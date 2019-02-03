@@ -7,7 +7,7 @@
  *
  *	Library				: Noxcorp Enviroment Library.
  *	Code Developer		: Mehmet Gunce Akkoyun (gunce.akkoyun@noxcorp.org)
- *	Revision			: 1.0.0
+ *	Revision			: 1.0.1
  *	Relase				: 03.02.2019
  *
  *********************************************************************************/
