@@ -7,7 +7,7 @@
  *
  *	Library				: Noxcorp Environment Library.
  *	Code Developer		: Mehmet Gunce Akkoyun (gunce.akkoyun@noxcorp.org)
- *	Revision			: 1.0.1
+ *	Revision			: 1.0.2
  *	Relase				: 03.02.2019
  *
  *********************************************************************************/
@@ -23,8 +23,8 @@ class Nox_Environment
 public:
 
 	// Define Function Versions
-	String B502BA_T_Version = "03.13.00";
-	String B502BA_H_Version = "03.13.00";
+	String B502BA_T_Version = "03.13.02";
+	String B502BA_H_Version = "03.13.02";
 	String B505AA_P_Version = "03.05.00";
 	String B501BA_L_Version = "03.03.00";
 
@@ -35,6 +35,12 @@ public:
 	bool B501BA_L(int Read_Count, int AVG_Type, float &Value_, double &Deviation_);	// TSL2561FN
 
 private:
+
+	// Calibration Constants
+	float B502BA_T_Calibrarion_a = 1.0129; // MGM
+	float B502BA_T_Calibrarion_b = 0.6075; // MGM
+	float B502BA_H_Calibrarion_a = 0.9518; // MGM
+	float B502BA_H_Calibrarion_b = 3.5316; // MGM
 
 };
 

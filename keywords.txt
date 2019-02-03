@@ -6,7 +6,7 @@
 # Datatypes (KEYWORD1)
 #######################################
 
-Nox_Environment				KEYWORD1
+Environment					KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
@@ -20,3 +20,8 @@ B501BA_L					KEYWORD2
 #######################################
 # Constants (LITERAL1)
 #######################################
+
+B502BA_T_Version			LITERAL1
+B502BA_H_Version			LITERAL1
+B505AA_P_Version			LITERAL1
+B501BA_L_Version			LITERAL1

@@ -7,7 +7,7 @@
  *
  *	Library				: Noxcorp Environment Library.
  *	Code Developer		: Mehmet Gunce Akkoyun (gunce.akkoyun@noxcorp.org)
- *	Revision			: 1.0.1
+ *	Revision			: 1.0.2
  *	Relase				: 03.02.2019
  *
  *********************************************************************************/
@@ -22,8 +22,8 @@ bool Nox_Environment::B502BA_T(int Read_Count, int AVG_Type, float &Value_, doub
 	/******************************************************************************
 	 *	Project		: SHT21 Temperature Read Function
 	 *	Developer	: Mehmet Gunce Akkoyun (gunce.akkoyun@noxcorp.org)
-	 *	Revision	: 03.13.00
-	 *	Relase		: 19.12.2018
+	 *	Revision	: 03.13.02
+	 *	Relase		: 03.02.2019
 	 *	AVG Type	: 1-AVG, 2-RMS, 3-EXRMS, 4-MEDIAN, 5-Sigma1RMS
 	 ******************************************************************************/
 	
@@ -381,12 +381,8 @@ bool Nox_Environment::B502BA_T(int Read_Count, int AVG_Type, float &Value_, doub
 	// Calibration Equation (MGM calibration values)
 	// ************************************************************
 
-	// Equation Constants
-	float a = 1.0129; // Slope
-	float b = 0.6075; // Offset
-	
 	// Calibrate
-	Value_ = (a * Value_) + b;
+	Value_ = (B502BA_T_Calibrarion_a * Value_) + B502BA_T_Calibrarion_b;
 
 	// End Function
 	return(true);
@@ -397,8 +393,8 @@ bool Nox_Environment::B502BA_H(int Read_Count, int AVG_Type, float &Value_, doub
 	/******************************************************************************
 	 *	Project		: SHT21 Humidity Read Function
 	 *	Developer	: Mehmet Gunce Akkoyun (gunce.akkoyun@noxcorp.org)
-	 *	Revision	: 03.13.00
-	 *	Relase		: 19.12.2018
+	 *	Revision	: 03.13.02
+	 *	Relase		: 03.02.2019
 	 *	AVG Type	: 1-AVG, 2-RMS, 3-EXRMS, 4-MEDIAN, 5-Sigma1RMS
 	 ******************************************************************************/
 	
@@ -750,12 +746,8 @@ bool Nox_Environment::B502BA_H(int Read_Count, int AVG_Type, float &Value_, doub
 	// Calibration Equation (MGM calibration values)
 	// ************************************************************
 	
-	// Equation Constants
-	float a = 0.9518; // Slope
-	float b = 3.5316; // Offset
-
 	// Calibrate
-	Value_ = (a * Value_) + b;
+	Value_ = (B502BA_H_Calibrarion_a * Value_) + B502BA_H_Calibrarion_b;
 
 	// End Function
 	return(true);
