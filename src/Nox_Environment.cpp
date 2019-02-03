@@ -5,7 +5,7 @@
  *
  *	The library is compatable with Noxcorp Hardware Community.
  *
- *	Library				: Noxcorp Enviroment Library.
+ *	Library				: Noxcorp Environment Library.
  *	Code Developer		: Mehmet Gunce Akkoyun (gunce.akkoyun@noxcorp.org)
  *	Revision			: 1.0.1
  *	Relase				: 03.02.2019
@@ -13,11 +13,11 @@
  *********************************************************************************/
 
 #include "Arduino.h"
-#include "Nox_Enviroment.h"
+#include "Nox_Environment.h"
 #include <Wire.h>
 
-// Enviroment
-bool Nox_Enviroment::B502BA_T(int Read_Count, int AVG_Type, float &Value_, double &Deviation_) {
+// Nox_Environment
+bool Nox_Environment::B502BA_T(int Read_Count, int AVG_Type, float &Value_, double &Deviation_) {
 	
 	/******************************************************************************
 	 *	Project		: SHT21 Temperature Read Function
@@ -392,7 +392,7 @@ bool Nox_Enviroment::B502BA_T(int Read_Count, int AVG_Type, float &Value_, doubl
 	return(true);
 
 }
-bool Nox_Enviroment::B502BA_H(int Read_Count, int AVG_Type, float &Value_, double &Deviation_) {
+bool Nox_Environment::B502BA_H(int Read_Count, int AVG_Type, float &Value_, double &Deviation_) {
 	
 	/******************************************************************************
 	 *	Project		: SHT21 Humidity Read Function
@@ -761,7 +761,7 @@ bool Nox_Enviroment::B502BA_H(int Read_Count, int AVG_Type, float &Value_, doubl
 	return(true);
 
 }
-bool Nox_Enviroment::B505AA_P(int Read_Count, int AVG_Type, float &Value_, double &Deviation_) {
+bool Nox_Environment::B505AA_P(int Read_Count, int AVG_Type, float &Value_, double &Deviation_) {
 
 	/******************************************************************************
 	 *	Project		: MPL3115A2 Pressure Read Function
@@ -1130,7 +1130,7 @@ bool Nox_Enviroment::B505AA_P(int Read_Count, int AVG_Type, float &Value_, doubl
 	return(true);
 
 }
-bool Nox_Enviroment::B501BA_L(int Read_Count, int AVG_Type, float &Value_, double &Deviation_) {
+bool Nox_Environment::B501BA_L(int Read_Count, int AVG_Type, float &Value_, double &Deviation_) {
 	
 	/******************************************************************************
 	 *	Project		: TSL2561 Light Read Function

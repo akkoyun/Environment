@@ -1,12 +1,12 @@
 #######################################
-# Syntax Coloring Map For Nox_Enviroment
+# Syntax Coloring Map For Nox_Environment
 #######################################
 
 #######################################
 # Datatypes (KEYWORD1)
 #######################################
 
-Nox_Enviroment				KEYWORD1
+Nox_Environment				KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)

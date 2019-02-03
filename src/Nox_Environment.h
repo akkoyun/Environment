@@ -5,20 +5,20 @@
  *
  *	The library is compatable with Noxcorp Hardware Community.
  *
- *	Library				: Noxcorp Enviroment Library.
+ *	Library				: Noxcorp Environment Library.
  *	Code Developer		: Mehmet Gunce Akkoyun (gunce.akkoyun@noxcorp.org)
  *	Revision			: 1.0.1
  *	Relase				: 03.02.2019
  *
  *********************************************************************************/
 
-#ifndef __Nox_Enviroment__
-#define __Nox_Enviroment__
+#ifndef __Nox_Environment__
+#define __Nox_Environment__
 
 #include <Arduino.h>
 #include <Wire.h>
 
-class Nox_Enviroment
+class Nox_Environment
 {
 public:
 
@@ -28,7 +28,7 @@ public:
 	String B505AA_P_Version = "03.05.00";
 	String B501BA_L_Version = "03.03.00";
 
-	// Enviroment
+	// Environment
 	bool B502BA_T(int Read_Count, int AVG_Type, float &Value_, double &Deviation_);	// SHT21
 	bool B502BA_H(int Read_Count, int AVG_Type, float &Value_, double &Deviation_);	// SHT21
 	bool B505AA_P(int Read_Count, int AVG_Type, float &Value_, double &Deviation_);	// MPL3115A2
@@ -38,4 +38,4 @@ private:
 
 };
 
-#endif /* defined(__Nox_Enviroment__) */
+#endif /* defined(__Nox_Environment__) */
