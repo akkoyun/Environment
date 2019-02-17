@@ -1,27 +1,25 @@
 /* *******************************************************************************
- *  Copyright (C) 2014-2019 Noxcorp Elektronik A.S. (info@noxcorp.org)
- *  Can not be copied and/or distributed without the express permission of Noxcorp
- *	This library is a combined book of Noxcorp enviroment sensor library.
+ *  Copyright (C) 2014-2019 Mehmet Gunce Akkoyun Can not be copied and/or
+ *	distributed without the express permission of Mehmet Gunce Akkoyun
+ *	This library is a combined book of enviroment sensor library.
  *
- *	The library is compatable with Noxcorp Hardware Community.
- *
- *	Library				: Noxcorp Environment Library.
- *	Code Developer		: Mehmet Gunce Akkoyun (gunce.akkoyun@noxcorp.org)
- *	Revision			: 1.0.3
- *	Relase				: 03.02.2019
+ *	Library				: Environment Library.
+ *	Code Developer		: Mehmet Gunce Akkoyun (akkoyun@me.com)
+ *	Revision			: 2.0.0
+ *	Relase				: 17.02.2019
  *
  *********************************************************************************/
 
 #include "Arduino.h"
-#include "Nox_Environment.h"
+#include "Environment.h"
 #include <Wire.h>
 
-// Nox_Environment
-bool Nox_Environment::B502BA_T(int Read_Count, int AVG_Type, float &Value_, double &Deviation_) {
+// Environment
+bool Environment::B502BA_T(int Read_Count, int AVG_Type, float &Value_, double &Deviation_) {
 	
 	/******************************************************************************
 	 *	Project		: SHT21 Temperature Read Function
-	 *	Developer	: Mehmet Gunce Akkoyun (gunce.akkoyun@noxcorp.org)
+	 *	Developer	: Mehmet Gunce Akkoyun (akkoyun@me.com)
 	 *	Revision	: 03.13.02
 	 *	Relase		: 03.02.2019
 	 *	AVG Type	: 1-AVG, 2-RMS, 3-EXRMS, 4-MEDIAN, 5-Sigma1RMS
@@ -388,11 +386,11 @@ bool Nox_Environment::B502BA_T(int Read_Count, int AVG_Type, float &Value_, doub
 	return(true);
 
 }
-bool Nox_Environment::B502BA_H(int Read_Count, int AVG_Type, float &Value_, double &Deviation_) {
+bool Environment::B502BA_H(int Read_Count, int AVG_Type, float &Value_, double &Deviation_) {
 	
 	/******************************************************************************
 	 *	Project		: SHT21 Humidity Read Function
-	 *	Developer	: Mehmet Gunce Akkoyun (gunce.akkoyun@noxcorp.org)
+	 *	Developer	: Mehmet Gunce Akkoyun (akkoyun@me.com)
 	 *	Revision	: 03.13.02
 	 *	Relase		: 03.02.2019
 	 *	AVG Type	: 1-AVG, 2-RMS, 3-EXRMS, 4-MEDIAN, 5-Sigma1RMS
@@ -753,11 +751,11 @@ bool Nox_Environment::B502BA_H(int Read_Count, int AVG_Type, float &Value_, doub
 	return(true);
 
 }
-bool Nox_Environment::B505AA_P(int Read_Count, int AVG_Type, float &Value_, double &Deviation_) {
+bool Environment::B505AA_P(int Read_Count, int AVG_Type, float &Value_, double &Deviation_) {
 
 	/******************************************************************************
 	 *	Project		: MPL3115A2 Pressure Read Function
-	 *	Developer	: Mehmet Gunce Akkoyun (gunce.akkoyun@noxcorp.org)
+	 *	Developer	: Mehmet Gunce Akkoyun (akkoyun@me.com)
 	 *	Revision	: 03.06.00
 	 *	Relase		: 25.12.2018
 	 *	AVG Type	: 1-AVG, 2-RMS, 3-EXRMS, 4-MEDIAN, 5-Sigma1RMS
@@ -1122,11 +1120,11 @@ bool Nox_Environment::B505AA_P(int Read_Count, int AVG_Type, float &Value_, doub
 	return(true);
 
 }
-bool Nox_Environment::B501BA_L(int Read_Count, int AVG_Type, float &Value_, double &Deviation_) {
+bool Environment::B501BA_L(int Read_Count, int AVG_Type, float &Value_, double &Deviation_) {
 	
 	/******************************************************************************
 	 *	Project		: TSL2561 Light Read Function
-	 *	Developer	: Mehmet Gunce Akkoyun (gunce.akkoyun@noxcorp.org)
+	 *	Developer	: Mehmet Gunce Akkoyun (akkoyun@me.com)
 	 *	Revision	: 03.03.00
 	 *	Relase		: 24.11.2018
 	 *	AVG Type	: 1-AVG, 2-RMS, 3-EXRMS, 4-MEDIAN, 5-Sigma1RMS

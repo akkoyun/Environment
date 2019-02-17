@@ -1,11 +1,11 @@
-#include "Nox_Environment.h"
+#include "Environment.h"
 
 // Measure Parameters
 int Sensor_Read_Count = 1;
 int Sensor_Average_Type = 5;
 
 // Define Library
-Nox_Environment Environment;
+Environment Environment;
 
 void setup() {
 

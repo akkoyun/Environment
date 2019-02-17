@@ -1,5 +1,5 @@
 #######################################
-# Syntax Coloring Map For Nox_Environment
+# Syntax Coloring Map For Environment
 #######################################
 
 #######################################

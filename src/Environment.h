@@ -1,24 +1,22 @@
 /* *******************************************************************************
- *  Copyright (C) 2014-2019 Noxcorp Elektronik A.S. (info@noxcorp.org)
- *  Can not be copied and/or distributed without the express permission of Noxcorp
- *	This library is a combined book of Noxcorp enviroment sensor library.
+ *  Copyright (C) 2014-2019 Mehmet Gunce Akkoyun Can not be copied and/or
+ *	distributed without the express permission of Mehmet Gunce Akkoyun
+ *	This library is a combined book of enviroment sensor library.
  *
- *	The library is compatable with Noxcorp Hardware Community.
- *
- *	Library				: Noxcorp Environment Library.
- *	Code Developer		: Mehmet Gunce Akkoyun (gunce.akkoyun@noxcorp.org)
- *	Revision			: 1.0.3
- *	Relase				: 03.02.2019
+ *	Library				: Environment Library.
+ *	Code Developer		: Mehmet Gunce Akkoyun (akkoyun@me.com)
+ *	Revision			: 2.0.0
+ *	Relase				: 17.02.2019
  *
  *********************************************************************************/
 
-#ifndef __Nox_Environment__
-#define __Nox_Environment__
+#ifndef __Environment__
+#define __Environment__
 
 #include <Arduino.h>
 #include <Wire.h>
 
-class Nox_Environment
+class Environment
 {
 public:
 
@@ -44,4 +42,4 @@ private:
 
 };
 
-#endif /* defined(__Nox_Environment__) */
+#endif /* defined(__Environment__) */
