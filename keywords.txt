@@ -12,16 +12,18 @@ Environment					KEYWORD1
 # Methods and Functions (KEYWORD2)
 #######################################
 
-B502BA_T					KEYWORD2
-B502BA_H					KEYWORD2
-B505AA_P					KEYWORD2
-B501BA_L					KEYWORD2
+SHT21_T						KEYWORD2
+SHT21_H						KEYWORD2
+MPL3115A2_P					KEYWORD2
+TSL2561_L					KEYWORD2
+HDC2010_T					KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
 #######################################
 
-B502BA_T_Version			LITERAL1
-B502BA_H_Version			LITERAL1
-B505AA_P_Version			LITERAL1
-B501BA_L_Version			LITERAL1
+SHT21_T_Version				LITERAL1
+SHT21_H_Version				LITERAL1
+MPL3115A2_P_Version			LITERAL1
+TSL2561_L_Version			LITERAL1
+HDC2010_T_Version			LITERAL1

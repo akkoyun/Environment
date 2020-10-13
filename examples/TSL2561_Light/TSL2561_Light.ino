@@ -34,7 +34,7 @@ void loop() {
 	Time = millis();
 	
 	// Measure
-	Environment.B502BA_H(Sensor_Read_Count, Sensor_Average_Type, _Measurement, _Deviation);
+	Environment.TSL2561_L(Sensor_Read_Count, Sensor_Average_Type, _Measurement, _Deviation);
 	
 	// Calculate Delta Time
 	int DT = millis() - Time;
@@ -43,8 +43,8 @@ void loop() {
 	pinMode(13, OUTPUT); digitalWrite(13, LOW);
 	
 	// Serial Print Data
-	Serial.print("Function Version        : "); Serial.println(Environment.B502BA_H_Version);
-	Serial.print("Value                   : "); Serial.print(_Measurement, 5); Serial.println(" %");
+	Serial.print("Function Version        : "); Serial.println(Environment.B501BA_L_Version);
+	Serial.print("Value                   : "); Serial.print(_Measurement, 3); Serial.println(" Lux");
 	Serial.print("Standart Deviation      : "); Serial.println(_Deviation, 5);
 	Serial.print("Read Count              : "); Serial.println(Sensor_Read_Count);
 	Serial.print("Average Type            : "); Serial.println(Sensor_Average_Type);

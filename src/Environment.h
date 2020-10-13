@@ -5,8 +5,8 @@
  *
  *	Library				: Environment Library.
  *	Code Developer		: Mehmet Gunce Akkoyun (akkoyun@me.com)
- *	Revision			: 2.0.0
- *	Relase				: 17.02.2019
+ *	Revision			: 3.0.0
+ *	Relase				: 12.10.2020
  *
  *********************************************************************************/
 
@@ -21,24 +21,43 @@ class Environment
 public:
 
 	// Define Function Versions
-	String B502BA_T_Version = "03.13.02";
-	String B502BA_H_Version = "03.13.02";
-	String B505AA_P_Version = "03.05.00";
-	String B501BA_L_Version = "03.03.00";
+	const PROGMEM char SHT21_T_Version[9] 		= "03.13.02";
+	const PROGMEM char SHT21_H_Version[9] 		= "03.13.02";
+	const PROGMEM char MPL3115A2_P_Version[9]	= "03.05.00";
+	const PROGMEM char TSL2561_L_Version[9] 	= "03.03.00";
+	const PROGMEM char HDC2010_T_Version[9] 	= "01.00.00";
+	const PROGMEM char HDC2010_H_Version[9] 	= "01.00.00";
 
-	// Environment
-	bool B502BA_T(int Read_Count, int AVG_Type, float &Value_, double &Deviation_);	// SHT21
-	bool B502BA_H(int Read_Count, int AVG_Type, float &Value_, double &Deviation_);	// SHT21
-	bool B505AA_P(int Read_Count, int AVG_Type, float &Value_, double &Deviation_);	// MPL3115A2
-	bool B501BA_L(int Read_Count, int AVG_Type, float &Value_, double &Deviation_);	// TSL2561FN
+	// SHT21
+	bool SHT21_T(uint8_t Read_Count, uint8_t AVG_Type, float &Value_, float &Deviation_);		// SHT21 Temperature
+	bool SHT21_H(uint8_t Read_Count, uint8_t AVG_Type, float &Value_, float &Deviation_);		// SHT21 Humidity
+	
+	// MPL3115A2
+	bool MPL3115A2_P(uint8_t Read_Count, uint8_t AVG_Type, float &Value_, float &Deviation_);	// MPL3115A2 Pressure
+	
+	// TSL2561
+	bool TSL2561_L(uint8_t Read_Count, uint8_t AVG_Type, float &Value_, float &Deviation_);		// TSL2561FN Light
+
+	// HDC2010
+	bool HDC2010_T(uint8_t Read_Count, uint8_t AVG_Type, float &Value_, float &Deviation_); 	// HDC2010 Temperature
+	bool HDC2010_H(uint8_t Read_Count, uint8_t AVG_Type, float &Value_, float &Deviation_); 	// HDC2010 Humidity
 
 private:
 
 	// Calibration Constants
-	float B502BA_T_Calibrarion_a = 1.0129; // MGM
-	float B502BA_T_Calibrarion_b = 0.6075; // MGM
-	float B502BA_H_Calibrarion_a = 0.9518; // MGM
-	float B502BA_H_Calibrarion_b = 3.5316; // MGM
+	float SHT21_T_Calibrarion_a = 1.0129; // MGM
+	float SHT21_T_Calibrarion_b = 0.6075; // MGM
+
+	float SHT21_H_Calibrarion_a = 0.9518; // MGM
+	float SHT21_H_Calibrarion_b = 3.5316; // MGM
+
+	float MPL3115A2_P_Calibrarion_a = 1;
+	float MPL3115A2_P_Calibrarion_b = 0;
+
+	float HDC2010_T_Calibrarion_a = 1;
+	float HDC2010_T_Calibrarion_b = 0;
+	float HDC2010_H_Calibrarion_a = 1;
+	float HDC2010_H_Calibrarion_b = 0;
 
 };
 
