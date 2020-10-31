@@ -43,7 +43,7 @@ int DT = millis() - Time;
 pinMode(13, OUTPUT); digitalWrite(13, LOW);
 
 // Serial Print Data
-Serial.print("Function Version        : "); Serial.println(Environment.B505AA_P_Version);
+Serial.print("Function Version        : "); Serial.println(Environment.MPL3115A2_P_Version);
 Serial.print("Value                   : "); Serial.print(_Measurement, 3); Serial.println(" mBar");
 Serial.print("Standart Deviation      : "); Serial.println(_Deviation, 5);
 Serial.print("Read Count              : "); Serial.println(Sensor_Read_Count);

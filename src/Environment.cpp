@@ -2565,3 +2565,243 @@ bool Environment::HDC2010_H(uint8_t Read_Count, uint8_t AVG_Type, float &Value_,
 	return(true);
 
 }
+bool Environment::MCP342X_P(uint8_t Channel, uint8_t Read_Count, uint8_t AVG_Type, float &Value_) {
+
+	/******************************************************************************
+	 *	Project		: ADC Sensor Read Function
+	 *	ADC IC      : MCP342X
+	 *	Developer	: Mehmet Gunce Akkoyun (akkoyun@me.com)
+	 *	Revision	: 01.00.00
+	 *	Relase		: 11.09.2020
+	 *	AVG Type	: 1-AVG, 2-RMS, 3-EXRMS, 4-MEDIAN, 5-Sigma1RMS
+	 ******************************************************************************/
+
+	// Define ADC Range
+	uint16_t ADC_Range_Min = 0x0000;		// Min
+	uint16_t ADC_Range_Max = 0xFFFF;		// Max
+
+	// Control Read Count
+	if (Read_Count < 1) Read_Count = 1;
+	if (Read_Count > 50) Read_Count = 50;
+
+	// Control for EXRMS Read Count
+	if (Read_Count < 3 and AVG_Type == 3) AVG_Type = 2;
+
+	// Set I2C Connection Close
+	if (Wire.available()) {
+		
+		int I2C_Close = Wire.endTransmission();
+		
+		// Control For Close Success
+		if (I2C_Close != 0) {
+			
+			// Set Error Code
+			Value_ = -101;
+			
+			// End Function
+			return(false);
+			
+		}
+		
+	}
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	if (P511[0].Analog_Pressure_Sense_Input == true) {
+		
+		// Select MUX Channel
+		I2C_MUX("ADC");
+
+	
+		
+		
+
+		// Define Pressure Read Array
+		uint16_t Pressure_RAW_Array[Read_Count];
+
+		// Start I2C
+		Wire.begin(0x68);
+
+		// Read Loop For Read Count
+		for (int Read_ID = 0; Read_ID < Read_Count; Read_ID++) {
+
+			// Start ADC Conversion for Channel x
+			Wire.beginTransmission(0x68);
+			if (Sensor_Channel == 1) Wire.write(0x80);
+			if (Sensor_Channel == 2) Wire.write(0xA0);
+			int I2C_Start_Conversation = Wire.endTransmission();
+
+			// Control For Close Success
+			if (I2C_Start_Conversation != 0) {
+				
+				// Set Error Code
+				Pressure = -101;
+				
+				// End Function
+				return(false);
+				
+			}
+
+			// Define Data Variable
+			uint8_t Pressure_Data[3];
+
+			// Read ADC Channel 1
+			do {
+
+				// Read Pressure Data
+				Wire.requestFrom(0x68, 3);
+
+				// Read Data
+				if(Wire.available() == 3) {
+					
+					// Read I2C Data
+					Pressure_Data[0] = Wire.read();
+					Pressure_Data[1] = Wire.read();
+					Pressure_Data[2] = Wire.read();
+
+					// Combine Data
+					Pressure_RAW_Array[Read_ID] = (Pressure_Data[0] << 8) | Pressure_Data[1];
+
+				}
+
+			} while((Pressure_Data[2] & 0x80) != 0x00);
+
+		}
+		
+		// Calculate Array Stats
+		float Max = double(Pressure_RAW_Array[0]); for (int i=0; i < Read_Count; i++) {if (double(Pressure_RAW_Array[i]) > Max) Max = double(Pressure_RAW_Array[i]);}
+		float Min = double(Pressure_RAW_Array[0]); for (int i=0; i < Read_Count; i++) {if (double(Pressure_RAW_Array[i]) < Min) Min = double(Pressure_RAW_Array[i]);}
+		float Avg; for (int i=0; i < Read_Count; i++) {Avg += double(Pressure_RAW_Array[i]);} Avg /= Read_Count;
+		float SDev; for (int i=0; i < Read_Count; i++) {SDev += (double(Pressure_RAW_Array[i]) - Avg) * (double(Pressure_RAW_Array[i]) - Avg);} SDev = sqrt(SDev/Read_Count);
+
+		// Define Variables
+		long Pressure_Sum = 0;
+		int Valid_Data_Count = 0;
+		int Sigma_1_Count = 0;
+		int Sigma_2_Count = 0;
+		int Sigma_3_Count = 0;
+
+		// Calculate Average Data
+		for (int Calculation_ID = 0; Calculation_ID < Read_Count; Calculation_ID++) {
+			
+			// Control Data for Limits
+			if (double(Pressure_RAW_Array[Calculation_ID]) >= Sensor_Range_Min and double(Pressure_RAW_Array[Calculation_ID]) <= Sensor_Range_Max) {
+				
+				// Calculate RMS/EXRMS Average
+				if (AVG_Type == 2 or AVG_Type == 3) {
+					
+					// Calculate Sum
+					Pressure_Sum += sq(double(Pressure_RAW_Array[Calculation_ID]));
+					
+					// Calculate Valid Data Count
+					Valid_Data_Count++;
+					
+				}
+				
+				// Calulate Sigma1 Average
+				if (AVG_Type == 5) {
+					
+					float Sigma_1_Max = Avg + SDev;
+					float Sigma_1_Min = Avg - SDev;
+					
+					if (Pressure_RAW_Array[Calculation_ID] >= Sigma_1_Min and Pressure_RAW_Array[Calculation_ID] <= Sigma_1_Max) {
+						
+						// Calculate Sum
+						Pressure_Sum += sq(Pressure_RAW_Array[Calculation_ID]);
+						
+						// Calculate Valid Data Count
+						Valid_Data_Count++;
+						
+					}
+					
+				}
+				
+			}
+			
+		}
+		
+		// Control for Valid Data
+		if (AVG_Type != 1 and Valid_Data_Count < 1) {
+			
+			// Set Error Code
+			Pressure = -102;
+			
+			// End Function
+			return(false);
+			
+		}
+
+		// Calculate Average
+		if (AVG_Type == 1) {
+			
+			// Calculate Average
+			Pressure = Avg;			// Average
+			
+		}	// Standart Average
+		if (AVG_Type == 2) {
+			
+			// Calculate Average
+			Pressure = sqrt(Pressure_Sum / Valid_Data_Count);		// RMS
+			
+		}	// RMS Average
+		if (AVG_Type == 3) {
+			
+			// Eleminate Max Value
+			Pressure_Sum = Pressure_Sum - (Max * Max);
+			
+			// Eleminate Min Value
+			Pressure_Sum = Pressure_Sum - (Min * Min);
+			
+			// Eleminate Min/Max Valid Data Count
+			Valid_Data_Count = Valid_Data_Count - 2;
+			
+			// Calculate Average
+			Pressure = sqrt(Pressure_Sum / Valid_Data_Count);		// EXRMS
+			
+		}	// Extendet RMS Average
+		if (AVG_Type == 4) {
+			
+			// Calculate Average
+			Pressure = (Max + Min) / 2;		// Median
+			
+		}	// Median Average
+		if (AVG_Type == 5) {
+			
+			// Calculate Average
+			Pressure = sqrt(Pressure_Sum / Valid_Data_Count);		// RMS
+			
+		}	// Sigma1RMS Average
+
+		// Calculate Pressure
+		Pressure = (0.0023 * double(Pressure)) -1.1015;
+
+		// Handle Pressure
+		if (Pressure < 0) Pressure = 0;
+		if (Pressure > 10) Pressure = 10;
+		
+		// End Function
+		return(true);
+		
+	} else {
+		
+		Pressure = 0;
+		
+	}
+
+}

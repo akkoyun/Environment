@@ -43,7 +43,7 @@ void loop() {
 	pinMode(13, OUTPUT); digitalWrite(13, LOW);
 	
 	// Serial Print Data
-	Serial.print("Function Version        : "); Serial.println(Environment.B502BA_T_Version);
+	Serial.print("Function Version        : "); Serial.println(Environment.SHT21_T_Version);
 	Serial.print("Value                   : "); Serial.print(_Measurement, 3); Serial.println(" C");
 	Serial.print("Standart Deviation      : "); Serial.println(_Deviation, 5);
 	Serial.print("Read Count              : "); Serial.println(Sensor_Read_Count);
