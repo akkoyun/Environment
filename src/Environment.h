@@ -42,6 +42,7 @@ public:
 	bool HDC2010_T(uint8_t Read_Count, uint8_t AVG_Type, float &Value_, float &Deviation_); 	// HDC2010 Temperature
 	bool HDC2010_H(uint8_t Read_Count, uint8_t AVG_Type, float &Value_, float &Deviation_); 	// HDC2010 Humidity
 
+	bool MCP342X_P(uint8_t Read_Count, uint8_t AVG_Type, float &Value_, float &Deviation_);
 private:
 
 	// Calibration Constants
