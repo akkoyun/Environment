@@ -23,8 +23,8 @@ void setup() {
 void loop() {
 	
 	// Define Sensor Variables
-	float _Measurement = 0;
-	float _Deviation = 0;
+	float _Measurement;
+	float _Deviation;
 	unsigned long Time;
 	
 	// Sensor EN to HIGH
