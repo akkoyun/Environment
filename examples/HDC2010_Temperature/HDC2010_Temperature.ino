@@ -24,7 +24,7 @@ void loop() {
 	
 	// Define Sensor Variables
 	float _Measurement = 0;
-	double _Deviation = 0;
+	float _Deviation = 0;
 	unsigned long Time;
 
 	// Sensor EN to HIGH
