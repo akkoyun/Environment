@@ -20,7 +20,10 @@ class Environment
 {
 public:
 
-	// Define Function Versions
+	// ************************************************************
+	// Public Variables
+	// ************************************************************
+
 	const char SHT21_T_Version[9] 		= "03.13.02";
 	const char SHT21_H_Version[9] 		= "03.13.02";
 	const char MPL3115A2_P_Version[9]	= "03.05.00";
@@ -28,8 +31,19 @@ public:
 	const char HDC2010_T_Version[9] 	= "01.00.00";
 	const char HDC2010_H_Version[9] 	= "01.00.00";
 
+	// ************************************************************
+	// Public Functions
+	// ************************************************************
+
+	
+	
+	
+	
+	
+	
+	
+	
 	// SHT21
-	bool SHT21_T(uint8_t Read_Count, uint8_t AVG_Type, float &Value_, float &Deviation_);		// SHT21 Temperature
 	bool SHT21_H(uint8_t Read_Count, uint8_t AVG_Type, float &Value_, float &Deviation_);		// SHT21 Humidity
 	
 	// MPL3115A2
@@ -44,7 +58,22 @@ public:
 
 private:
 
+	// ************************************************************
+	// Private Functions
+	// ************************************************************
+
+	// Sensirion SHT21
+	bool SHT21_Temperature(float &Value_);
+
+	// ************************************************************
+	// Private Variables
+	// ************************************************************
+
+	
+	// ************************************************************
 	// Calibration Constants
+	// ************************************************************
+
 	float SHT21_T_Calibrarion_a = 1.0129; // MGM
 	float SHT21_T_Calibrarion_b = 0.6075; // MGM
 
