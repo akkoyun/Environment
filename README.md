@@ -1,4 +1,9 @@
-# Environment Library [03.00.00]
+# Environment<sup>03</sup>
+`Environment Sensor Library - 03.00.00`
+
+---
+
+
 
 Not: İstatistiksel hesaplama herbir sensör fonksiyonu içinde yer almaktaydı (02.00.01 versiyonunda) fakat bunun hem şişme hemde kullanım zorluğu açısından harici bir şekilde analiz edilmesi uygun olduğu düşünülmüştür. Herbir sensöre ait ölçüm kütüphaneleri oluştturulacak ayrıca bir fonksiyonda istatistiksel ölçümlemeler yapılacaktır.
 
