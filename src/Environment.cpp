@@ -242,28 +242,13 @@ bool Environment::SHT21_Temperature(float &Value_) {
 	return(true);
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-bool Environment::SHT21_H(uint8_t Read_Count, uint8_t AVG_Type, float &Value_, float &Deviation_) {
+bool Environment::SHT21_Humidity(float &Value_) {
 	
 	/******************************************************************************
 	 *	Project		: SHT21 Humidity Read Function
 	 *	Developer	: Mehmet Gunce Akkoyun (akkoyun@me.com)
-	 *	Revision	: 03.13.02
-	 *	Relase		: 03.02.2019
-	 *	AVG Type	: 1-AVG, 2-RMS, 3-EXRMS, 4-MEDIAN, 5-Sigma1RMS
+	 *	Revision	: 04.00.00
+	 *	Release		: 04.11.2020
 	 ******************************************************************************/
 	
 	// Set Sensor Definations
@@ -289,10 +274,6 @@ bool Environment::SHT21_H(uint8_t Read_Count, uint8_t AVG_Type, float &Value_, f
 		}
 		
 	};
-	
-	// Control Read Count
-	if (Read_Count < 01) Read_Count = 01;
-	if (Read_Count > 50) Read_Count = 50;
 	
 	// ************************************************************
 	// Set Sensor Configuration Byte
@@ -396,206 +377,74 @@ bool Environment::SHT21_H(uint8_t Read_Count, uint8_t AVG_Type, float &Value_, f
 	// Read Sensor Datas
 	// ************************************************************
 	
-	// Define Measurement Read Array
-	float Measurement_Array[Read_Count];
+	// Define Variables
+	uint16_t Measurement_Raw = 0;
 	
-	// Read Loop For Read Count
-	for (int Read_ID = 0; Read_ID < Read_Count; Read_ID++) {
+	// Send Read Command to SHT21
+	Wire.beginTransmission(0b01000000);
+	Wire.write(0b11100101);
+	
+	// Close I2C Connection
+	int SHT21_Read = Wire.endTransmission(false);
+	
+	// Control For Read Success
+	if (SHT21_Read != 0) {
 		
-		// Define Variables
-		uint16_t Measurement_Raw = 0;
+		// Set Error Code
+		Value_ = -103;
 		
-		// Send Read Command to SHT21
-		Wire.beginTransmission(0b01000000);
-		Wire.write(0b11100101);
-		
-		// Close I2C Connection
-		int SHT21_Read = Wire.endTransmission(false);
-		
-		// Control For Read Success
-		if (SHT21_Read != 0) {
-			
-			// Set Error Code
-			Value_ = -103;
-			
-			// End Function
-			return(false);
-			
-		}
-		
-		// Read Data Command to SHT21
-		Wire.requestFrom(0b01000000, 3);
-		
-		// Define Data Variable
-		uint8_t SHT21_Data[3];
-		
-		// Read I2C Bytes
-		SHT21_Data[0] = Wire.read(); // MSB
-		SHT21_Data[1] = Wire.read(); // LSB
-		SHT21_Data[2] = Wire.read(); // CRC
-		
-		// Combine Read Bytes
-		Measurement_Raw = ((SHT21_Data[0] << 8) | SHT21_Data[1]);
-		
-		// Define CRC Variables
-		uint8_t CRC, Control_Byte;
-		
-		// Calculate CRC
-		for (Control_Byte = 0; Control_Byte < 3; Control_Byte++) {
-			CRC ^= SHT21_Data[Control_Byte];
-			for (uint8_t bit = 8; bit > 0; bit--) {
-				if (CRC & 0x80) {CRC = (CRC << 1) ^ 0x131;}
-				else { CRC = (CRC << 1);}
-			}
-		}
-		
-		// Control and Calculate Measurement
-		if (CRC == 0) {
-			
-			// Calculate Measurement
-			Measurement_Array[Read_ID] = (SHT21_H_Calibrarion_a * (-6 + ((125 * float(Measurement_Raw)) / pow(2,16))));
-			
-		} else {
-			
-			// Set Error Code
-			Value_ = -104;
-			
-			// End Function
-			return(false);
-			
-		}
-		
-		// Read Delay
-		if (SHT21[0].Resolution == 12) delay(29); 	// T: 12 bit
-		if (SHT21[0].Resolution == 11) delay(15);	// T: 11 bit
-		if (SHT21[0].Resolution == 10) delay(9); 	// T: 10 bit
-		if (SHT21[0].Resolution == 8) delay(4);		// T: 08 bit
+		// End Function
+		return(false);
 		
 	}
 	
-	// ************************************************************
-	// Calculate Value for Average Type
-	// ************************************************************
+	// Read Data Command to SHT21
+	Wire.requestFrom(0b01000000, 3);
 	
-	// Control for EXRMS Read Count
-	if (Read_Count < 3 and AVG_Type == 3) AVG_Type = 2;
+	// Define Data Variable
+	uint8_t SHT21_Data[3];
 	
-	// Calculate Average
-	if (AVG_Type == 1) {
-		
-		// ************************************************************
-		// Calculate Aritmetic Average With Measurement Array
-		// ************************************************************
-		
-		// Calculate Average
-		double Average_Value_Sum = 0, Average = 0;
-		for (int i = 0; i < Read_Count; i++) Average_Value_Sum += Measurement_Array[i];
-		Average = Average_Value_Sum / Read_Count;
-		
-		// Calculate Average
-		Value_ = Average;
-		
-		// Set Deviation Variable
-		Deviation_ = 0;
-		
-	}	// Aritmetic Average
-	if (AVG_Type == 2) {
-		
-		// ************************************************************
-		// Calculate RMS Average With Measurement Array
-		// ************************************************************
-		
-		// Calculate Average
-		double Average_Value_Sum = 0, Average = 0;
-		for (int i = 0; i < Read_Count; i++) Average_Value_Sum += sq(Measurement_Array[i]);
-		Average = sqrt(Average_Value_Sum / Read_Count);
-		
-		// Calculate Average
-		Value_ = Average;
-		
-		// Set Deviation Variable
-		Deviation_ = 0;
-		
-	}	// RMS Average
-	if (AVG_Type == 3) {
-		
-		// ************************************************************
-		// Calculate Max & Min values and Extract From Measurement
-		// Calculate RMS Average With Filtered Measurement Array
-		// ************************************************************
-		
-		
-	}	// Filtered RMS Average
-	if (AVG_Type == 4) {
-		
-		// ************************************************************
-		// Calculate Median Point of Measurement Array
-		// ************************************************************
-		
-		
-	}	// Median Average
-	if (AVG_Type == 5) {
-		
-		// ************************************************************
-		// Calculate Average and Standart Deviation With Measurement Array
-		// Select x Sigma Valid Data and Calculate Aritmetic Average
-		// ************************************************************
-		
-		// Define Sigma
-		float Sigma = 1;
-		
-		// Define Variables
-		int Valid_Data_Count = 0;
-		double Value_Sum = 0;
-		
-		// Calculate Average
-		double Average_Value_Sum = 0, Average = 0;
-		for (int i = 0; i < Read_Count; i++) Average_Value_Sum += Measurement_Array[i];
-		Average = Average_Value_Sum / Read_Count;
-		
-		// Calculate Standart Deviation
-		double Deviation_Value_Sum = 0, Deviation = 0;
-		for (int i = 0; i < Read_Count; i++) Deviation_Value_Sum += ((Measurement_Array[i] - Average) * (Measurement_Array[i] - Average));
-		Deviation = sqrt(Deviation_Value_Sum / Read_Count);
-		
-		// Set Sigma Min/Max Values
-		float Sigma_1_Max = Average + (Sigma * Deviation);
-		float Sigma_1_Min = Average - (Sigma * Deviation);
-		
-		// Handle Array Values
-		for (int Calculation_ID = 0; Calculation_ID < Read_Count; Calculation_ID++) {
-			
-			// Control for 1 Sigma Data
-			if (Measurement_Array[Calculation_ID] >= Sigma_1_Min and Measurement_Array[Calculation_ID] <= Sigma_1_Max) {
-				
-				// Calculate Sum
-				Value_Sum += Measurement_Array[Calculation_ID];
-				
-				// Calculate Valid Data Count
-				Valid_Data_Count++;
-				
-			}
-			
+	// Read I2C Bytes
+	SHT21_Data[0] = Wire.read(); // MSB
+	SHT21_Data[1] = Wire.read(); // LSB
+	SHT21_Data[2] = Wire.read(); // CRC
+	
+	// Combine Read Bytes
+	Measurement_Raw = ((SHT21_Data[0] << 8) | SHT21_Data[1]);
+	
+	// Define CRC Variables
+	uint8_t CRC, Control_Byte;
+	
+	// Calculate CRC
+	for (Control_Byte = 0; Control_Byte < 3; Control_Byte++) {
+		CRC ^= SHT21_Data[Control_Byte];
+		for (uint8_t bit = 8; bit > 0; bit--) {
+			if (CRC & 0x80) {CRC = (CRC << 1) ^ 0x131;}
+			else { CRC = (CRC << 1);}
 		}
+	}
+	
+	// Control and Calculate Measurement
+	if (CRC == 0) {
 		
-		// Control for Valid Data
-		if (Valid_Data_Count < 1) {
-			
-			// Set Error Code
-			Value_ = -105;
-			
-			// End Function
-			return(false);
-			
-		}
+		// Calculate Measurement
+		Value_ = (SHT21_H_Calibrarion_a * (-6 + ((125 * float(Measurement_Raw)) / pow(2,16))));
 		
-		// Calculate Average
-		Value_ = (Value_Sum / Valid_Data_Count);
+	} else {
 		
-		// Set Deviation Variable
-		Deviation_ = Deviation;
+		// Set Error Code
+		Value_ = -104;
 		
-	}	// 1 Sigma Average
+		// End Function
+		return(false);
+		
+	}
+	
+	// Read Delay
+	if (SHT21[0].Resolution == 12) delay(29); 	// T: 12 bit
+	if (SHT21[0].Resolution == 11) delay(15);	// T: 11 bit
+	if (SHT21[0].Resolution == 10) delay(9); 	// T: 10 bit
+	if (SHT21[0].Resolution == 8) delay(4);		// T: 08 bit
 	
 	// ************************************************************
 	// Control For Sensor Range
@@ -614,6 +463,16 @@ bool Environment::SHT21_H(uint8_t Read_Count, uint8_t AVG_Type, float &Value_, f
 	return(true);
 
 }
+
+
+
+
+
+
+
+
+
+
 bool Environment::MPL3115A2_P(uint8_t Read_Count, uint8_t AVG_Type, float &Value_, float &Deviation_) {
 
 	/******************************************************************************

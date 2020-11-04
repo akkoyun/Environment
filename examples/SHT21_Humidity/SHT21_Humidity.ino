@@ -34,7 +34,7 @@ void loop() {
 	Time = millis();
 	
 	// Measure
-	Environment.SHT21_H(Sensor_Read_Count, Sensor_Average_Type, _Measurement, _Deviation);
+	//Environment.SHT21_H(Sensor_Read_Count, Sensor_Average_Type, _Measurement, _Deviation);
 	
 	// Calculate Delta Time
 	int DT = millis() - Time;

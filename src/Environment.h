@@ -24,12 +24,6 @@ public:
 	// Public Variables
 	// ************************************************************
 
-	const char SHT21_T_Version[9] 		= "03.13.02";
-	const char SHT21_H_Version[9] 		= "03.13.02";
-	const char MPL3115A2_P_Version[9]	= "03.05.00";
-	const char TSL2561_L_Version[9] 	= "03.03.00";
-	const char HDC2010_T_Version[9] 	= "01.00.00";
-	const char HDC2010_H_Version[9] 	= "01.00.00";
 
 	// ************************************************************
 	// Public Functions
@@ -43,8 +37,6 @@ public:
 	
 	
 	
-	// SHT21
-	bool SHT21_H(uint8_t Read_Count, uint8_t AVG_Type, float &Value_, float &Deviation_);		// SHT21 Humidity
 	
 	// MPL3115A2
 	bool MPL3115A2_P(uint8_t Read_Count, uint8_t AVG_Type, float &Value_, float &Deviation_);	// MPL3115A2 Pressure
@@ -64,12 +56,15 @@ private:
 
 	// Sensirion SHT21
 	bool SHT21_Temperature(float &Value_);
+	bool SHT21_Humidity(float &Value_);
 
 	// ************************************************************
 	// Private Variables
 	// ************************************************************
 
-	
+	const char SHT21_Temperature_Version[9] 	= "04.00.00";
+	const char SHT21_Humidity_Version[9] 		= "04.00.00";
+
 	// ************************************************************
 	// Calibration Constants
 	// ************************************************************
