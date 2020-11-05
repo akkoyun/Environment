@@ -34,7 +34,7 @@ void loop() {
 	Time = millis();
 	
 	// Measure
-	Environment.TSL2561_L(Sensor_Read_Count, Sensor_Average_Type, _Measurement, _Deviation);
+	//Environment.TSL2561_L(Sensor_Read_Count, Sensor_Average_Type, _Measurement, _Deviation);
 	
 	// Calculate Delta Time
 	int DT = millis() - Time;

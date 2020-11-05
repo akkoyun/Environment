@@ -34,7 +34,7 @@ pinMode(13, OUTPUT); digitalWrite(13, HIGH); delay(10);
 Time = millis();
 
 // Measure
-Environment.MPL3115A2_P(Sensor_Read_Count, Sensor_Average_Type, _Measurement, _Deviation);
+//Environment.MPL3115A2_P(Sensor_Read_Count, Sensor_Average_Type, _Measurement, _Deviation);
 
 // Calculate Delta Time
 int DT = millis() - Time;
