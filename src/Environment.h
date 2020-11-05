@@ -28,6 +28,7 @@ public:
 	// ************************************************************
 	// Public Functions
 	// ************************************************************
+	float Read_Temperature(uint8_t Sensor_ID_, uint8_t Read_Count_, uint8_t Average_Type);
 
 private:
 
@@ -53,8 +54,9 @@ private:
 	// Private Variables
 	// ************************************************************
 
-	const char SHT21_Temperature_Version[9] 	= "04.00.00";
-	const char SHT21_Humidity_Version[9] 		= "04.00.00";
+	uint8_t Sensor_Count = 2;
+	
+	// const char SHT21_Temperature_Version[9] 	= "04.00.00";
 
 	// ************************************************************
 	// Calibration Constants

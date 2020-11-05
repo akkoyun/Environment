@@ -14,7 +14,7 @@
 #include "Environment.h"
 #include <Wire.h>
 
-// Environment
+// Sensor Functions
 bool Environment::SHT21_Temperature(float &Value_) {
 	
 	/******************************************************************************
@@ -1765,4 +1765,139 @@ bool Environment::HDC2010_Humidity(float &Value_) {
 	// End Function
 	return(true);
 
+}
+
+// Read Functions
+float Read_Temperature(uint8_t Sensor_ID_, uint8_t Read_Count_, uint8_t Average_Type_) {
+	
+	/******************************************************************************
+	 *	Project		: Temperature Read Function
+	 *	Developer	: Mehmet Gunce Akkoyun (akkoyun@me.com)
+	 *	Revision	: 01.00.00
+	 *	Release		: 05.11.2020
+	 ******************************************************************************/
+
+	// Define Measurement Read Array
+	float Measurement_Array[Read_Count_];
+	
+	// Define Sensor Read Success
+	bool Measurement_Succes;
+	
+	// ************************************************************
+	// Handle Function Inputs
+	// ************************************************************
+	
+	// Control for Sensor ID (1.SHT21 / 2.HDC2010)
+	if (Sensor_ID_ < 0 or Sensor_ID_ > Sensor_Count) return(-150);
+	
+	// Control for Read Count
+	if (Read_Count_ < 0 or Read_Count_ > 50) return(-151);
+
+	// Control for Average Type
+	if (Average_Type_ < 0 or Average_Type_ > 5) return(-152);
+
+	// ************************************************************
+	// Measure Sensor Variable
+	// ************************************************************
+	
+	// Declare Read ID
+	uint8_t Read_ID = 0;
+	
+	// Read Current Time
+	uint32_t _Time = millis();
+
+	// Read Loop For Read Count
+	while (Measurement_Succes == false) {
+		
+		// Control for Read Count
+		if (Read_ID > Read_Count_) break;
+		
+		// SHT21 Temperature Read
+		if (Sensor_ID_ == 1) {
+			
+			// Read Sensor
+			if (SHT21_Temperature(Measurement_Array[Read_ID]) == true) {
+				
+				// Increase Read ID
+				Read_ID++;
+				
+			}
+			
+		}
+
+		// HDC2010 Temperature Read
+		if (Sensor_ID_ == 2) {
+			
+			// Read Sensor
+			if (HDC2010_Temperature(Measurement_Array[Read_ID]) == true) {
+				
+				// Increase Read ID
+				Read_ID++;
+				
+			}
+			
+		}
+
+		// Handle for timeout
+		if (millis() - _Time >= 2000) return(false);
+		
+	}
+	
+	// ************************************************************
+	// Calculate Stats
+	// ************************************************************
+
+	// Calculate Array Stats
+	double Sum; for (int i=0; i < Read_Count_; i++) {Sum += double(Measurement_Array[i]);}
+	double SSum; for (int i=0; i < Read_Count_; i++) {SSum += (double(Measurement_Array[i]) * double(Measurement_Array[i]));}
+	float Max = double(Measurement_Array[0]); for (int i=0; i < Read_Count_; i++) {if (double(Measurement_Array[i]) > Max) Max = double(Measurement_Array[i]);}
+	float Min = double(Measurement_Array[0]); for (int i=0; i < Read_Count_; i++) {if (double(Measurement_Array[i]) < Min) Min = double(Measurement_Array[i]);}
+	float Avg; Avg = Sum / Read_Count_;
+	float SDev; for (int i=0; i < Read_Count_; i++) {SDev += (double(Measurement_Array[i]) - Avg) * (double(Measurement_Array[i]) - Avg);} SDev = sqrt(SDev/Read_Count_);
+
+	// ************************************************************
+	// Calculate Value
+	// ************************************************************
+
+	// Calculate Average
+	if (Average_Type_ == 1) {
+		
+		// Calculate Average
+		return(Avg);
+		
+	}	// Standart Average
+	if (Average_Type_ == 2) {
+		
+		// Calculate Average
+		return(sqrt(Sum / Read_Count_));
+		
+	}	// RMS Average
+	if (Average_Type_ == 3) {
+		
+		// Eleminate Max Value
+		SSum = SSum - (Max * Max);
+		
+		// Eleminate Min Value
+		SSum = SSum - (Min * Min);
+		
+		// Eleminate Min/Max Valid Data Count
+		Read_Count_ = Read_Count_ - 2;
+		
+		// Calculate Average
+		return(sqrt(SSum / Read_Count_));
+		
+	}	// Extendet RMS Average
+	if (Average_Type_ == 4) {
+		
+		// Calculate Average
+		return((Max + Min) / 2);		// Median
+		
+	}	// Median Average
+	if (Average_Type_ == 5) {
+		
+		// Calculate Average
+		return(sqrt(SSum / Read_Count_));		// RMS
+		
+	}	// Sigma1RMS Average
+	
 }
