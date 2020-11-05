@@ -28,7 +28,7 @@ public:
 	// ************************************************************
 	// Public Functions
 	// ************************************************************
-	float Read_Temperature(uint8_t Sensor_ID_, uint8_t Read_Count_, uint8_t Average_Type);
+	float Read_Sensor(uint8_t Sensor_ID_, uint8_t Read_Count_, uint8_t Average_Type);
 
 private:
 
@@ -62,17 +62,23 @@ private:
 	// Calibration Constants
 	// ************************************************************
 
+	// SHT21 Temperature
 	float SHT21_T_Calibrarion_a = 1.0129; // MGM
 	float SHT21_T_Calibrarion_b = 0.6075; // MGM
 
+	// SHT21 Humidity
 	float SHT21_H_Calibrarion_a = 0.9518; // MGM
 	float SHT21_H_Calibrarion_b = 3.5316; // MGM
 
+	// MPL3115A2 Pressure
 	float MPL3115A2_P_Calibrarion_a = 1;
 	float MPL3115A2_P_Calibrarion_b = 0;
 
+	// HDC2010 Temperature
 	float HDC2010_T_Calibrarion_a = 1;
 	float HDC2010_T_Calibrarion_b = 0;
+	
+	// HDC2010 Humidity
 	float HDC2010_H_Calibrarion_a = 1;
 	float HDC2010_H_Calibrarion_b = 0;
 

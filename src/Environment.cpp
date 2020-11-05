@@ -241,7 +241,7 @@ bool Environment::SHT21_Temperature(float &Value_) {
 	// End Function
 	return(true);
 
-}
+}	// 1
 bool Environment::SHT21_Humidity(float &Value_) {
 	
 	/******************************************************************************
@@ -462,7 +462,7 @@ bool Environment::SHT21_Humidity(float &Value_) {
 	// End Function
 	return(true);
 
-}
+}		// 2
 bool Environment::MPL3115A2_Pressure(float &Value_) {
 
 	/******************************************************************************
@@ -692,7 +692,7 @@ bool Environment::MPL3115A2_Pressure(float &Value_) {
 	// End Function
 	return(true);
 
-}
+}	// 3
 bool Environment::TSL2561_Light(float &Value_) {
 	
 	/******************************************************************************
@@ -1059,7 +1059,7 @@ bool Environment::TSL2561_Light(float &Value_) {
 	// End Function
 	return(true);
 	
-}
+}		// 4
 bool Environment::HDC2010_Temperature(float &Value_) {
 
 	/******************************************************************************
@@ -1412,7 +1412,7 @@ bool Environment::HDC2010_Temperature(float &Value_) {
 	// End Function
 	return(true);
 
-}
+}	// 5
 bool Environment::HDC2010_Humidity(float &Value_) {
 
 	/******************************************************************************
@@ -1765,10 +1765,10 @@ bool Environment::HDC2010_Humidity(float &Value_) {
 	// End Function
 	return(true);
 
-}
+}		// 6
 
 // Read Functions
-float Environment::Read_Temperature(uint8_t Sensor_ID_, uint8_t Read_Count_, uint8_t Average_Type_) {
+float Environment::Read_Sensor(uint8_t Sensor_ID_, uint8_t Read_Count_, uint8_t Average_Type_) {
 	
 	/******************************************************************************
 	 *	Project		: Temperature Read Function
@@ -1812,7 +1812,7 @@ float Environment::Read_Temperature(uint8_t Sensor_ID_, uint8_t Read_Count_, uin
 		// Control for Read Count
 		if (Read_ID > Read_Count_) break;
 		
-		// SHT21 Temperature Read
+		// 1- SHT21 Temperature Read
 		if (Sensor_ID_ == 1) {
 			
 			// Read Sensor
@@ -1825,11 +1825,63 @@ float Environment::Read_Temperature(uint8_t Sensor_ID_, uint8_t Read_Count_, uin
 			
 		}
 
-		// HDC2010 Temperature Read
+		// 2- SHT21 Humidity Read
 		if (Sensor_ID_ == 2) {
 			
 			// Read Sensor
+			if (SHT21_Humidity(Measurement_Array[Read_ID]) == true) {
+				
+				// Increase Read ID
+				Read_ID++;
+				
+			}
+			
+		}
+
+		// 3- MPL3115A2 Pressure Read
+		if (Sensor_ID_ == 3) {
+			
+			// Read Sensor
+			if (MPL3115A2_Pressure(Measurement_Array[Read_ID]) == true) {
+				
+				// Increase Read ID
+				Read_ID++;
+				
+			}
+			
+		}
+
+		// 4- TSL2561 Light Read
+		if (Sensor_ID_ == 4) {
+			
+			// Read Sensor
+			if (TSL2561_Light(Measurement_Array[Read_ID]) == true) {
+				
+				// Increase Read ID
+				Read_ID++;
+				
+			}
+			
+		}
+
+		// 5- HDC2010 Temperature Read
+		if (Sensor_ID_ == 5) {
+			
+			// Read Sensor
 			if (HDC2010_Temperature(Measurement_Array[Read_ID]) == true) {
+				
+				// Increase Read ID
+				Read_ID++;
+				
+			}
+			
+		}
+
+		// 6- HDC2010 Humidity Read
+		if (Sensor_ID_ == 6) {
+			
+			// Read Sensor
+			if (HDC2010_Humidity(Measurement_Array[Read_ID]) == true) {
 				
 				// Increase Read ID
 				Read_ID++;
