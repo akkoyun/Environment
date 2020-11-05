@@ -669,10 +669,7 @@ bool Environment::MPL3115A2_Pressure(float &Value_) {
 		Measurement_Raw >>= 4;
 		
 		// Calculate Pressure (mBar)
-		Measurement_Array[Read_ID] = (Measurement_Raw / 4.00 ) / 100;
-
-		// Calibration Curve Calculation
-		Measurement_Array[Read_ID] = (MPL3115A2_P_Calibrarion_a * Measurement_Array[Read_ID]) + MPL3115A2_P_Calibrarion_b;
+		Value_ = (MPL3115A2_P_Calibrarion_a * ((Measurement_Raw / 4.00 ) / 100)) + MPL3115A2_P_Calibrarion_b;
 
 		// Read Delay
 		delay(512);
