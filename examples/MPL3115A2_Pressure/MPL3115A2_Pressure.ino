@@ -34,7 +34,7 @@ pinMode(13, OUTPUT); digitalWrite(13, HIGH); delay(10);
 Time = millis();
 
 // Measure
-Environment.MPL3115A2_P(Sensor_Read_Count, Sensor_Average_Type, _Measurement, _Deviation);
+//Environment.MPL3115A2_P(Sensor_Read_Count, Sensor_Average_Type, _Measurement, _Deviation);
 
 // Calculate Delta Time
 int DT = millis() - Time;
@@ -43,7 +43,7 @@ int DT = millis() - Time;
 pinMode(13, OUTPUT); digitalWrite(13, LOW);
 
 // Serial Print Data
-Serial.print("Function Version        : "); Serial.println(Environment.MPL3115A2_P_Version);
+//Serial.print("Function Version        : "); Serial.println(Environment.MPL3115A2_P_Version);
 Serial.print("Value                   : "); Serial.print(_Measurement, 3); Serial.println(" mBar");
 Serial.print("Standart Deviation      : "); Serial.println(_Deviation, 5);
 Serial.print("Read Count              : "); Serial.println(Sensor_Read_Count);

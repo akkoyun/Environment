@@ -12,12 +12,14 @@ Environment					KEYWORD1
 # Methods and Functions (KEYWORD2)
 #######################################
 
-SHT21_T						KEYWORD2
-SHT21_H						KEYWORD2
-MPL3115A2_P					KEYWORD2
-TSL2561_L					KEYWORD2
-HDC2010_T					KEYWORD2
-
+Read_Sensor					KEYWORD2
+SHT21_Temperature			KEYWORD2
+SHT21_Humidity				KEYWORD2
+MPL3115A2_Pressure			KEYWORD2
+TSL2561_Light				KEYWORD2
+HDC2010_Temperature			KEYWORD2
+HDC2010_Humidity			KEYWORD2
+	
 #######################################
 # Constants (LITERAL1)
 #######################################

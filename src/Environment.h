@@ -20,42 +20,65 @@ class Environment
 {
 public:
 
-	// Define Function Versions
-	const char SHT21_T_Version[9] 		= "03.13.02";
-	const char SHT21_H_Version[9] 		= "03.13.02";
-	const char MPL3115A2_P_Version[9]	= "03.05.00";
-	const char TSL2561_L_Version[9] 	= "03.03.00";
-	const char HDC2010_T_Version[9] 	= "01.00.00";
-	const char HDC2010_H_Version[9] 	= "01.00.00";
+	// ************************************************************
+	// Public Variables
+	// ************************************************************
 
-	// SHT21
-	bool SHT21_T(uint8_t Read_Count, uint8_t AVG_Type, float &Value_, float &Deviation_);		// SHT21 Temperature
-	bool SHT21_H(uint8_t Read_Count, uint8_t AVG_Type, float &Value_, float &Deviation_);		// SHT21 Humidity
-	
-	// MPL3115A2
-	bool MPL3115A2_P(uint8_t Read_Count, uint8_t AVG_Type, float &Value_, float &Deviation_);	// MPL3115A2 Pressure
-	
-	// TSL2561
-	bool TSL2561_L(uint8_t Read_Count, uint8_t AVG_Type, float &Value_, float &Deviation_);		// TSL2561FN Light
 
-	// HDC2010
-	bool HDC2010_T(uint8_t Read_Count, uint8_t AVG_Type, float &Value_, float &Deviation_); 	// HDC2010 Temperature
-	bool HDC2010_H(uint8_t Read_Count, uint8_t AVG_Type, float &Value_, float &Deviation_); 	// HDC2010 Humidity
+	// ************************************************************
+	// Public Functions
+	// ************************************************************
+	float Read_Sensor(uint8_t Sensor_ID_, uint8_t Read_Count_, uint8_t Average_Type);
 
 private:
 
+	// ************************************************************
+	// Private Functions
+	// ************************************************************
+
+	// Sensirion SHT21
+	bool SHT21_Temperature(float &Value_);
+	bool SHT21_Humidity(float &Value_);
+
+	// MPL3115A2
+	bool MPL3115A2_Pressure(float &Value_);
+
+	// HDC2010
+	bool HDC2010_Temperature(float &Value_);
+	bool HDC2010_Humidity(float &Value_);
+
+	// TSL2561
+	bool TSL2561_Light(float &Value_);
+
+	// ************************************************************
+	// Private Variables
+	// ************************************************************
+
+	uint8_t Sensor_Count = 2;
+	
+	// const char SHT21_Temperature_Version[9] 	= "04.00.00";
+
+	// ************************************************************
 	// Calibration Constants
+	// ************************************************************
+
+	// SHT21 Temperature
 	float SHT21_T_Calibrarion_a = 1.0129; // MGM
 	float SHT21_T_Calibrarion_b = 0.6075; // MGM
 
+	// SHT21 Humidity
 	float SHT21_H_Calibrarion_a = 0.9518; // MGM
 	float SHT21_H_Calibrarion_b = 3.5316; // MGM
 
+	// MPL3115A2 Pressure
 	float MPL3115A2_P_Calibrarion_a = 1;
 	float MPL3115A2_P_Calibrarion_b = 0;
 
+	// HDC2010 Temperature
 	float HDC2010_T_Calibrarion_a = 1;
 	float HDC2010_T_Calibrarion_b = 0;
+	
+	// HDC2010 Humidity
 	float HDC2010_H_Calibrarion_a = 1;
 	float HDC2010_H_Calibrarion_b = 0;
 

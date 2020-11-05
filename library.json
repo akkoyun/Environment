@@ -1,0 +1,63 @@
+{
+	"name": "Environment",
+	"version": "3.0.0",
+	"keywords": "Sensor, Environment, SHT21, HDC2010, TSL2561, MPL3115, Temperature, Humidity, Pressure, Light",
+	"description": "Function measures the value of given sensors. Library is used data mining for stable sensor data. Also cleared for lite use.",
+	"authors":
+	{
+		"name": "Mehmet Gunce Akkoyun",
+		"email": "akkoyun@me.com",
+		"url": ""
+	},
+	"license": "MIT",
+	"frameworks": "arduino",
+	"platforms":
+	[
+		"atmelavr",
+		"atmelmegaavr"
+	],
+	"repository":
+	{
+		"type": "git",
+		"url": "https://github.com/akkoyun/Environment.git"
+	},
+	"examples": [
+		{
+			"name": "HDC2010 Temperature Read",
+			"base": "examples/HDC2010_Temperature",
+			"files": [
+				"HDC2010_Temperature.ino"
+			]
+		},
+		{
+			"name": "MPL3115A2 Pressure Read",
+			"base": "examples/MPL3115A2_Pressure",
+			"files": [
+				"MPL3115A2_Pressure.ino"
+			]
+		},
+		{
+			"name": "SHT21 Humidity Read",
+			"base": "examples/SHT21_Humidity",
+			"files": [
+				"SHT21_Humidity.ino"
+			]
+		},
+		{
+			"name": "SHT21 Temperature Read",
+			"base": "examples/SHT21_Temperature",
+			"files": [
+				"SHT21_Temperature.ino"
+			]
+		},
+		{
+			"name": "TSL2561 Light Read",
+			"base": "examples/TSL2561_Light",
+			"files": [
+				"TSL2561_Light.ino"
+			]
+		}
+	]
+}
+
+
