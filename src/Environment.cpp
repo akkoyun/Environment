@@ -1768,7 +1768,7 @@ bool Environment::HDC2010_Humidity(float &Value_) {
 }
 
 // Read Functions
-float Read_Temperature(uint8_t Sensor_ID_, uint8_t Read_Count_, uint8_t Average_Type_) {
+float Environment::Read_Temperature(uint8_t Sensor_ID_, uint8_t Read_Count_, uint8_t Average_Type_) {
 	
 	/******************************************************************************
 	 *	Project		: Temperature Read Function
