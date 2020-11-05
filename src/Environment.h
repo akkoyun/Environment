@@ -29,25 +29,6 @@ public:
 	// Public Functions
 	// ************************************************************
 
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	// MPL3115A2
-	bool MPL3115A2_P(uint8_t Read_Count, uint8_t AVG_Type, float &Value_, float &Deviation_);	// MPL3115A2 Pressure
-	
-	// TSL2561
-	bool TSL2561_L(uint8_t Read_Count, uint8_t AVG_Type, float &Value_, float &Deviation_);		// TSL2561FN Light
-
-	// HDC2010
-	bool HDC2010_T(uint8_t Read_Count, uint8_t AVG_Type, float &Value_, float &Deviation_); 	// HDC2010 Temperature
-	bool HDC2010_H(uint8_t Read_Count, uint8_t AVG_Type, float &Value_, float &Deviation_); 	// HDC2010 Humidity
-
 private:
 
 	// ************************************************************
@@ -57,6 +38,16 @@ private:
 	// Sensirion SHT21
 	bool SHT21_Temperature(float &Value_);
 	bool SHT21_Humidity(float &Value_);
+
+	// MPL3115A2
+	bool MPL3115A2_Pressure(float &Value_);
+
+	// HDC2010
+	bool HDC2010_Temperature(float &Value_);
+	bool HDC2010_Humidity(float &Value_);
+
+	// TSL2561
+	bool TSL2561_Light(float &Value_);
 
 	// ************************************************************
 	// Private Variables

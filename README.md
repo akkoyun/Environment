@@ -5,6 +5,16 @@
 
 
 
+
+* SHT21 - Temperature
+* SHT21 - Humidity
+* MPL3115A2 - Pressure
+* TSL2561 - Light
+* HDC2010 - Temperature
+* HDC2010 - Humidity
+
+
+
 Not: İstatistiksel hesaplama herbir sensör fonksiyonu içinde yer almaktaydı (02.00.01 versiyonunda) fakat bunun hem şişme hemde kullanım zorluğu açısından harici bir şekilde analiz edilmesi uygun olduğu düşünülmüştür. Herbir sensöre ait ölçüm kütüphaneleri oluştturulacak ayrıca bir fonksiyonda istatistiksel ölçümlemeler yapılacaktır.
 
 
