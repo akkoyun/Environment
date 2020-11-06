@@ -25,7 +25,3 @@ HDC2010_Humidity			KEYWORD2
 #######################################
 
 SHT21_T_Version				LITERAL1
-SHT21_H_Version				LITERAL1
-MPL3115A2_P_Version			LITERAL1
-TSL2561_L_Version			LITERAL1
-HDC2010_T_Version			LITERAL1
