@@ -5,7 +5,7 @@
  *
  *	Library				: Environment Library.
  *	Code Developer		: Mehmet Gunce Akkoyun (akkoyun@me.com)
- *	Revision			: 3.0.0
+ *	Revision			: 3.0.1
  *	Relase				: 12.10.2020
  *
  *********************************************************************************/
@@ -16,47 +16,31 @@
 #include <Arduino.h>
 #include <Wire.h>
 
+//#define Environment_Detail
+
 class Environment
 {
 public:
-
-	// ************************************************************
-	// Public Variables
-	// ************************************************************
-
-
+	
 	// ************************************************************
 	// Public Functions
 	// ************************************************************
-	float Read_Sensor(uint8_t Sensor_ID_, uint8_t Read_Count_, uint8_t Average_Type);
 
-private:
+	// SHT21
+	bool SHT21_Temperature(uint8_t Read_Count_, uint8_t Average_Type_, float &Value_);
+	bool SHT21_Humidity(uint8_t Read_Count_, uint8_t Average_Type_, float &Value_);
 
-	// ************************************************************
-	// Private Functions
-	// ************************************************************
-
-	// Sensirion SHT21
-	bool SHT21_Temperature(float &Value_);
-	bool SHT21_Humidity(float &Value_);
+	// HDC2010
+	bool HDC2010_Temperature(uint8_t Read_Count_, uint8_t Average_Type_, float &Value_);
+	bool HDC2010_Humidity(uint8_t Read_Count_, uint8_t Average_Type_, float &Value_);
 
 	// MPL3115A2
 	bool MPL3115A2_Pressure(float &Value_);
 
-	// HDC2010
-	bool HDC2010_Temperature(float &Value_);
-	bool HDC2010_Humidity(float &Value_);
-
 	// TSL2561
 	bool TSL2561_Light(float &Value_);
 
-	// ************************************************************
-	// Private Variables
-	// ************************************************************
-
-	uint8_t Sensor_Count = 2;
-	
-	// const char SHT21_Temperature_Version[9] 	= "04.00.00";
+private:
 
 	// ************************************************************
 	// Calibration Constants

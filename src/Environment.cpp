@@ -5,7 +5,7 @@
  *
  *	Library				: Environment Library.
  *	Code Developer		: Mehmet Gunce Akkoyun (akkoyun@me.com)
- *	Revision			: 3.0.0
+ *	Revision			: 3.0.3
  *	Relase				: 12.10.2020
  *
  *********************************************************************************/
@@ -15,7 +15,7 @@
 #include <Wire.h>
 
 // Sensor Functions
-bool Environment::SHT21_Temperature(float &Value_) {
+bool Environment::SHT21_Temperature(uint8_t Read_Count_, uint8_t Average_Type_, float &Value_) {
 	
 	/******************************************************************************
 	 *	Project		: SHT21 Temperature Read Function
@@ -26,26 +26,24 @@ bool Environment::SHT21_Temperature(float &Value_) {
 	
 	// Set Sensor Definations
 	struct Sensor_Settings {
-		int 	Resolution;
-		bool	EoB;
-		bool	OCH;
-		bool	OTP;
-		int		Range_Min;
-		int		Range_Max;
+		
+		uint8_t 	Resolution;
+		bool		EoB;
+		bool		OCH;
+		bool		OTP;
+		int			Range_Min;
+		int			Range_Max;
 		
 	};
 	Sensor_Settings SHT21[] {
 		
-		{
-			14,			// Measurement Resolution
-			false,		// Sensor End of Battery Setting
-			false,		// On Chip Heater Setting
-			true,		// OTP Read
-			-40,		// Sensor Range Minimum
-			100			// Sensor Range Maximum
-			
-		}
-		
+		14,			// Measurement Resolution
+		false,		// Sensor End of Battery Setting
+		false,		// On Chip Heater Setting
+		true,		// OTP Read
+		-40,		// Sensor Range Minimum
+		100			// Sensor Range Maximum
+
 	};
 	
 	// ************************************************************
@@ -149,82 +147,70 @@ bool Environment::SHT21_Temperature(float &Value_) {
 	// ************************************************************
 	// Read Sensor Data
 	// ************************************************************
-	
-	// Define Variables
-	uint16_t Measurement_Raw = 0;
-	
-	// Send Read Command to SHT21
-	Wire.beginTransmission(0b01000000);
-	Wire.write(0b11100011);
-	
-	// Close I2C Connection
-	int SHT21_Read = Wire.endTransmission(false);
-	
-	// Control For Read Success
-	if (SHT21_Read != 0) {
 		
-		// Set Error Code
-		Value_ = -103;
+	// Define Measurement Read Array
+	float Measurement_Array[Read_Count_];
+
+	// Read Loop For Read Count
+	for (uint8_t Read_ID = 0; Read_ID < Read_Count_; Read_ID++) {
+	
+		// Send Read Command to SHT21
+		Wire.beginTransmission(0b01000000);
+		Wire.write(0b11100011);
 		
-		// End Function
-		return(false);
+		// Close I2C Connection
+		int SHT21_Read = Wire.endTransmission(false);
 		
-	}
-	
-	// Read Data Command to SHT21
-	Wire.requestFrom(0b01000000, 3);
-	
-	// Define Data Variable
-	uint8_t SHT21_Data[3];
-	
-	// Read I2C Bytes
-	SHT21_Data[0] = Wire.read(); // MSB
-	SHT21_Data[1] = Wire.read(); // LSB
-	SHT21_Data[2] = Wire.read(); // CRC
-	
-	// Combine Read Bytes
-	Measurement_Raw = ((SHT21_Data[0] << 8) | SHT21_Data[1]);
-	
-	// Clear 2 Low Status Bit
-	if (SHT21[0].Resolution == 11) Measurement_Raw &= ~0x0006;
-	if (SHT21[0].Resolution == 12) Measurement_Raw &= ~0x0005;
-	if (SHT21[0].Resolution == 13) Measurement_Raw &= ~0x0004;
-	if (SHT21[0].Resolution == 14) Measurement_Raw &= ~0x0003;
-	
-	// Define CRC Variables
-	uint8_t CRC, Control_Byte;
-	
-	// Calculate CRC
-	for (Control_Byte = 0; Control_Byte < 3; Control_Byte++) {
-		CRC ^= SHT21_Data[Control_Byte];
-		for (uint8_t bit = 8; bit > 0; bit--) {
-			if (CRC & 0x80) {CRC = (CRC << 1) ^ 0x131;}
-			else { CRC = (CRC << 1);}
+		// Control For Read Success
+		if (SHT21_Read != 0) {
+			
+			// Set Error Code
+			Value_ = -103;
+			
+			// End Function
+			return(false);
+			
 		}
-	}
-	
-	// Control and Calculate Measurement
-	if (CRC == 0) {
+		
+		// Read Data Command to SHT21
+		Wire.requestFrom(0b01000000, 3);
+		
+		// Define Data Variable
+		uint8_t SHT21_Data[3];
+		
+		// Read I2C Bytes
+		SHT21_Data[0] = Wire.read(); // MSB
+		SHT21_Data[1] = Wire.read(); // LSB
+		SHT21_Data[2] = Wire.read(); // CRC
+		
+		// Combine Read Bytes
+		uint16_t Measurement_Raw = ((uint16_t)SHT21_Data[0] << 8) | (uint16_t)SHT21_Data[1];
+		
+		// Clear 2 Low Status Bit
+		if (SHT21[0].Resolution == 11) Measurement_Raw &= ~0x0006;
+		if (SHT21[0].Resolution == 12) Measurement_Raw &= ~0x0005;
+		if (SHT21[0].Resolution == 13) Measurement_Raw &= ~0x0004;
+		if (SHT21[0].Resolution == 14) Measurement_Raw &= ~0x0003;
 		
 		// Calculate Measurement
-		Value_ = (SHT21_T_Calibrarion_a * (-46.85 + ((175.72 * float(Measurement_Raw)) / pow(2,16)))) + SHT21_T_Calibrarion_b;
-		
-	} else {
-		
-		// Set Error Code
-		Value_ = -104;
-		
-		// End Function
-		return(false);
-		
+		Measurement_Array[Read_ID] = -46.85 + 175.72 * (float)Measurement_Raw / pow(2,16);
+			
 	}
 	
-	// Read Delay
-	if (SHT21[0].Resolution == 14) delay(85); 	// T: 14 bit
-	if (SHT21[0].Resolution == 12) delay(22);	// T: 12 bit
-	if (SHT21[0].Resolution == 13) delay(43); 	// T: 13 bit
-	if (SHT21[0].Resolution == 11) delay(11);	// T: 11 bit
-	
+	// Calculate Average
+	if (Average_Type_ == 1) {
+		
+		// Declare Variable
+		double SUM = 0;
+		
+		// Calculate Sum
+		for (int i = 0; i < Read_Count_; i++) SUM += Measurement_Array[i];
+		
+		// Calculate Avg
+		Value_ = SUM / Read_Count_;
+		
+	}	// Standart Average
+
 	// ************************************************************
 	// Control For Sensor Range
 	// ************************************************************
@@ -237,12 +223,18 @@ bool Environment::SHT21_Temperature(float &Value_) {
 		return(false);
 		
 	}
-	
+
+	// ************************************************************
+	// Calibrate Data
+	// ************************************************************
+
+	Value_ = (SHT21_T_Calibrarion_a * Value_) + SHT21_T_Calibrarion_b;
+
 	// End Function
 	return(true);
 
-}	// 1
-bool Environment::SHT21_Humidity(float &Value_) {
+}
+bool Environment::SHT21_Humidity(uint8_t Read_Count_, uint8_t Average_Type_, float &Value_) {
 	
 	/******************************************************************************
 	 *	Project		: SHT21 Humidity Read Function
@@ -263,18 +255,15 @@ bool Environment::SHT21_Humidity(float &Value_) {
 	};
 	Sensor_Settings SHT21[] {
 		
-		{
-			12,			// Measurement Resolution
-			false,		// Sensor End of Battery Setting
-			false,		// On Chip Heater Setting
-			false,		// OTP Read
-			0,			// Sensor Range Minimum
-			100			// Sensor Range Maximum
-			
-		}
-		
+		12,			// Measurement Resolution
+		false,		// Sensor End of Battery Setting
+		false,		// On Chip Heater Setting
+		false,		// OTP Read
+		0,			// Sensor Range Minimum
+		100			// Sensor Range Maximum
+
 	};
-	
+
 	// ************************************************************
 	// Set Sensor Configuration Byte
 	// ************************************************************
@@ -372,83 +361,72 @@ bool Environment::SHT21_Humidity(float &Value_) {
 		}
 		
 	}
-	
+
 	// ************************************************************
-	// Read Sensor Datas
+	// Read Sensor Data
 	// ************************************************************
-	
-	// Define Variables
-	uint16_t Measurement_Raw = 0;
-	
-	// Send Read Command to SHT21
-	Wire.beginTransmission(0b01000000);
-	Wire.write(0b11100101);
-	
-	// Close I2C Connection
-	int SHT21_Read = Wire.endTransmission(false);
-	
-	// Control For Read Success
-	if (SHT21_Read != 0) {
 		
-		// Set Error Code
-		Value_ = -103;
+	// Define Measurement Read Array
+	float Measurement_Array[Read_Count_];
+
+	// Read Loop For Read Count
+	for (uint8_t Read_ID = 0; Read_ID < Read_Count_; Read_ID++) {
+	
+		// Send Read Command to SHT21
+		Wire.beginTransmission(0b01000000);
+		Wire.write(0b11100101);
+
+		// Close I2C Connection
+		int SHT21_Read = Wire.endTransmission(false);
 		
-		// End Function
-		return(false);
-		
-	}
-	
-	// Read Data Command to SHT21
-	Wire.requestFrom(0b01000000, 3);
-	
-	// Define Data Variable
-	uint8_t SHT21_Data[3];
-	
-	// Read I2C Bytes
-	SHT21_Data[0] = Wire.read(); // MSB
-	SHT21_Data[1] = Wire.read(); // LSB
-	SHT21_Data[2] = Wire.read(); // CRC
-	
-	// Combine Read Bytes
-	Measurement_Raw = ((SHT21_Data[0] << 8) | SHT21_Data[1]);
-	
-	// Define CRC Variables
-	uint8_t CRC, Control_Byte;
-	
-	// Calculate CRC
-	for (Control_Byte = 0; Control_Byte < 3; Control_Byte++) {
-		CRC ^= SHT21_Data[Control_Byte];
-		for (uint8_t bit = 8; bit > 0; bit--) {
-			if (CRC & 0x80) {CRC = (CRC << 1) ^ 0x131;}
-			else { CRC = (CRC << 1);}
+		// Control For Read Success
+		if (SHT21_Read != 0) {
+			
+			// Set Error Code
+			Value_ = -103;
+			
+			// End Function
+			return(false);
+			
 		}
-	}
-	
-	// Control and Calculate Measurement
-	if (CRC == 0) {
 		
+		// Read Data Command to SHT21
+		Wire.requestFrom(0b01000000, 3);
+		
+		// Define Data Variable
+		uint8_t SHT21_Data[3];
+		
+		// Read I2C Bytes
+		SHT21_Data[0] = Wire.read(); // MSB
+		SHT21_Data[1] = Wire.read(); // LSB
+		SHT21_Data[2] = Wire.read(); // CRC
+
+		// Combine Read Bytes
+		uint16_t Measurement_Raw = ((uint16_t)SHT21_Data[0] << 8) | (uint16_t)SHT21_Data[1];
+				
 		// Calculate Measurement
-		Value_ = (SHT21_H_Calibrarion_a * (-6 + ((125 * float(Measurement_Raw)) / pow(2,16))));
-		
-	} else {
-		
-		// Set Error Code
-		Value_ = -104;
-		
-		// End Function
-		return(false);
-		
+		Measurement_Array[Read_ID] = -6 + 125 * (float)Measurement_Raw / pow(2,16);
+			
 	}
 	
-	// Read Delay
-	if (SHT21[0].Resolution == 12) delay(29); 	// T: 12 bit
-	if (SHT21[0].Resolution == 11) delay(15);	// T: 11 bit
-	if (SHT21[0].Resolution == 10) delay(9); 	// T: 10 bit
-	if (SHT21[0].Resolution == 8) delay(4);		// T: 08 bit
-	
+	// Calculate Average
+	if (Average_Type_ == 1) {
+		
+		// Declare Variable
+		double SUM = 0;
+		
+		// Calculate Sum
+		for (int i = 0; i < Read_Count_; i++) SUM += Measurement_Array[i];
+		
+		// Calculate Avg
+		Value_ = SUM / Read_Count_;
+		
+	}	// Standart Average
+
 	// ************************************************************
 	// Control For Sensor Range
 	// ************************************************************
+	
 	if (Value_ < SHT21[0].Range_Min or Value_ > SHT21[0].Range_Max) {
 		
 		// Set Error Code
@@ -458,11 +436,819 @@ bool Environment::SHT21_Humidity(float &Value_) {
 		return(false);
 		
 	}
+
+	// ************************************************************
+	// Calibrate Data
+	// ************************************************************
+
+	Value_ = (SHT21_H_Calibrarion_a * Value_) + SHT21_H_Calibrarion_b;
 	
 	// End Function
 	return(true);
 
-}		// 2
+}
+bool Environment::HDC2010_Temperature(uint8_t Read_Count_, uint8_t Average_Type_, float &Value_) {
+
+	/******************************************************************************
+	 *	Project		: HDC2010 Sensor Read Function
+	 *	Developer	: Mehmet Gunce Akkoyun (akkoyun@me.com)
+	 *	Revision	: 02.00.00
+	 *	Release		: 04.11.2020
+	 ******************************************************************************/
+
+	// Set Sensor Definations
+	struct Sensor {
+		float		Range_Min;
+		float		Range_Max;
+		uint8_t		Measurement_Rate;
+		uint8_t		Resolution_Temperature;
+		uint8_t		Resolution_Humidity;
+		bool		Sensor_Reset;
+		
+	};
+	Sensor HDC2010[] {
+		
+		-40,		// [Range_Min]
+		125,		// [Range_Max]
+		0,			// [Measurement_Rate]
+		9,			// [Resolution_Temperature]
+		9,			// [Resolution_Humidity]
+		true,		// [Sensor_Reset]
+
+	};
+
+	// ************************************************************
+	// Reset Sensor
+	// ************************************************************
+
+	// Reset Sensor
+	if (HDC2010[0].Sensor_Reset == true) {
+		
+		// ************************************************************
+		// Read Current Sensor Settings
+		// ************************************************************
+		
+		// Read User Register of HDC2010
+		Wire.beginTransmission(0x40);
+		Wire.write(0x0E);
+		Wire.requestFrom(0x40, 0x01);
+		uint8_t HDC2010_Reset_Read = Wire.read();
+
+		// ************************************************************
+		// Reset Sensor
+		// ************************************************************
+		
+		// Set Reset Bit
+		HDC2010_Reset_Read = (HDC2010_Reset_Read | 0b10000000);
+		
+		// Send Soft Reset Command to HDC2010
+		Wire.beginTransmission(0x40);
+		
+		// Set Address
+		Wire.write(0x0E);
+
+		// Send Data
+		Wire.write(HDC2010_Reset_Read);
+		
+		// Close I2C Connection
+		uint8_t HDC2010_Reset = Wire.endTransmission(false);
+		
+		// Control For Reset Success
+		if (HDC2010_Reset != 0) {
+			
+			// Set Error Code
+			Value_ = -101;
+			
+			// End Function
+			return (false);
+			
+		}
+		
+		// Software Reset Delay
+		delay(10);
+		
+	}
+	
+	// ************************************************************
+	// Read Current Sensor Settings
+	// ************************************************************
+	
+	// Connect to Sensor
+	Wire.beginTransmission(0x40);
+	
+	// Set Register Read (Config)
+	Wire.write(0x0E);
+
+	// Request Data
+	Wire.requestFrom(0x40, 0x01);
+
+	// Read Register
+	uint8_t HDC2010_Config_Read = Wire.read();
+
+	// delay
+	delay(5);
+
+	// Connect to Sensor
+	Wire.beginTransmission(0x40);
+
+	// Set Register Read (Config_Read)
+	Wire.write(0x0F);
+
+	// Request Data
+	Wire.requestFrom(0x40, 0x01);
+
+	// Read Register
+	uint8_t HDC2010_MeasurementConfig_Read = Wire.read();
+
+	// ************************************************************
+	// Set Sensor Configurations
+	// ************************************************************
+
+	// Set Measurement Mode
+	HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xFC);
+	HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x02);
+
+	// Set Measurement Rate
+	switch(HDC2010[0].Measurement_Rate) {
+
+		case 0:	// Manual
+			HDC2010_Config_Read = (HDC2010_Config_Read & 0x8F);
+			break;
+			
+		case 1:	// 2 Minutes
+			HDC2010_Config_Read = (HDC2010_Config_Read & 0x9F);
+			HDC2010_Config_Read = (HDC2010_Config_Read | 0x10);
+			break;
+			
+		case 2:	// 1 Minutes
+			HDC2010_Config_Read = (HDC2010_Config_Read & 0xAF);
+			HDC2010_Config_Read = (HDC2010_Config_Read | 0x20);
+			break;
+		
+		case 3:	// 10 Second
+			HDC2010_Config_Read = (HDC2010_Config_Read & 0xBF);
+			HDC2010_Config_Read = (HDC2010_Config_Read | 0x30);
+			break;
+		
+		case 4:	// 5 Second
+			HDC2010_Config_Read = (HDC2010_Config_Read & 0xCF);
+			HDC2010_Config_Read = (HDC2010_Config_Read | 0x40);
+			break;
+		
+		case 5:	// 1 Second
+			HDC2010_Config_Read = (HDC2010_Config_Read & 0xDF);
+			HDC2010_Config_Read = (HDC2010_Config_Read | 0x50);
+			break;
+		
+		case 6:	// 0.5 Second
+			HDC2010_Config_Read = (HDC2010_Config_Read & 0xEF);
+			HDC2010_Config_Read = (HDC2010_Config_Read | 0x60);
+			break;
+		
+		case 7:	// 0.2 Second
+			HDC2010_Config_Read = (HDC2010_Config_Read | 0x70);
+			break;
+			
+		default:
+			HDC2010_Config_Read = (HDC2010_Config_Read & 0x8F);
+		
+	}
+	
+	// Set Temperature Resolution
+	switch(HDC2010[0].Resolution_Temperature) {
+		
+		case 14:	// 14 Bit
+			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0x3F);
+			break;
+			
+		case 11:	// 11 Bit
+			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0x7F);
+			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x40);
+			break;
+			
+		case 9:		// 9 Bit
+			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xBF);
+			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x80);
+			break;
+			
+		default:
+			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0x3F);
+			
+	}
+
+	// Set Humidity Resolution
+	switch(HDC2010[0].Resolution_Humidity) {
+		
+		case 14:	// 14 Bit
+			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xCF);
+			break;
+			
+		case 11:	// 11 Bit
+			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xDF);
+			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x10);
+			break;
+			
+		case 9:		// 9 Bit
+			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xEF);
+			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x20);
+			break;
+			
+		default:
+			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xCF);
+			
+	}
+
+	// Trigger Measurement
+	HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x01);
+
+	// ************************************************************
+	// Read Temperature
+	// ************************************************************
+
+	// Define Measurement Read Array
+	float Measurement_Array[Read_Count_];
+
+	// Read Loop For Read Count
+	for (int Read_ID = 0; Read_ID < Read_Count_; Read_ID++) {
+
+		// ************************************************************
+		// Write Sensor Configurations
+		// ************************************************************
+
+		// Connect to Sensor
+		Wire.beginTransmission(0x40);
+		
+		// Set Register
+		Wire.write(0x0E);
+
+		// Send Data
+		Wire.write(HDC2010_Config_Read);
+
+		// Close I2C Connection
+		uint8_t HDC2010_Config = Wire.endTransmission(false);
+		
+		// Control For Write Success
+		if (HDC2010_Config != 0) {
+			
+			// Set Error Code
+			Value_ = -102;
+			
+			// End Function
+			return (false);
+			
+		}
+
+		// delay
+		delay(5);
+
+		// Send Mode Command to HDC2010
+		Wire.beginTransmission(0x40);
+		
+		// Set Address
+		Wire.write(0x0F);
+
+		// Send Data
+		Wire.write(HDC2010_MeasurementConfig_Read);
+
+		// Close I2C Connection
+		uint8_t HDC2010_Measurement_Config = Wire.endTransmission(false);
+		
+		// Control For Write Success
+		if (HDC2010_Measurement_Config != 0) {
+			
+			// Set Error Code
+			Value_ = -103;
+			
+			// End Function
+			return (false);
+			
+		}
+
+		// Define Variables
+		uint8_t HDC2010_Data[2];
+			
+		// Read Delay
+		delay(5);
+
+		// ************************************************************
+		// Read Temperature LSB Data
+		// ************************************************************
+
+		// Connect to Sensor
+		Wire.beginTransmission(0x40);
+
+		// Set Register // LSB Temperature
+		Wire.write(0x00);
+
+		// Close I2C Connection
+		uint8_t HDC2010_Measurement_Low_Read = Wire.endTransmission(false);
+
+		// Control For Read Success
+		if (HDC2010_Measurement_Low_Read != 0) {
+				
+			// Set Error Code
+			Value_ = -104;
+				
+			// End Function
+			return (false);
+				
+		}
+			
+		// Read LSB Data from HDC2010
+		Wire.requestFrom(0x40, 0x01);
+			
+		// Read Data
+		HDC2010_Data[0] = Wire.read(); // LSB Data
+			
+		// ************************************************************
+		// Read Temperature MSB Data
+		// ************************************************************
+
+		// Connect to Sensor
+		Wire.beginTransmission(0x40);
+
+		// Set Register // MSB Temperature
+		Wire.write(0x01);
+
+		// Close I2C Connection
+		uint8_t HDC2010_Measurement_High_Read = Wire.endTransmission(false);
+
+		// Control For Read Success
+		if (HDC2010_Measurement_High_Read != 0) {
+						
+			// Set Error Code
+			Value_ = -105;
+						
+			// End Function
+			return (false);
+				
+		}
+					
+		// Read MSB Data from HDC2010
+		Wire.requestFrom(0x40, 0x01);
+					
+		// Read Data
+		HDC2010_Data[1] = Wire.read(); // MSB Data
+
+		// ************************************************************
+		// Combine Data
+		// ************************************************************
+
+		// Combine Read Bytes
+		uint16_t Measurement_Raw = ((uint16_t)(HDC2010_Data[1]) << 8 | (uint16_t)HDC2010_Data[0]);
+
+		// Calculate Measurement
+		Measurement_Array[Read_ID] = (float)Measurement_Raw * 165 / 65536 - 40;
+
+		#ifdef Environment_Detail
+			
+		Serial.print(Read_ID); Serial.print(F(" - ")); Serial.print(Measurement_Array[Read_ID]); Serial.println(F(" C"));
+		
+		#endif
+		
+		
+	}
+	
+	// Calculate Average
+	if (Average_Type_ == 1) {
+		
+		// Declare Variable
+		double SUM = 0;
+		
+		// Calculate Sum
+		for (int i = 0; i < Read_Count_; i++) SUM += Measurement_Array[i];
+		
+		// Calculate Avg
+		Value_ = SUM / Read_Count_;
+		
+		Serial.print("Sum: ");Serial.print(SUM,4);Serial.print(" - Read Count: "); Serial.println(Read_Count_);
+		
+	}	// Standart Average
+
+	// ************************************************************
+	// Control For Sensor Range
+	// ************************************************************
+	if (Value_ < HDC2010[0].Range_Min or Value_ > HDC2010[0].Range_Max) {
+		
+		// Set Error Code
+		Value_ = -106;
+		
+		// End Function
+		return(false);
+		
+	}
+
+	// ************************************************************
+	// Calibrate Data
+	// ************************************************************
+
+	Value_ = (HDC2010_T_Calibrarion_a * Value_) + HDC2010_T_Calibrarion_b;
+
+	// End Function
+	return(true);
+		
+}
+bool Environment::HDC2010_Humidity(uint8_t Read_Count_, uint8_t Average_Type_, float &Value_) {
+
+	/******************************************************************************
+	 *	Project		: HDC2010 Sensor Read Function
+	 *	Developer	: Mehmet Gunce Akkoyun (akkoyun@me.coj)
+	 *	Revision	: 02.00.00
+	 *	Release		: 04.11.2020
+	 ******************************************************************************/
+
+	// Set Sensor Definations
+	struct Sensor {
+		float		Range_Min;
+		float		Range_Max;
+		uint8_t		Measurement_Rate;
+		uint8_t		Resolution_Temperature;
+		uint8_t		Resolution_Humidity;
+		bool		Sensor_Reset;
+
+	};
+	Sensor HDC2010[] {
+		
+		0,			// [Range_Min]
+		100,		// [Range_Max]
+		5,			// [Measurement_Rate]
+		14,			// [Resolution_Temperature]
+		14,			// [Resolution_Humidity]
+		true,		// [Sensor_Reset]
+		
+	};
+
+	// ************************************************************
+	// Reset Sensor
+	// ************************************************************
+
+	// Reset Sensor
+	if (HDC2010[0].Sensor_Reset == true) {
+		
+		// ************************************************************
+		// Read Current Sensor Settings
+		// ************************************************************
+		
+		// Read User Register of HDC2010
+		Wire.beginTransmission(0x40);
+		Wire.write(0x0E);
+		Wire.requestFrom(0x40, 0x01);
+		uint8_t HDC2010_Reset_Read = Wire.read();
+
+		// ************************************************************
+		// Reset Sensor
+		// ************************************************************
+		
+		// Set Reset Bit
+		HDC2010_Reset_Read = (HDC2010_Reset_Read | 0b10000000);
+		
+		// Send Soft Reset Command to HDC2010
+		Wire.beginTransmission(0x40);
+		
+		// Set Address
+		Wire.write(0x0E);
+
+		// Send Data
+		Wire.write(HDC2010_Reset_Read);
+		
+		// Close I2C Connection
+		uint8_t HDC2010_Reset = Wire.endTransmission(false);
+		
+		// Control For Reset Success
+		if (HDC2010_Reset != 0) {
+			
+			// Set Error Code
+			Value_ = -101;
+			
+			// End Function
+			return (false);
+			
+		}
+		
+		// Software Reset Delay
+		delay(10);
+		
+	}
+	
+	// ************************************************************
+	// Read Current Sensor Settings
+	// ************************************************************
+	
+	// Connect to Sensor
+	Wire.beginTransmission(0x40);
+	
+	// Set Register Read (Config)
+	Wire.write(0x0E);
+
+	// Request Data
+	Wire.requestFrom(0x40, 0x01);
+
+	// Read Register
+	uint8_t HDC2010_Config_Read = Wire.read();
+
+	// delay
+	delay(5);
+
+	// Connect to Sensor
+	Wire.beginTransmission(0x40);
+
+	// Set Register Read (Config_Read)
+	Wire.write(0x0F);
+
+	// Request Data
+	Wire.requestFrom(0x40, 0x01);
+
+	// Read Register
+	uint8_t HDC2010_MeasurementConfig_Read = Wire.read();
+
+	// ************************************************************
+	// Set Sensor Configurations
+	// ************************************************************
+
+	// Set Measurement Mode
+	HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xFD);
+	HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x04);
+
+	// Set Measurement Rate
+	switch(HDC2010[0].Measurement_Rate) {
+
+		case 0:	// Manual
+			HDC2010_Config_Read = (HDC2010_Config_Read & 0x8F);
+			break;
+			
+		case 1:	// 2 Minutes
+			HDC2010_Config_Read = (HDC2010_Config_Read & 0x9F);
+			HDC2010_Config_Read = (HDC2010_Config_Read | 0x10);
+			break;
+			
+		case 2:	// 1 Minutes
+			HDC2010_Config_Read = (HDC2010_Config_Read & 0xAF);
+			HDC2010_Config_Read = (HDC2010_Config_Read | 0x20);
+			break;
+		
+		case 3:	// 10 Second
+			HDC2010_Config_Read = (HDC2010_Config_Read & 0xBF);
+			HDC2010_Config_Read = (HDC2010_Config_Read | 0x30);
+			break;
+		
+		case 4:	// 5 Second
+			HDC2010_Config_Read = (HDC2010_Config_Read & 0xCF);
+			HDC2010_Config_Read = (HDC2010_Config_Read | 0x40);
+			break;
+		
+		case 5:	// 1 Second
+			HDC2010_Config_Read = (HDC2010_Config_Read & 0xDF);
+			HDC2010_Config_Read = (HDC2010_Config_Read | 0x50);
+			break;
+		
+		case 6:	// 0.5 Second
+			HDC2010_Config_Read = (HDC2010_Config_Read & 0xEF);
+			HDC2010_Config_Read = (HDC2010_Config_Read | 0x60);
+			break;
+		
+		case 7:	// 0.2 Second
+			HDC2010_Config_Read = (HDC2010_Config_Read | 0x70);
+			break;
+			
+		default:
+			HDC2010_Config_Read = (HDC2010_Config_Read & 0x8F);
+		
+	}
+	
+	// Set Temperature Resolution
+	switch(HDC2010[0].Resolution_Temperature) {
+		
+		case 14:	// 14 Bit
+			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0x3F);
+			break;
+			
+		case 11:	// 11 Bit
+			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0x7F);
+			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x40);
+			break;
+			
+		case 9:		// 9 Bit
+			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xBF);
+			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x80);
+			break;
+			
+		default:
+			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0x3F);
+			
+	}
+
+	// Set Humidity Resolution
+	switch(HDC2010[0].Resolution_Humidity) {
+		
+		case 14:	// 14 Bit
+			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xCF);
+			break;
+			
+		case 11:	// 11 Bit
+			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xDF);
+			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x10);
+			break;
+			
+		case 9:		// 9 Bit
+			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xEF);
+			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x20);
+			break;
+			
+		default:
+			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xCF);
+			
+	}
+
+	// Trigger Measurement
+	HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x01);
+	
+	// ************************************************************
+	// Read Temperature
+	// ************************************************************
+
+	// Define Measurement Read Array
+	float Measurement_Array[Read_Count_];
+
+	// Read Loop For Read Count
+	for (int Read_ID = 0; Read_ID < Read_Count_; Read_ID++) {
+
+		// ************************************************************
+		// Write Sensor Configurations
+		// ************************************************************
+
+		// Connect to Sensor
+		Wire.beginTransmission(0x40);
+		
+		// Set Register
+		Wire.write(0x0E);
+
+		// Send Data
+		Wire.write(HDC2010_Config_Read);
+
+		// Close I2C Connection
+		uint8_t HDC2010_Config = Wire.endTransmission(false);
+		
+		// Control For Write Success
+		if (HDC2010_Config != 0) {
+			
+			// Set Error Code
+			Value_ = -102;
+			
+			// End Function
+			return (false);
+			
+		}
+
+		// delay
+		delay(5);
+
+		// Send Mode Command to HDC2010
+		Wire.beginTransmission(0x40);
+		
+		// Set Address
+		Wire.write(0x0F);
+
+		// Send Data
+		Wire.write(HDC2010_MeasurementConfig_Read);
+
+		// Close I2C Connection
+		uint8_t HDC2010_Measurement_Config = Wire.endTransmission(false);
+		
+		// Control For Write Success
+		if (HDC2010_Measurement_Config != 0) {
+			
+			// Set Error Code
+			Value_ = -103;
+			
+			// End Function
+			return (false);
+			
+		}
+
+		// Define Variables
+		uint8_t HDC2010_Data[2];
+			
+		// Read Delay
+		delay(5);
+
+		// ************************************************************
+		// Read Humidity LSB Data
+		// ************************************************************
+
+		// Connect to Sensor
+		Wire.beginTransmission(0x40);
+
+		// Set Register // LSB Humidity
+		Wire.write(0x02);
+
+		// Close I2C Connection
+		uint8_t HDC2010_Measurement_Low_Read = Wire.endTransmission(false);
+
+		// Control For Read Success
+		if (HDC2010_Measurement_Low_Read != 0) {
+				
+			// Set Error Code
+			Value_ = -104;
+				
+			// End Function
+			return (false);
+				
+		}
+			
+		// Read LSB Data from HDC2010
+		Wire.requestFrom(0x40, 0x01);
+			
+		// Read Data
+		HDC2010_Data[0] = Wire.read(); // LSB Data
+			
+		// ************************************************************
+		// Read Humidity MSB Data
+		// ************************************************************
+
+		// Connect to Sensor
+		Wire.beginTransmission(0x40);
+
+		// Set Register // MSB Humidity
+		Wire.write(0x03);
+
+		// Close I2C Connection
+		uint8_t HDC2010_Measurement_High_Read = Wire.endTransmission(false);
+
+		// Control For Read Success
+		if (HDC2010_Measurement_High_Read != 0) {
+						
+			// Set Error Code
+			Value_ = -105;
+						
+			// End Function
+			return (false);
+				
+		}
+					
+		// Read MSB Data from HDC2010
+		Wire.requestFrom(0x40, 0x01);
+					
+		// Read Data
+		HDC2010_Data[1] = Wire.read(); // MSB Data
+
+		// ************************************************************
+		// Combine Data
+		// ************************************************************
+
+		// Combine Read Bytes
+		uint16_t Measurement_Raw = ((uint16_t)(HDC2010_Data[1]) << 8 | (uint16_t)HDC2010_Data[0]);
+
+		// Calculate Measurement
+		Measurement_Array[Read_ID] = (float)Measurement_Raw / 65536 * 100;
+		
+		#ifdef Environment_Detail
+			
+		Serial.print(Read_ID); Serial.print(F(" - ")); Serial.print(Measurement_Array[Read_ID]); Serial.println(F(" %"));
+		
+		#endif
+		
+		
+	}
+	
+	// Calculate Average
+	if (Average_Type_ == 1) {
+		
+		// Declare Variable
+		double SUM = 0;
+		
+		// Calculate Sum
+		for (int i = 0; i < Read_Count_; i++) SUM += Measurement_Array[i];
+		
+		// Calculate Avg
+		Value_ = SUM / Read_Count_;
+		
+		Serial.print("Sum: ");Serial.print(SUM,4);Serial.print(" - Read Count: "); Serial.println(Read_Count_);
+		
+	}	// Standart Average
+
+	// ************************************************************
+	// Control For Sensor Range
+	// ************************************************************
+	if (Value_ < HDC2010[0].Range_Min or Value_ > HDC2010[0].Range_Max) {
+		
+		// Set Error Code
+		Value_ = -106;
+		
+		// End Function
+		return(false);
+		
+	}
+
+	// ************************************************************
+	// Calibrate Data
+	// ************************************************************
+
+	Value_ = (HDC2010_T_Calibrarion_a * Value_) + HDC2010_T_Calibrarion_b;
+
+	// End Function
+	return(true);
+		
+}
 bool Environment::MPL3115A2_Pressure(float &Value_) {
 
 	/******************************************************************************
@@ -1060,896 +1846,3 @@ bool Environment::TSL2561_Light(float &Value_) {
 	return(true);
 	
 }		// 4
-bool Environment::HDC2010_Temperature(float &Value_) {
-
-	/******************************************************************************
-	 *	Project		: HDC2010 Sensor Read Function
-	 *	Developer	: Mehmet Gunce Akkoyun (akkoyun@me.com)
-	 *	Revision	: 02.00.00
-	 *	Release		: 04.11.2020
-	 ******************************************************************************/
-
-	// Set Sensor Definations
-	struct Sensor {
-		float		Range_Min;
-		float		Range_Max;
-		uint8_t		Measurement_Rate;
-		uint8_t		Resolution_Temperature;
-		uint8_t		Resolution_Humidity;
-		bool		Sensor_Reset;
-		
-	};
-	Sensor HDC2010[] {
-		
-		-40,		// [Range_Min]
-		125,		// [Range_Max]
-		5,			// [Measurement_Rate]
-		14,			// [Resolution_Temperature]
-		14,			// [Resolution_Humidity]
-		true,		// [Sensor_Reset]
-
-	};
-
-	// ************************************************************
-	// Reset Sensor
-	// ************************************************************
-
-	// Reset Sensor
-	if (HDC2010[0].Sensor_Reset == true) {
-		
-		// ************************************************************
-		// Read Current Sensor Settings
-		// ************************************************************
-		
-		// Read User Register of HDC2010
-		Wire.beginTransmission(0x40);
-		Wire.write(0x0E);
-		Wire.requestFrom(0x40, 0x01);
-		uint8_t HDC2010_Reset_Read = Wire.read();
-
-		// ************************************************************
-		// Reset Sensor
-		// ************************************************************
-		
-		// Set Reset Bit
-		HDC2010_Reset_Read = (HDC2010_Reset_Read | 0b10000000);
-		
-		// Send Soft Reset Command to HDC2010
-		Wire.beginTransmission(0x40);
-		
-		// Set Address
-		Wire.write(0x0E);
-
-		// Send Data
-		Wire.write(HDC2010_Reset_Read);
-		
-		// Close I2C Connection
-		uint8_t HDC2010_Reset = Wire.endTransmission(false);
-		
-		// Control For Reset Success
-		if (HDC2010_Reset != 0) {
-			
-			// Set Error Code
-			Value_ = -101;
-			
-			// End Function
-			return (false);
-			
-		}
-		
-		// Software Reset Delay
-		delay(10);
-		
-	}
-	
-	// ************************************************************
-	// Read Current Sensor Settings
-	// ************************************************************
-	
-	// Connect to Sensor
-	Wire.beginTransmission(0x40);
-	
-	// Set Register Read (Config)
-	Wire.write(0x0E);
-
-	// Request Data
-	Wire.requestFrom(0x40, 0x01);
-
-	// Read Register
-	uint8_t HDC2010_Config_Read = Wire.read();
-
-	// delay
-	delay(5);
-
-	// Connect to Sensor
-	Wire.beginTransmission(0x40);
-
-	// Set Register Read (Config_Read)
-	Wire.write(0x0F);
-
-	// Request Data
-	Wire.requestFrom(0x40, 0x01);
-
-	// Read Register
-	uint8_t HDC2010_MeasurementConfig_Read = Wire.read();
-
-	// ************************************************************
-	// Set Sensor Configurations
-	// ************************************************************
-
-	// Set Measurement Mode
-	HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xFC);
-	HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x02);
-
-	// Set Measurement Rate
-	switch(HDC2010[0].Measurement_Rate) {
-
-		case 0:	// Manual
-			HDC2010_Config_Read = (HDC2010_Config_Read & 0x8F);
-			break;
-			
-		case 1:	// 2 Minutes
-			HDC2010_Config_Read = (HDC2010_Config_Read & 0x9F);
-			HDC2010_Config_Read = (HDC2010_Config_Read | 0x10);
-			break;
-			
-		case 2:	// 1 Minutes
-			HDC2010_Config_Read = (HDC2010_Config_Read & 0xAF);
-			HDC2010_Config_Read = (HDC2010_Config_Read | 0x20);
-			break;
-		
-		case 3:	// 10 Second
-			HDC2010_Config_Read = (HDC2010_Config_Read & 0xBF);
-			HDC2010_Config_Read = (HDC2010_Config_Read | 0x30);
-			break;
-		
-		case 4:	// 5 Second
-			HDC2010_Config_Read = (HDC2010_Config_Read & 0xCF);
-			HDC2010_Config_Read = (HDC2010_Config_Read | 0x40);
-			break;
-		
-		case 5:	// 1 Second
-			HDC2010_Config_Read = (HDC2010_Config_Read & 0xDF);
-			HDC2010_Config_Read = (HDC2010_Config_Read | 0x50);
-			break;
-		
-		case 6:	// 0.5 Second
-			HDC2010_Config_Read = (HDC2010_Config_Read & 0xEF);
-			HDC2010_Config_Read = (HDC2010_Config_Read | 0x60);
-			break;
-		
-		case 7:	// 0.2 Second
-			HDC2010_Config_Read = (HDC2010_Config_Read | 0x70);
-			break;
-			
-		default:
-			HDC2010_Config_Read = (HDC2010_Config_Read & 0x8F);
-		
-	}
-	
-	// Set Temperature Resolution
-	switch(HDC2010[0].Resolution_Temperature) {
-		
-		case 14:	// 14 Bit
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0x3F);
-			break;
-			
-		case 11:	// 11 Bit
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0x7F);
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x40);
-			break;
-			
-		case 9:		// 9 Bit
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xBF);
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x80);
-			break;
-			
-		default:
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0x3F);
-			
-	}
-
-	// Set Humidity Resolution
-	switch(HDC2010[0].Resolution_Humidity) {
-		
-		case 14:	// 14 Bit
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xCF);
-			break;
-			
-		case 11:	// 11 Bit
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xDF);
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x10);
-			break;
-			
-		case 9:		// 9 Bit
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xEF);
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x20);
-			break;
-			
-		default:
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xCF);
-			
-	}
-
-	// Trigger Measurement
-	HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x01);
-
-	// ************************************************************
-	// Write Sensor Configurations
-	// ************************************************************
-
-	// Connect to Sensor
-	Wire.beginTransmission(0x40);
-	
-	// Set Register
-	Wire.write(0x0E);
-
-	// Send Data
-	Wire.write(HDC2010_Config_Read);
-
-	// Close I2C Connection
-	uint8_t HDC2010_Config = Wire.endTransmission(false);
-	
-	// Control For Write Success
-	if (HDC2010_Config != 0) {
-		
-		// Set Error Code
-		Value_ = -102;
-		
-		// End Function
-		return (false);
-		
-	}
-
-	// delay
-	delay(5);
-
-	// Send Mode Command to HDC2010
-	Wire.beginTransmission(0x40);
-	
-	// Set Address
-	Wire.write(0x0F);
-
-	// Send Data
-	Wire.write(HDC2010_MeasurementConfig_Read);
-
-	// Close I2C Connection
-	uint8_t HDC2010_Measurement_Config = Wire.endTransmission(false);
-	
-	// Control For Write Success
-	if (HDC2010_Measurement_Config != 0) {
-		
-		// Set Error Code
-		Value_ = -103;
-		
-		// End Function
-		return (false);
-		
-	}
-
-	// ************************************************************
-	// Read Temperature Array
-	// ************************************************************
-
-	// Define Variables
-	uint16_t Measurement_Raw;
-	uint8_t HDC2010_Data[2];
-		
-	// ************************************************************
-	// Read Temperature LSB Data
-	// ************************************************************
-
-	// Connect to Sensor
-	Wire.beginTransmission(0x40);
-
-	// Set Register // LSB Temperature
-	Wire.write(0x00);
-
-	// Close I2C Connection
-	uint8_t HDC2010_Measurement_Low_Read = Wire.endTransmission(false);
-
-	// Control For Read Success
-	if (HDC2010_Measurement_Low_Read != 0) {
-			
-		// Set Error Code
-		Value_ = -104;
-			
-		// End Function
-		return (false);
-			
-	}
-		
-	// Read LSB Data from HDC2010
-	Wire.requestFrom(0x40, 0x01);
-		
-	// Read Data
-	HDC2010_Data[0] = Wire.read(); // LSB Data
-		
-	// ************************************************************
-	// Read Temperature MSB Data
-	// ************************************************************
-
-	// Connect to Sensor
-	Wire.beginTransmission(0x40);
-
-	// Set Register // MSB Temperature
-	Wire.write(0x01);
-
-	// Close I2C Connection
-	uint8_t HDC2010_Measurement_High_Read = Wire.endTransmission(false);
-
-	// Control For Read Success
-	if (HDC2010_Measurement_High_Read != 0) {
-					
-		// Set Error Code
-		Value_ = -105;
-					
-		// End Function
-		return (false);
-			
-	}
-				
-	// Read MSB Data from HDC2010
-	Wire.requestFrom(0x40, 0x01);
-				
-	// Read Data
-	HDC2010_Data[1] = Wire.read(); // MSB Data
-
-	// ************************************************************
-	// Combine Data
-	// ************************************************************
-
-	// Combine Read Bytes
-	Measurement_Raw = ((uint16_t)(HDC2010_Data[1]) << 8 | (uint16_t)HDC2010_Data[0]);
-
-	// Calculate Measurement
-	Value_ = (HDC2010_T_Calibrarion_a * ((float)Measurement_Raw * 165 / 65536 - 40)) + HDC2010_T_Calibrarion_b;
-	
-	// Handle Measurement
-	if (Value_ < HDC2010[0].Range_Min) Value_ = HDC2010[0].Range_Min;
-	if (Value_ > HDC2010[0].Range_Max) Value_ = HDC2010[0].Range_Max;
-	
-	// End Function
-	return(true);
-
-}	// 5
-bool Environment::HDC2010_Humidity(float &Value_) {
-
-	/******************************************************************************
-	 *	Project		: HDC2010 Sensor Read Function
-	 *	Developer	: Mehmet Gunce Akkoyun (akkoyun@me.coj)
-	 *	Revision	: 02.00.00
-	 *	Release		: 04.11.2020
-	 ******************************************************************************/
-
-	// Set Sensor Definations
-	struct Sensor {
-		float		Range_Min;
-		float		Range_Max;
-		uint8_t		Measurement_Rate;
-		uint8_t		Resolution_Temperature;
-		uint8_t		Resolution_Humidity;
-		bool		Sensor_Reset;
-
-	};
-	Sensor HDC2010[] {
-		
-		0,			// [Range_Min]
-		100,		// [Range_Max]
-		5,			// [Measurement_Rate]
-		14,			// [Resolution_Temperature]
-		14,			// [Resolution_Humidity]
-		true,		// [Sensor_Reset]
-		
-	};
-	
-	// ************************************************************
-	// Reset Sensor
-	// ************************************************************
-
-	// Reset Sensor
-	if (HDC2010[0].Sensor_Reset == true) {
-
-		// ************************************************************
-		// Read Current Sensor Settings
-		// ************************************************************
-		
-		// Read User Register of HDC2010
-		Wire.beginTransmission(0x40);
-		Wire.write(0x0E);
-		Wire.requestFrom(0x40, 0x01);
-		uint8_t HDC2010_Reset_Read = Wire.read();
-
-		// ************************************************************
-		// Reset Sensor
-		// ************************************************************
-		
-		// Set Reset Bit
-		HDC2010_Reset_Read = (HDC2010_Reset_Read | 0b10000000);
-		
-		// Send Soft Reset Command to HDC2010
-		Wire.beginTransmission(0x40);
-		
-		// Set Address
-		Wire.write(0x0E);
-
-		// Send Data
-		Wire.write(HDC2010_Reset_Read);
-		
-		// Close I2C Connection
-		uint8_t HDC2010_Reset = Wire.endTransmission(false);
-		
-		// Control For Reset Success
-		if (HDC2010_Reset != 0) {
-			
-			// Set Error Code
-			Value_ = -101;
-			
-			// End Function
-			return (false);
-			
-		}
-		
-		// Software Reset Delay
-		delay(50);
-		
-	}
-	
-	// ************************************************************
-	// Read Current Sensor Settings
-	// ************************************************************
-	
-	// Connect to Sensor
-	Wire.beginTransmission(0x40);
-	
-	// Set Register Read (Config)
-	Wire.write(0x0E);
-
-	// Request Data
-	Wire.requestFrom(0x40, 0x01);
-
-	// Read Register
-	uint8_t HDC2010_Config_Read = Wire.read();
-
-	// delay
-	delay(10);
-
-	// Connect to Sensor
-	Wire.beginTransmission(0x40);
-
-	// Set Register Read (Config_Read)
-	Wire.write(0x0F);
-
-	// Request Data
-	Wire.requestFrom(0x40, 0x01);
-
-	// Read Register
-	uint8_t HDC2010_MeasurementConfig_Read = Wire.read();
-	
-	// ************************************************************
-	// Set Sensor Configurations
-	// ************************************************************
-
-	// Set Measurement Mode
-	HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xFD);
-	HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x04);
-
-	// Set Measurement Rate
-	switch(HDC2010[0].Measurement_Rate) {
-
-		case 0:	// Manual
-			HDC2010_Config_Read = (HDC2010_Config_Read & 0x8F);
-			break;
-			
-		case 1:	// 2 Minutes
-			HDC2010_Config_Read = (HDC2010_Config_Read & 0x9F);
-			HDC2010_Config_Read = (HDC2010_Config_Read | 0x10);
-			break;
-			
-		case 2:	// 1 Minutes
-			HDC2010_Config_Read = (HDC2010_Config_Read & 0xAF);
-			HDC2010_Config_Read = (HDC2010_Config_Read | 0x20);
-			break;
-		
-		case 3:	// 10 Second
-			HDC2010_Config_Read = (HDC2010_Config_Read & 0xBF);
-			HDC2010_Config_Read = (HDC2010_Config_Read | 0x30);
-			break;
-		
-		case 4:	// 5 Second
-			HDC2010_Config_Read = (HDC2010_Config_Read & 0xCF);
-			HDC2010_Config_Read = (HDC2010_Config_Read | 0x40);
-			break;
-		
-		case 5:	// 1 Second
-			HDC2010_Config_Read = (HDC2010_Config_Read & 0xDF);
-			HDC2010_Config_Read = (HDC2010_Config_Read | 0x50);
-			break;
-		
-		case 6:	// 0.5 Second
-			HDC2010_Config_Read = (HDC2010_Config_Read & 0xEF);
-			HDC2010_Config_Read = (HDC2010_Config_Read | 0x60);
-			break;
-		
-		case 7:	// 0.2 Second
-			HDC2010_Config_Read = (HDC2010_Config_Read | 0x70);
-			break;
-			
-		default:
-			HDC2010_Config_Read = (HDC2010_Config_Read & 0x8F);
-		
-	}
-	
-	// Set Temperature Resolution
-	switch(HDC2010[0].Resolution_Temperature) {
-		
-		case 14:	// 14 Bit
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0x3F);
-			break;
-			
-		case 11:	// 11 Bit
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0x7F);
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x40);
-			break;
-			
-		case 9:		// 9 Bit
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xBF);
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x80);
-			break;
-			
-		default:
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0x3F);
-			
-	}
-
-	// Set Humidity Resolution
-	switch(HDC2010[0].Resolution_Humidity) {
-		
-		case 14:	// 14 Bit
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xCF);
-			break;
-			
-		case 11:	// 11 Bit
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xDF);
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x10);
-			break;
-			
-		case 9:		// 9 Bit
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xEF);
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x20);
-			break;
-			
-		default:
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xCF);
-			
-	}
-
-	// Trigger Measurement
-	HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x01);
-
-	// ************************************************************
-	// Write Sensor Configurations
-	// ************************************************************
-
-	// Connect to Sensor
-	Wire.beginTransmission(0x40);
-	
-	// Set Register
-	Wire.write(0x0E);
-
-	// Send Data
-	Wire.write(HDC2010_Config_Read);
-
-	// Close I2C Connection
-	uint8_t HDC2010_Config = Wire.endTransmission(false);
-	
-	// Control For Write Success
-	if (HDC2010_Config != 0) {
-		
-		// Set Error Code
-		Value_ = -102;
-		
-		// End Function
-		return (false);
-		
-	}
-
-	// delay
-	delay(5);
-
-	// Send Mode Command to HDC2010
-	Wire.beginTransmission(0x40);
-	
-	// Set Address
-	Wire.write(0x0F);
-
-	// Send Data
-	Wire.write(HDC2010_MeasurementConfig_Read);
-
-	// Close I2C Connection
-	uint8_t HDC2010_Measurement_Config = Wire.endTransmission(false);
-	
-	// Control For Write Success
-	if (HDC2010_Measurement_Config != 0) {
-		
-		// Set Error Code
-		Value_ = -103;
-		
-		// End Function
-		return (false);
-		
-	}
-
-	// ************************************************************
-	// Read Temperature Array
-	// ************************************************************
-
-	// Define Variables
-	uint16_t Measurement_Raw;
-	uint8_t HDC2010_Data[2];
-		
-	// ************************************************************
-	// Read Humidity LSB Data
-	// ************************************************************
-
-	// Connect to Sensor
-	Wire.beginTransmission(0x40);
-
-	// Set Register // LSB Humidity
-	Wire.write(0x02);
-
-	// Close I2C Connection
-	uint8_t HDC2010_Measurement_Low_Read = Wire.endTransmission(false);
-
-	// Control For Read Success
-	if (HDC2010_Measurement_Low_Read != 0) {
-			
-		// Set Error Code
-		Value_ = -104;
-			
-		// End Function
-		return (false);
-			
-	}
-		
-	// Read LSB Data from HDC2010
-	Wire.requestFrom(0x40, 0x01);
-		
-	// Read Data
-	HDC2010_Data[0] = Wire.read(); // LSB Data
-		
-	// ************************************************************
-	// Read Humidity MSB Data
-	// ************************************************************
-
-	// Connect to Sensor
-	Wire.beginTransmission(0x40);
-
-	// Set Register // MSB Humidity
-	Wire.write(0x03);
-
-	// Close I2C Connection
-	uint8_t HDC2010_Measurement_High_Read = Wire.endTransmission(false);
-
-	// Control For Read Success
-	if (HDC2010_Measurement_High_Read != 0) {
-					
-		// Set Error Code
-		Value_ = -105;
-					
-		// End Function
-		return (false);
-			
-	}
-				
-	// Read MSB Data from HDC2010
-	Wire.requestFrom(0x40, 0x01);
-				
-	// Read Data
-	HDC2010_Data[1] = Wire.read(); // MSB Data
-
-	// ************************************************************
-	// Combine Data
-	// ************************************************************
-
-	// Combine Read Bytes
-	Measurement_Raw = ((uint16_t)(HDC2010_Data[1]) << 8 | (uint16_t)HDC2010_Data[0]);
-
-	// Calculate Measurement
-	Value_ = (HDC2010_H_Calibrarion_a * ((float) Measurement_Raw / (65536) * 100)) + HDC2010_H_Calibrarion_b;
-
-	// Handle Measurement
-	if (Value_ < HDC2010[0].Range_Min) Value_ = HDC2010[0].Range_Min;
-	if (Value_ > HDC2010[0].Range_Max) Value_ = HDC2010[0].Range_Max;
-	
-	// End Function
-	return(true);
-
-}		// 6
-
-// Read Functions
-float Environment::Read_Sensor(uint8_t Sensor_ID_, uint8_t Read_Count_, uint8_t Average_Type_) {
-	
-	/******************************************************************************
-	 *	Project		: Temperature Read Function
-	 *	Developer	: Mehmet Gunce Akkoyun (akkoyun@me.com)
-	 *	Revision	: 01.00.00
-	 *	Release		: 05.11.2020
-	 ******************************************************************************/
-
-	// Define Measurement Read Array
-	float Measurement_Array[Read_Count_];
-	
-	// Define Sensor Read Success
-	bool Measurement_Succes;
-	
-	// ************************************************************
-	// Handle Function Inputs
-	// ************************************************************
-	
-	// Control for Sensor ID (1.SHT21 / 2.HDC2010)
-	if (Sensor_ID_ < 0 or Sensor_ID_ > Sensor_Count) return(-150);
-	
-	// Control for Read Count
-	if (Read_Count_ < 0 or Read_Count_ > 50) return(-151);
-
-	// Control for Average Type
-	if (Average_Type_ < 0 or Average_Type_ > 5) return(-152);
-
-	// ************************************************************
-	// Measure Sensor Variable
-	// ************************************************************
-	
-	// Declare Read ID
-	uint8_t Read_ID = 0;
-	
-	// Read Current Time
-	uint32_t _Time = millis();
-
-	// Read Loop For Read Count
-	while (Measurement_Succes == false) {
-		
-		// Control for Read Count
-		if (Read_ID > Read_Count_) break;
-		
-		// 1- SHT21 Temperature Read
-		if (Sensor_ID_ == 1) {
-			
-			// Read Sensor
-			if (SHT21_Temperature(Measurement_Array[Read_ID]) == true) {
-				
-				// Increase Read ID
-				Read_ID++;
-				
-			}
-			
-		}
-
-		// 2- SHT21 Humidity Read
-		if (Sensor_ID_ == 2) {
-			
-			// Read Sensor
-			if (SHT21_Humidity(Measurement_Array[Read_ID]) == true) {
-				
-				// Increase Read ID
-				Read_ID++;
-				
-			}
-			
-		}
-
-		// 3- MPL3115A2 Pressure Read
-		if (Sensor_ID_ == 3) {
-			
-			// Read Sensor
-			if (MPL3115A2_Pressure(Measurement_Array[Read_ID]) == true) {
-				
-				// Increase Read ID
-				Read_ID++;
-				
-			}
-			
-		}
-
-		// 4- TSL2561 Light Read
-		if (Sensor_ID_ == 4) {
-			
-			// Read Sensor
-			if (TSL2561_Light(Measurement_Array[Read_ID]) == true) {
-				
-				// Increase Read ID
-				Read_ID++;
-				
-			}
-			
-		}
-
-		// 5- HDC2010 Temperature Read
-		if (Sensor_ID_ == 5) {
-			
-			// Read Sensor
-			if (HDC2010_Temperature(Measurement_Array[Read_ID]) == true) {
-				
-				// Increase Read ID
-				Read_ID++;
-				
-			}
-			
-		}
-
-		// 6- HDC2010 Humidity Read
-		if (Sensor_ID_ == 6) {
-			
-			// Read Sensor
-			if (HDC2010_Humidity(Measurement_Array[Read_ID]) == true) {
-				
-				// Increase Read ID
-				Read_ID++;
-				
-			}
-			
-		}
-
-		// Handle for timeout
-		if (millis() - _Time >= 2000) return(false);
-		
-	}
-	
-	// ************************************************************
-	// Calculate Stats
-	// ************************************************************
-
-	// Calculate Array Stats
-	double Sum; for (int i=0; i < Read_Count_; i++) {Sum += double(Measurement_Array[i]);}
-	double SSum; for (int i=0; i < Read_Count_; i++) {SSum += (double(Measurement_Array[i]) * double(Measurement_Array[i]));}
-	float Max = double(Measurement_Array[0]); for (int i=0; i < Read_Count_; i++) {if (double(Measurement_Array[i]) > Max) Max = double(Measurement_Array[i]);}
-	float Min = double(Measurement_Array[0]); for (int i=0; i < Read_Count_; i++) {if (double(Measurement_Array[i]) < Min) Min = double(Measurement_Array[i]);}
-	float Avg; Avg = Sum / Read_Count_;
-	float SDev; for (int i=0; i < Read_Count_; i++) {SDev += (double(Measurement_Array[i]) - Avg) * (double(Measurement_Array[i]) - Avg);} SDev = sqrt(SDev/Read_Count_);
-
-	// ************************************************************
-	// Calculate Value
-	// ************************************************************
-
-	// Calculate Average
-	if (Average_Type_ == 1) {
-		
-		// Calculate Average
-		return(Avg);
-		
-	}	// Standart Average
-	if (Average_Type_ == 2) {
-		
-		// Calculate Average
-		return(sqrt(Sum / Read_Count_));
-		
-	}	// RMS Average
-	if (Average_Type_ == 3) {
-		
-		// Eleminate Max Value
-		SSum = SSum - (Max * Max);
-		
-		// Eleminate Min Value
-		SSum = SSum - (Min * Min);
-		
-		// Eleminate Min/Max Valid Data Count
-		Read_Count_ = Read_Count_ - 2;
-		
-		// Calculate Average
-		return(sqrt(SSum / Read_Count_));
-		
-	}	// Extendet RMS Average
-	if (Average_Type_ == 4) {
-		
-		// Calculate Average
-		return((Max + Min) / 2);		// Median
-		
-	}	// Median Average
-	if (Average_Type_ == 5) {
-		
-		// Calculate Average
-		return(sqrt(SSum / Read_Count_));		// RMS
-		
-	}	// Sigma1RMS Average
-	
-}

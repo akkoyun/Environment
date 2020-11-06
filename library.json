@@ -30,6 +30,13 @@
 			]
 		},
 		{
+			"name": "HDC2010 Humidity Read",
+			"base": "examples/HDC2010_Humidity",
+			"files": [
+				"HDC2010_Humidity.ino"
+			]
+		},
+		{
 			"name": "MPL3115A2 Pressure Read",
 			"base": "examples/MPL3115A2_Pressure",
 			"files": [
