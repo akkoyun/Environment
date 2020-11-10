@@ -799,13 +799,6 @@ bool Environment::HDC2010_Temperature(uint8_t Read_Count_, uint8_t Average_Type_
 
 		// Calculate Measurement
 		Measurement_Array[Read_ID] = (float)Measurement_Raw * 165 / 65536 - 40;
-
-		#ifdef Environment_Detail
-			
-		Serial.print(Read_ID); Serial.print(F(" - ")); Serial.print(Measurement_Array[Read_ID]); Serial.println(F(" C"));
-		
-		#endif
-		
 		
 	}
 	
@@ -820,9 +813,7 @@ bool Environment::HDC2010_Temperature(uint8_t Read_Count_, uint8_t Average_Type_
 		
 		// Calculate Avg
 		Value_ = SUM / Read_Count_;
-		
-		Serial.print("Sum: ");Serial.print(SUM,4);Serial.print(" - Read Count: "); Serial.println(Read_Count_);
-		
+				
 	}	// Standart Average
 
 	// ************************************************************
@@ -1201,13 +1192,6 @@ bool Environment::HDC2010_Humidity(uint8_t Read_Count_, uint8_t Average_Type_, f
 		// Calculate Measurement
 		Measurement_Array[Read_ID] = (float)Measurement_Raw / 65536 * 100;
 		
-		#ifdef Environment_Detail
-			
-		Serial.print(Read_ID); Serial.print(F(" - ")); Serial.print(Measurement_Array[Read_ID]); Serial.println(F(" %"));
-		
-		#endif
-		
-		
 	}
 	
 	// Calculate Average
@@ -1221,8 +1205,6 @@ bool Environment::HDC2010_Humidity(uint8_t Read_Count_, uint8_t Average_Type_, f
 		
 		// Calculate Avg
 		Value_ = SUM / Read_Count_;
-		
-		Serial.print("Sum: ");Serial.print(SUM,4);Serial.print(" - Read Count: "); Serial.println(Read_Count_);
 		
 	}	// Standart Average
 
