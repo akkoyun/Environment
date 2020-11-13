@@ -5,7 +5,7 @@
  *
  *	Library				: Environment Library.
  *	Code Developer		: Mehmet Gunce Akkoyun (akkoyun@me.com)
- *	Revision			: 3.0.3
+ *	Revision			: 3.1.0
  *	Relase				: 12.10.2020
  *
  *********************************************************************************/
@@ -15,7 +15,7 @@
 #include <Wire.h>
 
 // Sensor Functions
-bool Environment::SHT21_Temperature(uint8_t Read_Count_, uint8_t Average_Type_, float &Value_) {
+float Environment::SHT21_Temperature(const uint8_t Read_Count_, const uint8_t Average_Type_) {
 	
 	/******************************************************************************
 	 *	Project		: SHT21 Temperature Read Function
@@ -45,6 +45,9 @@ bool Environment::SHT21_Temperature(uint8_t Read_Count_, uint8_t Average_Type_, 
 		100			// Sensor Range Maximum
 
 	};
+	
+	// Declare Output Variable
+	float Value_;
 	
 	// ************************************************************
 	// Set Sensor Configuration Byte
@@ -93,15 +96,7 @@ bool Environment::SHT21_Temperature(uint8_t Read_Count_, uint8_t Average_Type_, 
 	int SHT21_Reset = Wire.endTransmission(false);
 	
 	// Control For Reset Success
-	if (SHT21_Reset != 0) {
-		
-		// Set Error Code
-		Value_ = -101;
-		
-		// End Function
-		return(false);
-		
-	}
+	if (SHT21_Reset != 0) return(-101);
 	
 	// Software Reset Delay
 	delay(15);
@@ -132,15 +127,7 @@ bool Environment::SHT21_Temperature(uint8_t Read_Count_, uint8_t Average_Type_, 
 		int SHT21_Config = Wire.endTransmission(false);
 		
 		// Control For Command Success
-		if (SHT21_Config != 0) {
-			
-			// Set Error Code
-			Value_ = -102;
-			
-			// End Function
-			return(false);
-			
-		}
+		if (SHT21_Config != 0) return(-102);
 		
 	}
 	
@@ -162,15 +149,7 @@ bool Environment::SHT21_Temperature(uint8_t Read_Count_, uint8_t Average_Type_, 
 		int SHT21_Read = Wire.endTransmission(false);
 		
 		// Control For Read Success
-		if (SHT21_Read != 0) {
-			
-			// Set Error Code
-			Value_ = -103;
-			
-			// End Function
-			return(false);
-			
-		}
+		if (SHT21_Read != 0) return(-103);
 		
 		// Read Data Command to SHT21
 		Wire.requestFrom(0b01000000, 3);
@@ -214,15 +193,7 @@ bool Environment::SHT21_Temperature(uint8_t Read_Count_, uint8_t Average_Type_, 
 	// ************************************************************
 	// Control For Sensor Range
 	// ************************************************************
-	if (Value_ < SHT21[0].Range_Min or Value_ > SHT21[0].Range_Max) {
-		
-		// Set Error Code
-		Value_ = -106;
-		
-		// End Function
-		return(false);
-		
-	}
+	if (Value_ < SHT21[0].Range_Min or Value_ > SHT21[0].Range_Max) return(-106);
 
 	// ************************************************************
 	// Calibrate Data
@@ -231,10 +202,10 @@ bool Environment::SHT21_Temperature(uint8_t Read_Count_, uint8_t Average_Type_, 
 	Value_ = (SHT21_T_Calibrarion_a * Value_) + SHT21_T_Calibrarion_b;
 
 	// End Function
-	return(true);
+	return(Value_);
 
 }
-bool Environment::SHT21_Humidity(uint8_t Read_Count_, uint8_t Average_Type_, float &Value_) {
+float Environment::SHT21_Humidity(const uint8_t Read_Count_, const uint8_t Average_Type_) {
 	
 	/******************************************************************************
 	 *	Project		: SHT21 Humidity Read Function
@@ -263,6 +234,9 @@ bool Environment::SHT21_Humidity(uint8_t Read_Count_, uint8_t Average_Type_, flo
 		100			// Sensor Range Maximum
 
 	};
+
+	// Declare Output Variable
+	float Value_;
 
 	// ************************************************************
 	// Set Sensor Configuration Byte
@@ -311,15 +285,7 @@ bool Environment::SHT21_Humidity(uint8_t Read_Count_, uint8_t Average_Type_, flo
 	int SHT21_Reset = Wire.endTransmission(false);
 	
 	// Control For Reset Success
-	if (SHT21_Reset != 0) {
-		
-		// Set Error Code
-		Value_ = -101;
-		
-		// End Function
-		return(false);
-		
-	}
+	if (SHT21_Reset != 0) return(-101);
 	
 	// Software Reset Delay
 	delay(15);
@@ -350,15 +316,7 @@ bool Environment::SHT21_Humidity(uint8_t Read_Count_, uint8_t Average_Type_, flo
 		int SHT21_Config = Wire.endTransmission(false);
 		
 		// Control For Command Success
-		if (SHT21_Config != 0) {
-			
-			// Set Error Code
-			Value_ = -102;
-			
-			// End Function
-			return(false);
-			
-		}
+		if (SHT21_Config != 0) return(-102);
 		
 	}
 
@@ -380,15 +338,7 @@ bool Environment::SHT21_Humidity(uint8_t Read_Count_, uint8_t Average_Type_, flo
 		int SHT21_Read = Wire.endTransmission(false);
 		
 		// Control For Read Success
-		if (SHT21_Read != 0) {
-			
-			// Set Error Code
-			Value_ = -103;
-			
-			// End Function
-			return(false);
-			
-		}
+		if (SHT21_Read != 0) return(-103);
 		
 		// Read Data Command to SHT21
 		Wire.requestFrom(0b01000000, 3);
@@ -427,15 +377,7 @@ bool Environment::SHT21_Humidity(uint8_t Read_Count_, uint8_t Average_Type_, flo
 	// Control For Sensor Range
 	// ************************************************************
 	
-	if (Value_ < SHT21[0].Range_Min or Value_ > SHT21[0].Range_Max) {
-		
-		// Set Error Code
-		Value_ = -106;
-		
-		// End Function
-		return(false);
-		
-	}
+	if (Value_ < SHT21[0].Range_Min or Value_ > SHT21[0].Range_Max) return(-106);
 
 	// ************************************************************
 	// Calibrate Data
@@ -444,10 +386,10 @@ bool Environment::SHT21_Humidity(uint8_t Read_Count_, uint8_t Average_Type_, flo
 	Value_ = (SHT21_H_Calibrarion_a * Value_) + SHT21_H_Calibrarion_b;
 	
 	// End Function
-	return(true);
+	return(Value_);
 
 }
-bool Environment::HDC2010_Temperature(uint8_t Read_Count_, uint8_t Average_Type_, float &Value_) {
+float Environment::HDC2010_Temperature(const uint8_t Read_Count_, const uint8_t Average_Type_) {
 
 	/******************************************************************************
 	 *	Project		: HDC2010 Sensor Read Function
@@ -476,6 +418,9 @@ bool Environment::HDC2010_Temperature(uint8_t Read_Count_, uint8_t Average_Type_
 		true,		// [Sensor_Reset]
 
 	};
+
+	// Declare Output Variable
+	float Value_;
 
 	// ************************************************************
 	// Reset Sensor
@@ -514,15 +459,7 @@ bool Environment::HDC2010_Temperature(uint8_t Read_Count_, uint8_t Average_Type_
 		uint8_t HDC2010_Reset = Wire.endTransmission(false);
 		
 		// Control For Reset Success
-		if (HDC2010_Reset != 0) {
-			
-			// Set Error Code
-			Value_ = -101;
-			
-			// End Function
-			return (false);
-			
-		}
+		if (HDC2010_Reset != 0) return (-101);
 		
 		// Software Reset Delay
 		delay(10);
@@ -688,15 +625,7 @@ bool Environment::HDC2010_Temperature(uint8_t Read_Count_, uint8_t Average_Type_
 		uint8_t HDC2010_Config = Wire.endTransmission(false);
 		
 		// Control For Write Success
-		if (HDC2010_Config != 0) {
-			
-			// Set Error Code
-			Value_ = -102;
-			
-			// End Function
-			return (false);
-			
-		}
+		if (HDC2010_Config != 0) return (-102);
 
 		// delay
 		delay(5);
@@ -714,15 +643,7 @@ bool Environment::HDC2010_Temperature(uint8_t Read_Count_, uint8_t Average_Type_
 		uint8_t HDC2010_Measurement_Config = Wire.endTransmission(false);
 		
 		// Control For Write Success
-		if (HDC2010_Measurement_Config != 0) {
-			
-			// Set Error Code
-			Value_ = -103;
-			
-			// End Function
-			return (false);
-			
-		}
+		if (HDC2010_Measurement_Config != 0) return (-103);
 
 		// Define Variables
 		uint8_t HDC2010_Data[2];
@@ -744,15 +665,7 @@ bool Environment::HDC2010_Temperature(uint8_t Read_Count_, uint8_t Average_Type_
 		uint8_t HDC2010_Measurement_Low_Read = Wire.endTransmission(false);
 
 		// Control For Read Success
-		if (HDC2010_Measurement_Low_Read != 0) {
-				
-			// Set Error Code
-			Value_ = -104;
-				
-			// End Function
-			return (false);
-				
-		}
+		if (HDC2010_Measurement_Low_Read != 0) return (-104);
 			
 		// Read LSB Data from HDC2010
 		Wire.requestFrom(0x40, 0x01);
@@ -774,15 +687,7 @@ bool Environment::HDC2010_Temperature(uint8_t Read_Count_, uint8_t Average_Type_
 		uint8_t HDC2010_Measurement_High_Read = Wire.endTransmission(false);
 
 		// Control For Read Success
-		if (HDC2010_Measurement_High_Read != 0) {
-						
-			// Set Error Code
-			Value_ = -105;
-						
-			// End Function
-			return (false);
-				
-		}
+		if (HDC2010_Measurement_High_Read != 0) return (-105);
 					
 		// Read MSB Data from HDC2010
 		Wire.requestFrom(0x40, 0x01);
@@ -819,15 +724,7 @@ bool Environment::HDC2010_Temperature(uint8_t Read_Count_, uint8_t Average_Type_
 	// ************************************************************
 	// Control For Sensor Range
 	// ************************************************************
-	if (Value_ < HDC2010[0].Range_Min or Value_ > HDC2010[0].Range_Max) {
-		
-		// Set Error Code
-		Value_ = -106;
-		
-		// End Function
-		return(false);
-		
-	}
+	if (Value_ < HDC2010[0].Range_Min or Value_ > HDC2010[0].Range_Max) return(-106);
 
 	// ************************************************************
 	// Calibrate Data
@@ -836,10 +733,10 @@ bool Environment::HDC2010_Temperature(uint8_t Read_Count_, uint8_t Average_Type_
 	Value_ = (HDC2010_T_Calibrarion_a * Value_) + HDC2010_T_Calibrarion_b;
 
 	// End Function
-	return(true);
+	return(Value_);
 		
 }
-bool Environment::HDC2010_Humidity(uint8_t Read_Count_, uint8_t Average_Type_, float &Value_) {
+float Environment::HDC2010_Humidity(const uint8_t Read_Count_, const uint8_t Average_Type_) {
 
 	/******************************************************************************
 	 *	Project		: HDC2010 Sensor Read Function
@@ -868,6 +765,9 @@ bool Environment::HDC2010_Humidity(uint8_t Read_Count_, uint8_t Average_Type_, f
 		true,		// [Sensor_Reset]
 		
 	};
+
+	// Declare Output Variable
+	float Value_;
 
 	// ************************************************************
 	// Reset Sensor
@@ -906,15 +806,7 @@ bool Environment::HDC2010_Humidity(uint8_t Read_Count_, uint8_t Average_Type_, f
 		uint8_t HDC2010_Reset = Wire.endTransmission(false);
 		
 		// Control For Reset Success
-		if (HDC2010_Reset != 0) {
-			
-			// Set Error Code
-			Value_ = -101;
-			
-			// End Function
-			return (false);
-			
-		}
+		if (HDC2010_Reset != 0) return (-101);
 		
 		// Software Reset Delay
 		delay(10);
@@ -1080,15 +972,7 @@ bool Environment::HDC2010_Humidity(uint8_t Read_Count_, uint8_t Average_Type_, f
 		uint8_t HDC2010_Config = Wire.endTransmission(false);
 		
 		// Control For Write Success
-		if (HDC2010_Config != 0) {
-			
-			// Set Error Code
-			Value_ = -102;
-			
-			// End Function
-			return (false);
-			
-		}
+		if (HDC2010_Config != 0) return (-102);
 
 		// delay
 		delay(5);
@@ -1106,15 +990,7 @@ bool Environment::HDC2010_Humidity(uint8_t Read_Count_, uint8_t Average_Type_, f
 		uint8_t HDC2010_Measurement_Config = Wire.endTransmission(false);
 		
 		// Control For Write Success
-		if (HDC2010_Measurement_Config != 0) {
-			
-			// Set Error Code
-			Value_ = -103;
-			
-			// End Function
-			return (false);
-			
-		}
+		if (HDC2010_Measurement_Config != 0) return (-103);
 
 		// Define Variables
 		uint8_t HDC2010_Data[2];
@@ -1136,15 +1012,7 @@ bool Environment::HDC2010_Humidity(uint8_t Read_Count_, uint8_t Average_Type_, f
 		uint8_t HDC2010_Measurement_Low_Read = Wire.endTransmission(false);
 
 		// Control For Read Success
-		if (HDC2010_Measurement_Low_Read != 0) {
-				
-			// Set Error Code
-			Value_ = -104;
-				
-			// End Function
-			return (false);
-				
-		}
+		if (HDC2010_Measurement_Low_Read != 0) return (-104);
 			
 		// Read LSB Data from HDC2010
 		Wire.requestFrom(0x40, 0x01);
@@ -1166,15 +1034,7 @@ bool Environment::HDC2010_Humidity(uint8_t Read_Count_, uint8_t Average_Type_, f
 		uint8_t HDC2010_Measurement_High_Read = Wire.endTransmission(false);
 
 		// Control For Read Success
-		if (HDC2010_Measurement_High_Read != 0) {
-						
-			// Set Error Code
-			Value_ = -105;
-						
-			// End Function
-			return (false);
-				
-		}
+		if (HDC2010_Measurement_High_Read != 0) return (-105);
 					
 		// Read MSB Data from HDC2010
 		Wire.requestFrom(0x40, 0x01);
@@ -1211,15 +1071,7 @@ bool Environment::HDC2010_Humidity(uint8_t Read_Count_, uint8_t Average_Type_, f
 	// ************************************************************
 	// Control For Sensor Range
 	// ************************************************************
-	if (Value_ < HDC2010[0].Range_Min or Value_ > HDC2010[0].Range_Max) {
-		
-		// Set Error Code
-		Value_ = -106;
-		
-		// End Function
-		return(false);
-		
-	}
+	if (Value_ < HDC2010[0].Range_Min or Value_ > HDC2010[0].Range_Max) return(-106);
 
 	// ************************************************************
 	// Calibrate Data
@@ -1228,10 +1080,10 @@ bool Environment::HDC2010_Humidity(uint8_t Read_Count_, uint8_t Average_Type_, f
 	Value_ = (HDC2010_T_Calibrarion_a * Value_) + HDC2010_T_Calibrarion_b;
 
 	// End Function
-	return(true);
+	return(Value_);
 		
 }
-bool Environment::MPL3115A2_Pressure(float &Value_) {
+float Environment::MPL3115A2_Pressure(void) {
 
 	/******************************************************************************
 	 *	Project		: MPL3115A2 Pressure Read Function
@@ -1252,6 +1104,9 @@ bool Environment::MPL3115A2_Pressure(float &Value_) {
 		11000,		// Sensor Range Maximum
 
 	};
+	
+	// Declare Output Variable
+	float Value_;
 
 	// ************************************************************
 	// Controll For WHO_AM_I Register
@@ -1265,15 +1120,7 @@ bool Environment::MPL3115A2_Pressure(float &Value_) {
 	int MPL3115A2_Sensor_Identification = Wire.endTransmission(false);
 
 	// Control For Identifier Read Success
-	if (MPL3115A2_Sensor_Identification != 0) {
-		
-		// Set Error Code
-		Value_ = -101;
-		
-		// End Function
-		return(false);
-		
-	}
+	if (MPL3115A2_Sensor_Identification != 0) return(-101);
 
 	// Read Device Identifier Register
 	Wire.requestFrom(0b01100000, 1);
@@ -1301,15 +1148,7 @@ bool Environment::MPL3115A2_Pressure(float &Value_) {
 		int MPL3115A2_Sensor_CTRL_REG1_Register = Wire.endTransmission(false);
 		
 		// Control For Register Write
-		if (MPL3115A2_Sensor_CTRL_REG1_Register != 0) {
-			
-			// Set Error Code
-			Value_ = -102;
-			
-			// End Function
-			return(false);
-			
-		}
+		if (MPL3115A2_Sensor_CTRL_REG1_Register != 0) return(-102);
 		
 		// ************************************************************
 		// Set PT_DATA_CFG Register
@@ -1324,15 +1163,7 @@ bool Environment::MPL3115A2_Pressure(float &Value_) {
 		int MPL3115A2_Sensor_PT_DATA_CFG_Register = Wire.endTransmission(false);
 		
 		// Control For Register Write
-		if (MPL3115A2_Sensor_PT_DATA_CFG_Register != 0) {
-			
-			// Set Error Code
-			Value_ = -103;
-			
-			// End Function
-			return(false);
-			
-		}
+		if (MPL3115A2_Sensor_PT_DATA_CFG_Register != 0) return(-103);
 		
 		// ************************************************************
 		// Read Sensor Datas
@@ -1355,15 +1186,7 @@ bool Environment::MPL3115A2_Pressure(float &Value_) {
 			int MPL3115A2_Sensor_Pressure_Ready_Status = Wire.endTransmission(false);
 			
 			// Control For Ready Status Write
-			if (MPL3115A2_Sensor_Pressure_Ready_Status != 0) {
-				
-				// Set Error Code
-				Value_ = -104;
-				
-				// End Function
-				return(false);
-				
-			}
+			if (MPL3115A2_Sensor_Pressure_Ready_Status != 0) return(-105);
 			
 			// Read Device Status Register
 			Wire.requestFrom(0b01100000, 1);
@@ -1373,16 +1196,8 @@ bool Environment::MPL3115A2_Pressure(float &Value_) {
 			Ready_Status_Try_Counter += 1;
 			
 			// Control for Wait Counter
-			if (Ready_Status_Try_Counter > 50) {
-				
-				// Set Error Code
-				Value_ = -105;
-				
-				// End Function
-				return(false);
-				
-			}
-			
+			if (Ready_Status_Try_Counter > 50) return(-106);
+
 			// Ready Status Wait Delay
 			if ((MPL3115A2_Read_Status & 0b00000100) != 0b00000100) delay(50);
 			
@@ -1400,15 +1215,7 @@ bool Environment::MPL3115A2_Pressure(float &Value_) {
 		int MPL3115A2_Sensor_Data_Read = Wire.endTransmission(false);
 		
 		// Control For Read Command Success
-		if (MPL3115A2_Sensor_Data_Read != 0) {
-			
-			// Set Error Code
-			Value_ = -106;
-			
-			// End Function
-			return(false);
-			
-		}
+		if (MPL3115A2_Sensor_Data_Read != 0) return(-107);
 		
 		// Request Pressure Data
 		Wire.requestFrom(0b01100000,3);
@@ -1447,21 +1254,13 @@ bool Environment::MPL3115A2_Pressure(float &Value_) {
 	// ************************************************************
 	// Control For Sensor Range
 	// ************************************************************
-	if (Value_ <= MPL3115A2[0].Range_Min or Value_ >= MPL3115A2[0].Range_Max) {
-		
-		// Set Error Code
-		Value_ = -108;
-		
-		// End Function
-		return(false);
-		
-	}
+	if (Value_ <= MPL3115A2[0].Range_Min or Value_ >= MPL3115A2[0].Range_Max) return(-108);
 
 	// End Function
-	return(true);
+	return(Value_);
 
-}	// 3
-bool Environment::TSL2561_Light(float &Value_) {
+}
+float Environment::TSL2561_Light(void) {
 	
 	/******************************************************************************
 	 *	Project		: TSL2561 Light Read Function
@@ -1474,6 +1273,9 @@ bool Environment::TSL2561_Light(float &Value_) {
 	int TSL2561_Integrate_Time 	= 1; // 13.7 ms - 0.034 Scale
 	int TSL2561_Gain 			= 1; // 1x Gain
 	
+	// Declare Output Variable
+	float Value_;
+
 	/****************************************
 	 * Read Device ID Register from TSL2561
 	 ****************************************/
@@ -1570,15 +1372,7 @@ bool Environment::TSL2561_Light(float &Value_) {
 		int TSL2561_Timing_Register_Write = Wire.endTransmission(false);
 		
 		// Control For Register Write
-		if (TSL2561_Timing_Register_Write != 0) {
-			
-			// Set Error Code
-			Value_ = -101;
-			
-			// End Function
-			return(false);
-			
-		}
+		if (TSL2561_Timing_Register_Write != 0) return(-101);
 		
 		// Delay
 		delay(50);
@@ -1596,15 +1390,7 @@ bool Environment::TSL2561_Light(float &Value_) {
 		int TSL2561_Power_ON_Register_Write = Wire.endTransmission(false);
 		
 		// Control For Register Write
-		if (TSL2561_Power_ON_Register_Write != 0) {
-			
-			// Set Error Code
-			Value_ = -102;
-			
-			// End Function
-			return(false);
-			
-		}
+		if (TSL2561_Power_ON_Register_Write != 0) return(-102);
 		
 		/****************************************
 		 * Read CH0
@@ -1800,15 +1586,7 @@ bool Environment::TSL2561_Light(float &Value_) {
 		int TSL2561_Power_OFF_Register_Write = Wire.endTransmission(false);
 		
 		// Control For Register Write
-		if (TSL2561_Power_OFF_Register_Write != 0) {
-			
-			// Set Error Code
-			Value_ = -103;
-			
-			// End Function
-			return(false);
-			
-		}
+		if (TSL2561_Power_OFF_Register_Write != 0) return(-103);
 		
 		// Power Off Delay
 		delay(50);
@@ -1816,15 +1594,12 @@ bool Environment::TSL2561_Light(float &Value_) {
 	}
 	else {
 		
-		// Set Error Code
-		Value_ = -105;
-		
 		// End Function
-		return(false);
+		return(-104);
 		
 	}
 	
 	// End Function
-	return(true);
+	return(Value_);
 	
-}		// 4
+}
