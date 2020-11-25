@@ -59,12 +59,12 @@ private:
 	const float MPL3115A2_P_Calibrarion_b = 0;
 
 	// HDC2010 Temperature
-	const float HDC2010_T_Calibrarion_a = 1;
-	const float HDC2010_T_Calibrarion_b = 0;
+	const float HDC2010_T_Calibrarion_a = 1.0053;
+	const float HDC2010_T_Calibrarion_b = -0.4102;
 	
 	// HDC2010 Humidity
-	const float HDC2010_H_Calibrarion_a = 1;
-	const float HDC2010_H_Calibrarion_b = 0;
+	const float HDC2010_H_Calibrarion_a = 0.9821;
+	const float HDC2010_H_Calibrarion_b = -0.3217;
 
 };
 
