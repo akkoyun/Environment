@@ -14,10 +14,14 @@
 #define __Environment__
 
 #include <Arduino.h>
+
+// Define Wire Library
+#ifndef "Wire.h"
 #include <Wire.h>
+#endif
 
 // Define Statistical Library
-#ifndef <Statistical.h>
+#ifndef "Statistical.h"
 #include "Statistical.h"
 #endif
 
