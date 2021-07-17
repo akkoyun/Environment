@@ -24,7 +24,6 @@ void loop() {
 	
 	// Define Sensor Variables
 	float _Measurement;
-	float _Deviation;
 	unsigned long Time;
 	
 	// Sensor EN to HIGH
@@ -34,7 +33,7 @@ void loop() {
 	Time = millis();
 	
 	// Measure
-	//Environment.TSL2561_L(Sensor_Read_Count, Sensor_Average_Type, _Measurement, _Deviation);
+	_Measurement = Environment.TSL2561_Light(Sensor_Read_Count, Sensor_Average_Type);
 	
 	// Calculate Delta Time
 	int DT = millis() - Time;

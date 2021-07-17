@@ -24,7 +24,6 @@ void loop() {
 
 // Define Sensor Variables
 float _Measurement;
-float _Deviation;
 unsigned long Time;
 
 // Sensor EN to HIGH
@@ -34,7 +33,7 @@ pinMode(13, OUTPUT); digitalWrite(13, HIGH); delay(10);
 Time = millis();
 
 // Measure
-_Measurement = Environment.MPL3115A2_P(Sensor_Read_Count, Sensor_Average_Type);
+_Measurement = Environment.MPL3115A2_Pressure(Sensor_Read_Count, Sensor_Average_Type);
 
 // Calculate Delta Time
 int DT = millis() - Time;

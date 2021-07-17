@@ -21,7 +21,6 @@ void loop() {
 	
 	// Define Sensor Variables
 	float _Measurement;
-	float _Deviation;
 	unsigned long Time;
 
 	// Set Start Time
