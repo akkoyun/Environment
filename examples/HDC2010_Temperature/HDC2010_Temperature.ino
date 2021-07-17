@@ -44,7 +44,6 @@ void loop() {
 	// Serial Print Data
 	//Serial.print("Function Version        : "); Serial.println(Environment.HDC2010_T_Version);
 	Serial.print("Value                   : "); Serial.print(_Measurement, 3); Serial.println(" C");
-	Serial.print("Standart Deviation      : "); Serial.println(_Deviation, 5);
 	Serial.print("Read Count              : "); Serial.println(Sensor_Read_Count);
 	Serial.print("Average Type            : "); Serial.println(Sensor_Average_Type);
 	Serial.print("Function Time           : "); Serial.print(DT); Serial.println(" mS");
