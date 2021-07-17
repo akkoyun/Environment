@@ -9,11 +9,7 @@ install:
 - platformio lib install 986 # LSM303
 
 env:
-- BOARD=uno
-- BOARD=leonardo
-- BOARD=micro
 - BOARD=megaatmega2560
-- BOARD=yun
 
 script:
 - for e in examples/*; do
