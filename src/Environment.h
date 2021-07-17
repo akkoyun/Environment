@@ -16,12 +16,12 @@
 #include <Arduino.h>
 
 // Define Wire Library
-#ifndef "Wire.h"
+#ifndef __Wire__
 #include <Wire.h>
 #endif
 
 // Define Statistical Library
-#ifndef "Statistical.h"
+#ifndef __Statistical__
 #include "Statistical.h"
 #endif
 
