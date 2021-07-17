@@ -101,6 +101,9 @@ float Environment::SHT21_Temperature(const uint8_t Read_Count_, const uint8_t Av
 	// Software Reset Delay
 	delay(15);
 	
+	for (<#initialization#>; <#condition#>; <#increment#>) {
+		<#statements#>
+	}
 	// ************************************************************
 	// Read Current Sensor Settings
 	// ************************************************************
