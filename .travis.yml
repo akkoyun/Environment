@@ -10,7 +10,8 @@ before_install:
 	- sudo ln -s /usr/local/share/arduino/arduino /usr/local/bin/arduino
 
 install:
-	- arduino --install-library "Statistical:1.0.0"
+	- ln -s $PWD https://github.com/akkoyun/Statistical/
+	- arduino --install-library "Statistical Functions Library"
 
 script:
 	- arduino --verify --board arduino:avr:uno $PWD/examples/HDC2010_Humidity/HDC2010_Humidity.ino
@@ -21,6 +22,6 @@ script:
 	- arduino --verify --board arduino:avr:uno $PWD/examples/TSL2561_Light/TSL2561_Light.ino
 
 notifications:
-  email:
-    on_success: change
-    on_failure: change
+	email:
+		on_success: change
+		on_failure: change
