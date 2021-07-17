@@ -1,12 +1,5 @@
 #include "Environment.h"
 
-// Measure Parameters
-uint8_t Sensor_Read_Count = 10;
-uint8_t Sensor_Average_Type = 1;
-
-// Define Library
-Environment Sensor;
-
 void setup() {
   
   // Serial Communication Start
@@ -23,18 +16,14 @@ void setup() {
 
 void loop() {
   
-  // Define Sensor Variables
-  float _Measurement;
-  unsigned long Time;
-
   // Set Start Time
-  Time = millis();
+  unsigned long Time = millis();
 
   // Measure
-_Measurement = Sensor.HDC2010_Humidity(Sensor_Read_Count, Sensor_Average_Type);
+  float _Measurement = Sensor.HDC2010_Humidity(10, 1);
 
   // Calculate Delta Time
-  int DT = millis() - Time;
+  long DT = millis() - Time;
     
   // Serial Print Data
   Serial.print("Value         : "); Serial.print(_Measurement, 3); Serial.println(" %");

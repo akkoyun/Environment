@@ -68,4 +68,6 @@ private:
 
 };
 
+extern Environment Sensor;
+
 #endif /* defined(__Environment__) */

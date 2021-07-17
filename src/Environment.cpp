@@ -1603,3 +1603,5 @@ float Environment::TSL2561_Light(void) {
 	return(Value_);
 	
 }
+
+Environment Sensor;
