@@ -13,7 +13,10 @@
 #ifndef __Environment__
 #define __Environment__
 
+// Define Arduino Library
+#ifndef __Arduino__
 #include <Arduino.h>
+#endif
 
 // Define Wire Library
 #ifndef __Wire__

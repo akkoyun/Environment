@@ -10,7 +10,6 @@
  *
  *********************************************************************************/
 
-#include "Arduino.h"
 #include "Environment.h"
 
 // Sensor Functions
