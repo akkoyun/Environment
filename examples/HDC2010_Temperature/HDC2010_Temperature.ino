@@ -34,7 +34,7 @@ void loop() {
 	Time = millis();
 
 	// Measure
-	//Environment.HDC2010_T(Sensor_Read_Count, Sensor_Average_Type, _Measurement, _Deviation);
+	_Measurement = Environment.HDC2010_T(Sensor_Read_Count, Sensor_Average_Type);
 
 	// Calculate Delta Time
 	int DT = millis() - Time;
