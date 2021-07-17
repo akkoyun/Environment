@@ -5,6 +5,7 @@ cache:
   - "~/.platformio"
 
 install:
+- ln -s $PWD /usr/local/share/arduino/libraries/Environment
 - pip install -U platformio
 - platformio lib install 986 # LSM303
 
