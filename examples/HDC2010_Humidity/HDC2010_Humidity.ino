@@ -31,7 +31,7 @@ void loop() {
   Time = millis();
 
   // Measure
-  Sensor.HDC2010_Humidity(Sensor_Read_Count, Sensor_Average_Type, _Measurement);
+_Measurement = Sensor.HDC2010_Humidity(Sensor_Read_Count, Sensor_Average_Type);
 
   // Calculate Delta Time
   int DT = millis() - Time;
