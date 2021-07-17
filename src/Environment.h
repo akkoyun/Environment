@@ -20,11 +20,6 @@
 #include <Wire.h>
 #endif
 
-// Define Statistical Library
-#ifndef __Statistical__
-#include "Statistical.h"
-#endif
-
 class Environment
 {
 public:

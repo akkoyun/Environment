@@ -12,7 +12,6 @@
 
 #include "Arduino.h"
 #include "Environment.h"
-#include <Wire.h>
 
 // Sensor Functions
 float Environment::SHT21_Temperature(const uint8_t Read_Count_, const uint8_t Average_Type_) {

@@ -3,7 +3,6 @@ language: python
 cache:
   directories:
   - "~/.platformio"
-  - "/Users/akkoyun/Documents/Arduino/libraries/Statistical"
 
 install:
 - pip install -U platformio
