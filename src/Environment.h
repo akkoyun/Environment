@@ -16,7 +16,10 @@
 #include <Arduino.h>
 #include <Wire.h>
 
-//#define Environment_Detail
+// Define Statistical Library
+#ifndef <Statistical.h>
+#include "Statistical.h"
+#endif
 
 class Environment
 {
