@@ -1,18 +1,36 @@
-language: python
-
+language: c
+sudo: false
 cache:
   directories:
-  - "~/.platformio"
+    - ~/arduino_ide
+    - ~/.arduino15/packages/
+git:
+  depth: false
+  quiet: true
+addons:
+  apt:
+    sources:
+      - llvm-toolchain-trusty-5.0
+      - key_url: 'http://apt.llvm.org/llvm-snapshot.gpg.key'
+    packages:
+      - python3-pip
+      - python3-wheel
+      - clang-format-5.0
+env:
+  global:
+     - PRETTYNAME="Environmen Library"
+
+before_install:
+   - source <(curl -SLs https://raw.githubusercontent.com/adafruit/travis-ci-arduino/master/install.sh)
+   - curl -SLs https://raw.githubusercontent.com/adafruit/travis-ci-arduino/master/run-clang-format.py > run-clang-format.py
 
 install:
-- pip install -U platformio
-- platformio lib install 986 # LSM303
-- arduino --install-library "Statistical"
-
-env:
-- BOARD=megaatmega2560
+   - arduino --install-library "Statistical"
 
 script:
-- for e in examples/*; do
-    platformio ci --board=$BOARD --lib=. $e/*;
-  done
+   - python run-clang-format.py -r .
+   - build_main_platforms
+
+after_success:
+  - source <(curl -SLs  https://raw.githubusercontent.com/adafruit/travis-ci-arduino/master/library_check.sh)
+  - source <(curl -SLs  https://raw.githubusercontent.com/adafruit/travis-ci-arduino/master/doxy_gen_and_deploy.sh)
