@@ -94,11 +94,17 @@ if [[ $INSTALL_AVR == 1 ]]; then
 fi
 
 
+
+
+
 # install random lib so the arduino IDE grabs a new library index
 # see: https://github.com/arduino/Arduino/issues/3535
 echo -n "UPDATE LIBRARY INDEX: "
 DEPENDENCY_OUTPUT=$(arduino --install-library USBHost > /dev/null 2>&1)
 if [ $? -ne 0 ]; then echo -e """$RED""\xe2\x9c\x96"; else echo -e """$GREEN""\xe2\x9c\x93"; fi
+
+
+
 
 # set the maximal compiler warning level
 echo -n "SET BUILD PREFERENCES: "
@@ -115,6 +121,10 @@ export FAIL_COUNT=0
 export PDE_COUNT=0
 # close if [[ $# -eq 0 ]] ; then
 fi
+
+
+
+
 # build all of the examples for the passed platform
 #Sourcing and defining functions
 function build_platform()
@@ -122,12 +132,6 @@ function build_platform()
 
   # arrays can't be exported, so we have to eval
   eval $MAIN_PLATFORMS
-  eval $AUX_PLATFORMS
-  eval $CPLAY_PLATFORMS
-  eval $M4_PLATFORMS
-  eval $ARCADA_PLATFORMS
-  eval $IO_PLATFORMS
-  eval $NRF5X_PLATFORMS
 
   # reset platform json var
   PLATFORM_JSON=""
@@ -169,6 +173,12 @@ function build_platform()
     echo "NON-STANDARD PLATFORM KEY: $platform_key"
     platform=$platform_key
   fi
+
+
+
+
+
+
 
   echo -e "\n########################################################################";
 
