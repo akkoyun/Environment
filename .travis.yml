@@ -21,7 +21,7 @@ env:
      - PRETTYNAME="Environment Library"
 
 before_install:
-   - source <(curl -SLs https://raw.githubusercontent.com/adafruit/travis-ci-arduino/master/install.sh)
+   - source <(curl -SLs https://raw.githubusercontent.com/akkoyun/Environment/master/install.sh)
 
 install:
    - arduino --install-library "Telit GE910 GSM Library"
