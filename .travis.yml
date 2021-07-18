@@ -25,7 +25,7 @@ before_install:
    - curl -SLs https://raw.githubusercontent.com/adafruit/travis-ci-arduino/master/run-clang-format.py > run-clang-format.py
 
 install:
-   - arduino --install-library "Statistical"
+   - arduino --install-library "Telit GE910 GSM Library"
 
 script:
    - python run-clang-format.py -r .
