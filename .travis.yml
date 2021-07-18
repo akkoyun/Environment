@@ -7,6 +7,7 @@ cache:
 install:
 - pip install -U platformio
 - platformio lib install 986 # LSM303
+- arduino --install-library "Statistical"
 
 env:
 - BOARD=megaatmega2560
