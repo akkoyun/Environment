@@ -178,7 +178,7 @@ float Environment::SHT21_Temperature(const uint8_t Read_Count_, const uint8_t Av
 	}
 	
 	// Calculate Data
-	DataSet_SHT21T.Array_Statistic(Measurement_Array,Read_Count_,2);
+	DataSet_SHT21T.Array_Statistic(Measurement_Array,Read_Count_,Average_Type_);
 
 	// Get Average
 	Value_ = DataSet_SHT21T.Array_Average;
@@ -352,19 +352,11 @@ float Environment::SHT21_Humidity(const uint8_t Read_Count_, const uint8_t Avera
 			
 	}
 	
-	// Calculate Average
-	if (Average_Type_ == 1) {
-		
-		// Declare Variable
-		double SUM = 0;
-		
-		// Calculate Sum
-		for (int i = 0; i < Read_Count_; i++) SUM += Measurement_Array[i];
-		
-		// Calculate Avg
-		Value_ = SUM / Read_Count_;
-		
-	}	// Standart Average
+	// Calculate Data
+	DataSet_SHT21H.Array_Statistic(Measurement_Array,Read_Count_,Average_Type_);
+
+	// Get Average
+	Value_ = DataSet_SHT21H.Array_Average;
 
 	// ************************************************************
 	// Control For Sensor Range
@@ -700,19 +692,11 @@ float Environment::HDC2010_Temperature(const uint8_t Read_Count_, const uint8_t 
 		
 	}
 	
-	// Calculate Average
-	if (Average_Type_ == 1) {
-		
-		// Declare Variable
-		double SUM = 0;
-		
-		// Calculate Sum
-		for (int i = 0; i < Read_Count_; i++) SUM += Measurement_Array[i];
-		
-		// Calculate Avg
-		Value_ = SUM / Read_Count_;
-				
-	}	// Standart Average
+	// Calculate Data
+	DataSet_HDC2010T.Array_Statistic(Measurement_Array,Read_Count_,Average_Type_);
+
+	// Get Average
+	Value_ = DataSet_HDC2010T.Array_Average;
 
 	// ************************************************************
 	// Control For Sensor Range
@@ -1047,19 +1031,11 @@ float Environment::HDC2010_Humidity(const uint8_t Read_Count_, const uint8_t Ave
 		
 	}
 	
-	// Calculate Average
-	if (Average_Type_ == 1) {
-		
-		// Declare Variable
-		double SUM = 0;
-		
-		// Calculate Sum
-		for (int i = 0; i < Read_Count_; i++) SUM += Measurement_Array[i];
-		
-		// Calculate Avg
-		Value_ = SUM / Read_Count_;
-		
-	}	// Standart Average
+	// Calculate Data
+	DataSet_HDC2010H.Array_Statistic(Measurement_Array,Read_Count_,Average_Type_);
+
+	// Get Average
+	Value_ = DataSet_HDC2010H.Array_Average;
 
 	// ************************************************************
 	// Control For Sensor Range
