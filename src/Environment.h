@@ -23,6 +23,8 @@
 #include <Wire.h>
 #endif
 
+#include <Statistical.h>
+
 class Environment
 {
 public:

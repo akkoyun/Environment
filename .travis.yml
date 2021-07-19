@@ -23,7 +23,7 @@ before_install:
    - source <(curl -SLs https://raw.githubusercontent.com/akkoyun/Environment/master/install.sh)
 
 install:
-   - arduino --install-library "Telit GE910 GSM Library"
+   - arduino --install-library "Statistical"
 
 script:
    - build_main_platforms

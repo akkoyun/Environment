@@ -12,6 +12,9 @@
 
 #include "Environment.h"
 
+// Define Objects
+Statistical DataSet_SHT21T;
+
 // Sensor Functions
 float Environment::SHT21_Temperature(const uint8_t Read_Count_, const uint8_t Average_Type_) {
 	
@@ -174,20 +177,12 @@ float Environment::SHT21_Temperature(const uint8_t Read_Count_, const uint8_t Av
 			
 	}
 	
-	// Calculate Average
-	if (Average_Type_ == 1) {
-		
-		// Declare Variable
-		double SUM = 0;
-		
-		// Calculate Sum
-		for (int i = 0; i < Read_Count_; i++) SUM += Measurement_Array[i];
-		
-		// Calculate Avg
-		Value_ = SUM / Read_Count_;
-		
-	}	// Standart Average
+	// Calculate Data
+	DataSet_SHT21T.Array_Statistic(Measurement_Array,Read_Count_,2);
 
+	// Get Average
+	Value_ = DataSet_SHT21T.Array_Average;
+	
 	// ************************************************************
 	// Control For Sensor Range
 	// ************************************************************
