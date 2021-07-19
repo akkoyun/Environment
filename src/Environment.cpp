@@ -14,6 +14,9 @@
 
 // Define Objects
 Statistical DataSet_SHT21T;
+Statistical DataSet_SHT21H;
+Statistical DataSet_HDC2010T;
+Statistical DataSet_HDC2010H;
 
 // Sensor Functions
 float Environment::SHT21_Temperature(const uint8_t Read_Count_, const uint8_t Average_Type_) {
