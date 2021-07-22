@@ -490,8 +490,8 @@ float Environment::HDC2010_Temperature(const uint8_t Read_Count_, const uint8_t 
 	// ************************************************************
 
 	// Set Measurement Mode
-	HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xFC);
-	HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x02);
+	HDC2010_MeasurementConfig_Read &= 0xFC;
+	HDC2010_MeasurementConfig_Read |= 0x02;
 
 	// Set Measurement Rate
 	switch(HDC2010[0].Measurement_Rate) {
@@ -584,7 +584,7 @@ float Environment::HDC2010_Temperature(const uint8_t Read_Count_, const uint8_t 
 	}
 
 	// Trigger Measurement
-	HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x01);
+	HDC2010_MeasurementConfig_Read |= 0x01;
 
 	// ************************************************************
 	// Read Temperature
@@ -696,7 +696,7 @@ float Environment::HDC2010_Temperature(const uint8_t Read_Count_, const uint8_t 
 	}
 	
 	// Calculate Data
-	DataSet_HDC2010T.Array_Statistic(Measurement_Array,Read_Count_,Average_Type_);
+	DataSet_HDC2010T.Array_Statistic(Measurement_Array,Read_Count_, Average_Type_);
 
 	// Get Average
 	Value_ = DataSet_HDC2010T.Array_Average;
