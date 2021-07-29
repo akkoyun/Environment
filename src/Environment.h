@@ -46,6 +46,9 @@ public:
 
 	// TSL2561
 	float TSL2561_Light(void);
+	
+	// MCP3422
+	float MCP3422_Pressure(const uint8_t _Channel, const uint8_t _Read_Count, const uint8_t _Average_Type);
 
 private:
 
@@ -72,6 +75,10 @@ private:
 	// HDC2010 Humidity
 	const float HDC2010_H_Calibrarion_a = 0.9821;
 	const float HDC2010_H_Calibrarion_b = -0.3217;
+
+	// MCP3422 Humidity
+	const float MCP3422_P_Calibrarion_a = 0.9821;
+	const float MCP3422_P_Calibrarion_b = -0.3217;
 
 };
 

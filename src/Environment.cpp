@@ -17,6 +17,7 @@ Statistical DataSet_SHT21T;
 Statistical DataSet_SHT21H;
 Statistical DataSet_HDC2010T;
 Statistical DataSet_HDC2010H;
+Statistical DataSet_MCP3422;
 
 // Sensor Functions
 float Environment::SHT21_Temperature(const uint8_t Read_Count_, const uint8_t Average_Type_) {
@@ -1574,6 +1575,161 @@ float Environment::TSL2561_Light(void) {
 	// End Function
 	return(Value_);
 	
+}
+float Environment::MCP3422_Pressure(const uint8_t _Channel, const uint8_t _Read_Count, const uint8_t _Average_Type) {
+	
+	/******************************************************************************
+	 *	Project		: MCP3422 2 Channel ADC Converter Read Function
+	 *	Developer	: Mehmet Gunce Akkoyun (akkoyun@me.com)
+	 *	Revision	: 02.00.00
+	 ******************************************************************************/
+	
+	// Static Variables
+	const uint8_t _Gain 		= 1;
+	const uint8_t _Resolution 	= 12;
+	const uint8_t _Mode 		= 2;
+	const uint8_t _Sensor_Max 	= 10;
+
+	// Set I2C Connection Close
+	if (Wire.available()) {
+		
+		int I2C_Close = Wire.endTransmission();
+		
+		// Control For Close Success
+		if (I2C_Close != 0) {
+			
+			// End Function
+			return(-101);
+			
+		}
+		
+	}
+
+	// Define Pressure Read Array
+	double Pressure_RAW_Array[_Read_Count];
+
+	// Start I2C
+	Wire.beginTransmission(0x68);
+	Wire.write(0x06);
+	Wire.endTransmission(false);
+
+	// Setting Register
+	uint8_t Setting_Register = 0b00000000;
+
+	// Gain Setting
+	if (_Gain == 1) {
+		Setting_Register &= 0b11111100;
+	} // x1
+	if (_Gain == 2) {
+		Setting_Register &= 0b11111101;
+		Setting_Register |= 0b00000001;
+	} // x2
+	if (_Gain == 4) {
+		Setting_Register &= 0b11111110;
+		Setting_Register |= 0b00000010;
+	} // x4
+	if (_Gain == 8) {
+		Setting_Register |= 0b00000011;
+	} // x8
+
+	// Resolution Setting
+	if (_Resolution == 12) {
+		Setting_Register &= 0b11110011;
+	} // 12 bit
+	if (_Resolution == 14) {
+		Setting_Register &= 0b11110111;
+		Setting_Register |= 0b00000100;
+	} // 14 bit
+	if (_Resolution == 16) {
+		Setting_Register &= 0b11111011;
+		Setting_Register |= 0b00001000;
+	} // 16 bit
+	if (_Resolution == 18) {
+		Setting_Register |= 0b00001100;
+	} // 18 bit
+
+	// Mode Setting
+	if (_Mode == 1) {
+		Setting_Register |= 0b00010000;
+	} // Continious Mode
+	if (_Mode == 2) {
+		Setting_Register &= 0b11101111;
+	} // One Shot Mode
+
+	// Channel Setting
+	if (_Channel == 1) {
+		Setting_Register &= 0b10011111;
+	} // Channel 1
+	if (_Channel == 2) {
+		Setting_Register &= 0b10111111;
+		Setting_Register |= 0b00100000;
+	} // Channel 2
+
+	// New Conversation Setting
+	Setting_Register |= 0b10000000;
+	
+	// Start ADC Conversion for Channel x
+	Wire.beginTransmission(0x68);
+	Wire.write(Setting_Register);
+	int I2C_Start_Conversation = Wire.endTransmission(false);
+
+	// Control For Close Success
+	if (I2C_Start_Conversation != 0) {
+		
+		// End Function
+		return(-102);
+		
+	}
+
+	// Conversation Delay
+	delay(1);
+
+	// Read Loop For Read Count
+	for (int Read_ID = 0; Read_ID < _Read_Count; Read_ID++) {
+
+		// Define Data Variable
+		uint8_t Pressure_Data[3];
+		double Pressure_RAW = 0;
+		uint16_t _Data_RAW = 0;
+
+		// Read ADC
+		do {
+
+			// Read Pressure Data
+			Wire.requestFrom(0x68, 3);
+
+			// Read Data
+			if(Wire.available() == 3) {
+				
+				// Read I2C Data
+				Pressure_Data[0] = Wire.read();
+				Pressure_Data[1] = Wire.read();
+				Pressure_Data[2] = Wire.read();
+				
+				// Combine Read Bytes
+				_Data_RAW = ((uint16_t)Pressure_Data[0] << 8) | (uint16_t)Pressure_Data[1];
+
+			}
+
+		} while((Pressure_Data[2] & 0x80) != 0x00);
+
+		// Calculate Data
+		for (uint8_t i = 0; i <= 10; i++) if (bitRead(_Data_RAW, i) == true) Pressure_RAW += pow(2, i);
+
+		// Calculate Pressure
+		if (_Resolution == 12) Pressure_RAW_Array[Read_ID] = Pressure_RAW * _Sensor_Max / 2047;
+
+	}
+
+	// Calculate Data
+	DataSet_MCP3422.Array_Statistic(Pressure_RAW_Array, _Read_Count, _Average_Type);
+
+	// Get Average
+	float _Value = (DataSet_SHT21T.Array_Average * MCP3422_P_Calibrarion_a) + MCP3422_P_Calibrarion_b;
+
+	// End Function
+	return(_Value);
+
 }
 
 Environment Sensor;
