@@ -19,7 +19,8 @@ MPL3115A2_Pressure			KEYWORD2
 TSL2561_Light				KEYWORD2
 HDC2010_Temperature			KEYWORD2
 HDC2010_Humidity			KEYWORD2
-	
+MCP3422_Pressure			KEYWORD2
+
 #######################################
 # Constants (LITERAL1)
 #######################################
