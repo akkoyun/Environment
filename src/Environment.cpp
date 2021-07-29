@@ -1606,7 +1606,7 @@ float Environment::MCP3422_Pressure(const uint8_t _Channel, const uint8_t _Read_
 	}
 
 	// Define Pressure Read Array
-	double Pressure_RAW_Array[_Read_Count];
+	float Pressure_RAW_Array[_Read_Count];
 
 	// Start I2C
 	Wire.beginTransmission(0x68);
