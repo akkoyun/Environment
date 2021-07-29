@@ -1470,7 +1470,7 @@ float Environment::TSL2561_Light(void) {
 		if (TSL2561_Channel_0 != 0) TSL2561_Channel_Ratio = (TSL2561_Channel_1 << 10) / TSL2561_Channel_0;
 		
 		// Round the Ratio Value
-		unsigned long TSL2561_Ratio = (TSL2561_Channel_Ratio + 1) >> 1;
+		long TSL2561_Ratio = (TSL2561_Channel_Ratio + 1) >> 1;
 		
 		unsigned int TSL2561_Calculation_B, TSL2561_Calculation_M;
 		
