@@ -1717,7 +1717,7 @@ float Environment::MCP3422_Pressure(const uint8_t _Channel, const uint8_t _Read_
 		for (uint8_t i = 0; i <= 10; i++) if (bitRead(_Data_RAW, i) == true) Pressure_RAW += pow(2, i);
 
 		// Calculate Pressure
-		if (_Resolution == 12) Pressure_RAW_Array[Read_ID] = Pressure_RAW * _Sensor_Max / 2047;
+		if (_Resolution == 12) Pressure_RAW_Array[Read_ID] = Pressure_RAW / 2047;
 
 	}
 
@@ -1725,7 +1725,8 @@ float Environment::MCP3422_Pressure(const uint8_t _Channel, const uint8_t _Read_
 	DataSet_MCP3422.Array_Statistic(Pressure_RAW_Array, _Read_Count, _Average_Type);
 
 	// Get Average
-	float _Value = (DataSet_SHT21T.Array_Average * MCP3422_P_Calibrarion_a) + MCP3422_P_Calibrarion_b;
+	float _Value = (DataSet_MCP3422.Array_Average * _Sensor_Max);
+	_Value = (_Value * 1.5304) - 1.3437;
 
 	// End Function
 	return(_Value);

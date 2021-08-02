@@ -77,8 +77,8 @@ private:
 	const float HDC2010_H_Calibrarion_b = -0.3217;
 
 	// MCP3422 Humidity
-	const float MCP3422_P_Calibrarion_a = 0.9821;
-	const float MCP3422_P_Calibrarion_b = -0.3217;
+	const float MCP3422_P_Calibrarion_a = 1; //1.5304
+	const float MCP3422_P_Calibrarion_b = 0; // -1,3437
 
 };
 
