@@ -1528,9 +1528,6 @@ float Environment::TSL2561_Light(void) {
 		// Calculate Temp Lux Value
 		TSL2561_Lux_Temp = ((TSL2561_Channel_0 * TSL2561_Calculation_B) - (TSL2561_Channel_1 * TSL2561_Calculation_M));
 		
-		// Do not Allow Negative Lux Value
-		if (TSL2561_Lux_Temp < 0) TSL2561_Lux_Temp = 0;
-		
 		// Round LSB (2^(LUX_SCALE-1))
 		TSL2561_Lux_Temp += (1 << 13);
 		
