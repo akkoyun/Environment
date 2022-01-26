@@ -1,23 +1,14 @@
 /* *******************************************************************************
- *  Copyright (C) 2014-2019 Mehmet Gunce Akkoyun Can not be copied and/or
+ *  Copyright (C) 2014-2022 Mehmet Gunce Akkoyun Can not be copied and/or
  *	distributed without the express permission of Mehmet Gunce Akkoyun
  *	This library is a combined book of enviroment sensor library.
  *
  *	Library				: Environment Library.
  *	Code Developer		: Mehmet Gunce Akkoyun (akkoyun@me.com)
- *	Revision			: 3.1.0
- *	Relase				: 12.10.2020
  *
  *********************************************************************************/
 
 #include "Environment.h"
-
-// Define Objects
-Statistical DataSet_SHT21T;
-Statistical DataSet_SHT21H;
-Statistical DataSet_HDC2010T;
-Statistical DataSet_HDC2010H;
-Statistical DataSet_MCP3422;
 
 // Sensor Functions
 float Environment::SHT21_Temperature(const uint8_t Read_Count_, const uint8_t Average_Type_) {
@@ -28,7 +19,10 @@ float Environment::SHT21_Temperature(const uint8_t Read_Count_, const uint8_t Av
 	 *	Revision	: 04.00.00
 	 *	Release		: 04.11.2020
 	 ******************************************************************************/
-	
+
+	// Define Objects
+	Statistical DataSet_SHT21T;
+
 	// Set Sensor Definations
 	struct Sensor_Settings {
 		
@@ -211,6 +205,9 @@ float Environment::SHT21_Humidity(const uint8_t Read_Count_, const uint8_t Avera
 	 *	Release		: 04.11.2020
 	 ******************************************************************************/
 	
+	// Define Objects
+	Statistical DataSet_SHT21H;
+
 	// Set Sensor Definations
 	struct Sensor_Settings {
 		int 	Resolution;
@@ -386,6 +383,9 @@ float Environment::HDC2010_Temperature(const uint8_t Read_Count_, const uint8_t 
 	 *	Revision	: 02.00.00
 	 *	Release		: 04.11.2020
 	 ******************************************************************************/
+
+	// Define Objects
+	Statistical DataSet_HDC2010T;
 
 	// Set Sensor Definations
 	struct Sensor {
@@ -725,6 +725,9 @@ float Environment::HDC2010_Humidity(const uint8_t Read_Count_, const uint8_t Ave
 	 *	Revision	: 02.00.00
 	 *	Release		: 04.11.2020
 	 ******************************************************************************/
+
+	// Define Objects
+	Statistical DataSet_HDC2010H;
 
 	// Set Sensor Definations
 	struct Sensor {
@@ -1581,6 +1584,9 @@ float Environment::MCP3422_Pressure(const uint8_t _Channel, const uint8_t _Read_
 	 *	Revision	: 02.00.00
 	 ******************************************************************************/
 	
+	// Define Objects
+	Statistical DataSet_MCP3422;
+
 	// Static Variables
 	const uint8_t _Gain 		= 1;
 	const uint8_t _Resolution 	= 12;

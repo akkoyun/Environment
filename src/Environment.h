@@ -5,8 +5,6 @@
  *
  *	Library				: Environment Library.
  *	Code Developer		: Mehmet Gunce Akkoyun (akkoyun@me.com)
- *	Revision			: 3.1.0
- *	Relase				: 12.10.2020
  *
  *********************************************************************************/
 
@@ -25,60 +23,60 @@
 
 #include <Statistical.h>
 
-class Environment
-{
-public:
+class Environment {
+
+	public:
 	
-	// ************************************************************
-	// Public Functions
-	// ************************************************************
+		// ************************************************************
+		// Public Functions
+		// ************************************************************
 
-	// SHT21
-	float SHT21_Temperature(const uint8_t Read_Count_, const uint8_t Average_Type_);
-	float SHT21_Humidity(const uint8_t Read_Count_, const uint8_t Average_Type_);
+		// SHT21
+		float SHT21_Temperature(const uint8_t Read_Count_, const uint8_t Average_Type_);
+		float SHT21_Humidity(const uint8_t Read_Count_, const uint8_t Average_Type_);
 
-	// HDC2010
-	float HDC2010_Temperature(const uint8_t Read_Count_, const uint8_t Average_Type_);
-	float HDC2010_Humidity(const uint8_t Read_Count_, const uint8_t Average_Type_);
+		// HDC2010
+		float HDC2010_Temperature(const uint8_t Read_Count_, const uint8_t Average_Type_);
+		float HDC2010_Humidity(const uint8_t Read_Count_, const uint8_t Average_Type_);
 
-	// MPL3115A2
-	float MPL3115A2_Pressure(void);
+		// MPL3115A2
+		float MPL3115A2_Pressure(void);
 
-	// TSL2561
-	float TSL2561_Light(void);
-	
-	// MCP3422
-	float MCP3422_Pressure(const uint8_t _Channel, const uint8_t _Read_Count, const uint8_t _Average_Type);
+		// TSL2561
+		float TSL2561_Light(void);
+		
+		// MCP3422
+		float MCP3422_Pressure(const uint8_t _Channel, const uint8_t _Read_Count, const uint8_t _Average_Type);
 
-private:
+	private:
 
-	// ************************************************************
-	// Calibration Constants
-	// ************************************************************
+		// ************************************************************
+		// Calibration Constants
+		// ************************************************************
 
-	// SHT21 Temperature
-	const float SHT21_T_Calibrarion_a = 1.0129; // MGM
-	const float SHT21_T_Calibrarion_b = 0.6075; // MGM
+		// SHT21 Temperature
+		const float SHT21_T_Calibrarion_a = 1.0129; // MGM
+		const float SHT21_T_Calibrarion_b = 0.6075; // MGM
 
-	// SHT21 Humidity
-	const float SHT21_H_Calibrarion_a = 0.9518; // MGM
-	const float SHT21_H_Calibrarion_b = 3.5316; // MGM
+		// SHT21 Humidity
+		const float SHT21_H_Calibrarion_a = 0.9518; // MGM
+		const float SHT21_H_Calibrarion_b = 3.5316; // MGM
 
-	// MPL3115A2 Pressure
-	const float MPL3115A2_P_Calibrarion_a = 1;
-	const float MPL3115A2_P_Calibrarion_b = 0;
+		// MPL3115A2 Pressure
+		const float MPL3115A2_P_Calibrarion_a = 1;
+		const float MPL3115A2_P_Calibrarion_b = 0;
 
-	// HDC2010 Temperature
-	const float HDC2010_T_Calibrarion_a = 1.0053;
-	const float HDC2010_T_Calibrarion_b = -0.4102;
-	
-	// HDC2010 Humidity
-	const float HDC2010_H_Calibrarion_a = 0.9821;
-	const float HDC2010_H_Calibrarion_b = -0.3217;
+		// HDC2010 Temperature
+		const float HDC2010_T_Calibrarion_a = 1.0053;
+		const float HDC2010_T_Calibrarion_b = -0.4102;
+		
+		// HDC2010 Humidity
+		const float HDC2010_H_Calibrarion_a = 0.9821;
+		const float HDC2010_H_Calibrarion_b = -0.3217;
 
-	// MCP3422 Humidity
-	const float MCP3422_P_Calibrarion_a = 1; //1.5304
-	const float MCP3422_P_Calibrarion_b = 0; // -1,3437
+		// MCP3422 Humidity
+		const float MCP3422_P_Calibrarion_a = 1; //1.5304
+		const float MCP3422_P_Calibrarion_b = 0; // -1,3437
 
 };
 
