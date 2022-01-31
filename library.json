@@ -1,16 +1,17 @@
 {
 	"name": "Environment",
-	"version": "3.2.0",
+	"version": "3.2.1",
 	"keywords": "Sensor, Environment, SHT21, HDC2010, TSL2561, MPL3115, Temperature, Humidity, Pressure, Light",
 	"description": "Function measures the value of given sensors. Library is used data mining for stable sensor data. Also cleared for lite use.",
 	"authors":
 	{
 		"name": "Mehmet Gunce Akkoyun",
 		"email": "akkoyun@me.com",
-		"url": ""
+		"url": "https://github.com/akkoyun"
 	},
 	"license": "MIT",
 	"frameworks": "arduino",
+	"headers": "Environment.h",
 	"platforms":
 	[
 		"atmelavr",
