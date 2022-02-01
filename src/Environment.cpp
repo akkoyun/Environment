@@ -12,13 +12,6 @@
 
 #include "Environment.h"
 
-// Define Objects
-Statistical DataSet_SHT21T;
-Statistical DataSet_SHT21H;
-Statistical DataSet_HDC2010T;
-Statistical DataSet_HDC2010H;
-Statistical DataSet_MCP3422;
-
 // Sensor Functions
 float Environment::SHT21_Temperature(const uint8_t Read_Count_, const uint8_t Average_Type_) {
 	
@@ -182,11 +175,9 @@ float Environment::SHT21_Temperature(const uint8_t Read_Count_, const uint8_t Av
 	}
 	
 	// Calculate Data
-	DataSet_SHT21T.Array_Statistic(Measurement_Array,Read_Count_,Average_Type_);
+	uint16_t _Data_Size = sizeof(Measurement_Array) / sizeof(Measurement_Array[0]);
+	Value_ = Stats.Array_Average(Measurement_Array, _Data_Size, Average_Type_);
 
-	// Get Average
-	Value_ = DataSet_SHT21T.Array_Average;
-	
 	// ************************************************************
 	// Control For Sensor Range
 	// ************************************************************
@@ -357,10 +348,8 @@ float Environment::SHT21_Humidity(const uint8_t Read_Count_, const uint8_t Avera
 	}
 	
 	// Calculate Data
-	DataSet_SHT21H.Array_Statistic(Measurement_Array,Read_Count_,Average_Type_);
-
-	// Get Average
-	Value_ = DataSet_SHT21H.Array_Average;
+	uint16_t _Data_Size = sizeof(Measurement_Array) / sizeof(Measurement_Array[0]);
+	Value_ = Stats.Array_Average(Measurement_Array, _Data_Size, Average_Type_);
 
 	// ************************************************************
 	// Control For Sensor Range
@@ -697,10 +686,8 @@ float Environment::HDC2010_Temperature(const uint8_t Read_Count_, const uint8_t 
 	}
 	
 	// Calculate Data
-	DataSet_HDC2010T.Array_Statistic(Measurement_Array,Read_Count_, Average_Type_);
-
-	// Get Average
-	Value_ = DataSet_HDC2010T.Array_Average;
+	uint16_t _Data_Size = sizeof(Measurement_Array) / sizeof(Measurement_Array[0]);
+	Value_ = Stats.Array_Average(Measurement_Array, _Data_Size, Average_Type_);
 
 	// ************************************************************
 	// Control For Sensor Range
@@ -1036,10 +1023,8 @@ float Environment::HDC2010_Humidity(const uint8_t Read_Count_, const uint8_t Ave
 	}
 	
 	// Calculate Data
-	DataSet_HDC2010H.Array_Statistic(Measurement_Array,Read_Count_,Average_Type_);
-
-	// Get Average
-	Value_ = DataSet_HDC2010H.Array_Average;
+	uint16_t _Data_Size = sizeof(Measurement_Array) / sizeof(Measurement_Array[0]);
+	Value_ = Stats.Array_Average(Measurement_Array, _Data_Size, Average_Type_);
 
 	// ************************************************************
 	// Control For Sensor Range
@@ -1719,10 +1704,7 @@ float Environment::MCP3422_Pressure(const uint8_t _Channel, const uint8_t _Read_
 	}
 
 	// Calculate Data
-	DataSet_MCP3422.Array_Statistic(Pressure_RAW_Array, _Read_Count, _Average_Type);
-
-	// Get Average
-	float _Value = (DataSet_MCP3422.Array_Average * _Sensor_Max);
+	float _Value = (Stats.Array_Average(Pressure_RAW_Array, _Read_Count, _Average_Type) * _Sensor_Max);
 	_Value = (_Value * 1.5304) - 1.3437;
 
 	// End Function
