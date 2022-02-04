@@ -23,6 +23,11 @@
 #include <Wire.h>
 #endif
 
+// Define I2C Functions Library
+#ifndef __I2C_Functions__
+#include <I2C_Functions.h>
+#endif
+
 #include <Statistical.h>
 
 class Environment {
