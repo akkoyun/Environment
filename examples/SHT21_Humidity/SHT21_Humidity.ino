@@ -20,7 +20,7 @@ void loop() {
   unsigned long Time = millis();
 
   // Measure
-  float _Measurement = Sensor.SHT21_Humidity(20,1);
+  float _Measurement = Sensor.SHT21_Humidity(5,1);
 
   // Calculate Delta Time
   long DT = millis() - Time;
