@@ -142,6 +142,7 @@ float Environment::SHT21_Temperature(const uint8_t Read_Count_, const uint8_t Av
 	// Calculate Data
 	uint16_t _Data_Size = sizeof(Measurement_Array) / sizeof(Measurement_Array[0]);
 	Value_ = Stats.Array_Average(Measurement_Array, _Data_Size, Average_Type_);
+	Stats.Array_Statistic_Clear();
 
 	// ************************************************************
 	// Control For Sensor Range
@@ -274,6 +275,7 @@ float Environment::SHT21_Humidity(const uint8_t Read_Count_, const uint8_t Avera
 	// Calculate Data
 	uint16_t _Data_Size = sizeof(Measurement_Array) / sizeof(Measurement_Array[0]);
 	Value_ = Stats.Array_Average(Measurement_Array, _Data_Size, Average_Type_);
+	Stats.Array_Statistic_Clear();
 
 	// ************************************************************
 	// Control For Sensor Range
@@ -503,6 +505,7 @@ float Environment::HDC2010_Temperature(const uint8_t Read_Count_, const uint8_t 
 	// Calculate Data
 	uint16_t _Data_Size = sizeof(Measurement_Array) / sizeof(Measurement_Array[0]);
 	Value_ = Stats.Array_Average(Measurement_Array, _Data_Size, Average_Type_);
+	Stats.Array_Statistic_Clear();
 
 	// ************************************************************
 	// Control For Sensor Range
@@ -731,6 +734,7 @@ float Environment::HDC2010_Humidity(const uint8_t Read_Count_, const uint8_t Ave
 	// Calculate Data
 	uint16_t _Data_Size = sizeof(Measurement_Array) / sizeof(Measurement_Array[0]);
 	Value_ = Stats.Array_Average(Measurement_Array, _Data_Size, Average_Type_);
+	Stats.Array_Statistic_Clear();
 
 	// ************************************************************
 	// Control For Sensor Range
@@ -1412,6 +1416,7 @@ float Environment::MCP3422_Pressure(const uint8_t _Channel, const uint8_t _Read_
 	// Calculate Data
 	float _Value = (Stats.Array_Average(Pressure_RAW_Array, _Read_Count, _Average_Type) * _Sensor_Max);
 	_Value = (_Value * 1.5304) - 1.3437;
+	Stats.Array_Statistic_Clear();
 
 	// End Function
 	return(_Value);
