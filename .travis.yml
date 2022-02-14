@@ -24,6 +24,7 @@ before_install:
 
 install:
    - arduino --install-library "Statistical"
+   - arduino --install-library "I2C_Functions"
 
 script:
    - build_main_platforms
