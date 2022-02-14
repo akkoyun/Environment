@@ -18,17 +18,15 @@
 #include <Arduino.h>
 #endif
 
-// Define Wire Library
-#ifndef __Wire__
-#include <Wire.h>
-#endif
-
 // Define I2C Functions Library
 #ifndef __I2C_Functions__
 #include <I2C_Functions.h>
 #endif
 
+// Define Statistical Library
+#ifndef __Statistical__
 #include <Statistical.h>
+#endif
 
 class Environment {
 
