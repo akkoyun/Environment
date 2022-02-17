@@ -112,15 +112,7 @@ float Environment::SHT21_Temperature(const uint8_t Read_Count_, const uint8_t Av
 		// Send Read Command to SHT21
 		I2C.Read_Multiple_Register(0b01000000, 0b11100011, SHT21_Data, 3, false);
 
-		// Write Array
-//		Serial.print(SHT21_Data[3], HEX);
-//		Serial.print(" - ");
-//		Serial.print(SHT21_Data[2], HEX);
-//		Serial.print(" - ");
-//		Serial.print(SHT21_Data[1], HEX);
-//		Serial.print(" - ");
-//		Serial.print(SHT21_Data[0], HEX);
-//		Serial.println("");
+
 
 		// Combine Read Bytes
 		uint16_t Measurement_Raw = ((uint16_t)SHT21_Data[0] << 8) | (uint16_t)SHT21_Data[1];
@@ -1415,6 +1407,38 @@ float Environment::MCP3422_Pressure(const uint8_t _Channel, const uint8_t _Read_
 
 	// End Function
 	return(_Value);
+
+}
+float Environment::Read_Analog_Pressure(uint8_t _Channel, uint8_t _Read_Count) {
+
+	// Calibration Parameters
+	float _Slope = 1.5777;
+	float _Offset = 1.1925;
+
+	// Define Measurement Read Array
+	float Pressure_Array[_Read_Count];
+
+	// Read Loop For Read Count
+	for (uint8_t Read_ID = 0; Read_ID < _Read_Count; Read_ID++) {
+
+		// Define Variable
+		uint16_t _Raw_Pressure = 0;
+
+		// Read Analog Data
+		if (_Channel == 1) _Raw_Pressure = analogRead(A1);
+		if (_Channel == 2) _Raw_Pressure = analogRead(A2);
+
+		// Calculate Raw Pressure
+		float _Pressure = ((float)10 * (float)_Raw_Pressure) / (float)1024;
+		Pressure_Array[Read_ID] = (_Slope * _Pressure) - _Offset;
+
+	}
+
+	// Calculate Average
+	float Pressure = Stats.Array_Ext_RMS_Average(Pressure_Array, _Read_Count);
+
+	// End Function
+	return(Pressure);
 
 }
 
