@@ -53,6 +53,9 @@ class Environment {
 		// MCP3422
 		float MCP3422_Pressure(const uint8_t _Channel, const uint8_t _Read_Count, const uint8_t _Average_Type);
 
+		// Analog Read
+		float Read_Analog_Pressure(uint8_t _Channel, uint8_t _Read_Count);
+
 	private:
 
 		// ************************************************************
