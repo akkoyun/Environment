@@ -5,9 +5,6 @@
  *
  *	Library				: Environment Library.
  *	Code Developer		: Mehmet Gunce Akkoyun (akkoyun@me.com)
- *	Revision			: 3.1.0
- *	Relase				: 12.10.2020
- *
  *********************************************************************************/
 
 #ifndef __Environment__
