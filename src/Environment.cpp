@@ -9,55 +9,38 @@
 
 #include "Environment.h"
 
-// Sensor Functions
+// SHT21 Functions
 float Environment::SHT21_Temperature(const uint8_t Read_Count_, const uint8_t Average_Type_) {
 	
-	// Set Sensor Definations
-	struct Sensor_Settings {
-		
-		uint8_t 	Resolution;
-		bool		EoB;
-		bool		OCH;
-		bool		OTP;
-		int			Range_Min;
-		int			Range_Max;
-		
-	};
-	Sensor_Settings SHT21 {
-		
-		14,			// Measurement Resolution
-		true,		// Sensor End of Battery Setting
-		false,		// On Chip Heater Setting
-		true,		// OTP Read
-		-40,		// Sensor Range Minimum
-		100			// Sensor Range Maximum
+	// ************************************************************
+	// Set Sensor Configuration
+	// ************************************************************
 
-	};
-	
-	// Declare Output Variable
-	float Value_;
-	
-	// ************************************************************
-	// Set Sensor Configuration Byte
-	// ************************************************************
-	
+	// Set Sensor Definations
+	uint8_t		_Resolution 	= 14;		// Measurement Resolution (11,12,13,14)
+	bool		_EoB 			= true;		// Sensor End of Battery Setting
+	bool		_OCH 			= false;	// On Chip Heater Setting
+	bool		_OTP 			= true;		// OTP Read
+	float		_Range_Min 		= -40;		// Sensor Range Minimum
+	float		_Range_Max 		= 100;		// Sensor Range Maximum
+
 	// User Register Bit Definations
 	bool User_Reg_Bits_[8] = {false, false, false, false, false, false, false, false};
 	
 	// Set Resolution Bits
-	if (SHT21.Resolution == 14)	{ User_Reg_Bits_[7] = false	; User_Reg_Bits_[0] = false	;} // T: 14 bit
-	if (SHT21.Resolution == 12)	{ User_Reg_Bits_[7] = false	; User_Reg_Bits_[0] = true	;} // T: 12 bit
-	if (SHT21.Resolution == 13)	{ User_Reg_Bits_[7] = true	; User_Reg_Bits_[0] = false	;} // T: 13 bit
-	if (SHT21.Resolution == 11)	{ User_Reg_Bits_[7] = true	; User_Reg_Bits_[0] = true	;} // T: 11 bit
+	if (_Resolution == 14)	{ User_Reg_Bits_[7] = false	; User_Reg_Bits_[0] = false	;} // T: 14 bit
+	if (_Resolution == 12)	{ User_Reg_Bits_[7] = false	; User_Reg_Bits_[0] = true	;} // T: 12 bit
+	if (_Resolution == 13)	{ User_Reg_Bits_[7] = true	; User_Reg_Bits_[0] = false	;} // T: 13 bit
+	if (_Resolution == 11)	{ User_Reg_Bits_[7] = true	; User_Reg_Bits_[0] = true	;} // T: 11 bit
 	
 	// Set End of Battery Bits
-	if (SHT21.EoB == true) {User_Reg_Bits_[6] = true;} else {User_Reg_Bits_[6] = false;}
+	if (_EoB) {User_Reg_Bits_[6] = true;} else {User_Reg_Bits_[6] = false;}
 	
 	// On Chip Heater Bits
-	if (SHT21.OCH == true) {User_Reg_Bits_[2] = true;} else {User_Reg_Bits_[2] = false;}
+	if (_OCH) {User_Reg_Bits_[2] = true;} else {User_Reg_Bits_[2] = false;}
 	
 	// OTP Reload Bits
-	if (SHT21.OTP == true) {User_Reg_Bits_[1] = true;} else {User_Reg_Bits_[1] = false;}
+	if (_OTP) {User_Reg_Bits_[1] = true;} else {User_Reg_Bits_[1] = false;}
 	
 	// User Register Defination
 	uint8_t User_Reg_ = 0x00;
@@ -72,26 +55,14 @@ float Environment::SHT21_Temperature(const uint8_t Read_Count_, const uint8_t Av
 	if (User_Reg_Bits_[6] == true) {User_Reg_ |= 0b01000000;} else {User_Reg_ &= 0b10111111;}	// User Register Bit 6
 	if (User_Reg_Bits_[7] == true) {User_Reg_ |= 0b10000000;} else {User_Reg_ &= 0b01111111;}	// User Register Bit 7
 	
-	// ************************************************************
-	// Reset Sensor
-	// ************************************************************
-	
 	// Send Soft Reset Command to SHT21
-	I2C.Write_Command(0b01000000, 0b11111110, false);
-	
-	// ************************************************************
-	// Read Current Sensor Settings
-	// ************************************************************
-	
+	I2C.Write_Command(__ADDR_SHT21__, __SHT21_SOFT_RESET_, false);
+
 	// Read User Register of SHT21
-	uint8_t SHT21_Config_Read = I2C.Read_Register(0b01000000, 0b11100110);
-	
-	// ************************************************************
-	// Write New Settings if Different
-	// ************************************************************
-	
+	uint8_t SHT21_Config_Read = I2C.Read_Register(__ADDR_SHT21__, __SHT21_USER_REGISTER_);
+
 	// Control for Config Read Register
-	if (SHT21_Config_Read != User_Reg_) if (!I2C.Write_Register(0b01000000, 0b11100110, User_Reg_, false)) return(-102);
+	if (SHT21_Config_Read != User_Reg_) if (!I2C.Write_Register(__ADDR_SHT21__, __SHT21_USER_REGISTER_, User_Reg_, false)) return(-102);
 	
 	// ************************************************************
 	// Read Sensor Data
@@ -107,18 +78,16 @@ float Environment::SHT21_Temperature(const uint8_t Read_Count_, const uint8_t Av
 		uint8_t SHT21_Data[4];
 
 		// Send Read Command to SHT21
-		I2C.Read_Multiple_Register(0b01000000, 0b11100011, SHT21_Data, 3, false);
-
-
+		I2C.Read_Multiple_Register(__ADDR_SHT21__, __SHT21_T_MEASUREMENT_, SHT21_Data, 3, false);
 
 		// Combine Read Bytes
 		uint16_t Measurement_Raw = ((uint16_t)SHT21_Data[0] << 8) | (uint16_t)SHT21_Data[1];
 		
 		// Clear 2 Low Status Bit
-		if (SHT21.Resolution == 11) Measurement_Raw &= ~0x0006;
-		if (SHT21.Resolution == 12) Measurement_Raw &= ~0x0005;
-		if (SHT21.Resolution == 13) Measurement_Raw &= ~0x0004; 
-		if (SHT21.Resolution == 14) Measurement_Raw &= ~0x0003;
+		if (_Resolution == 11) Measurement_Raw &= ~0x0006;
+		if (_Resolution == 12) Measurement_Raw &= ~0x0005;
+		if (_Resolution == 13) Measurement_Raw &= ~0x0004; 
+		if (_Resolution == 14) Measurement_Raw &= ~0x0003;
 		
 		// Calculate Measurement
 		Measurement_Array[Read_ID] = -46.85 + 175.72 * (float)Measurement_Raw / pow(2,16);
@@ -130,17 +99,12 @@ float Environment::SHT21_Temperature(const uint8_t Read_Count_, const uint8_t Av
 	
 	// Calculate Data
 	uint16_t _Data_Size = sizeof(Measurement_Array) / sizeof(Measurement_Array[0]);
-	Value_ = Stats.Array_Average(Measurement_Array, _Data_Size, Average_Type_);
+	float Value_ = Stats.Array_Average(Measurement_Array, _Data_Size, Average_Type_);
 
-	// ************************************************************
 	// Control For Sensor Range
-	// ************************************************************
-	if (Value_ < SHT21.Range_Min or Value_ > SHT21.Range_Max) return(-106);
+	if (Value_ < _Range_Min or Value_ > _Range_Max) return(-106);
 
-	// ************************************************************
 	// Calibrate Data
-	// ************************************************************
-
 	Value_ = (SHT21_T_Calibrarion_a * Value_) + SHT21_T_Calibrarion_b;
 
 	// End Function
@@ -149,58 +113,35 @@ float Environment::SHT21_Temperature(const uint8_t Read_Count_, const uint8_t Av
 }
 float Environment::SHT21_Humidity(const uint8_t Read_Count_, const uint8_t Average_Type_) {
 	
-	/******************************************************************************
-	 *	Project		: SHT21 Humidity Read Function
-	 *	Developer	: Mehmet Gunce Akkoyun (akkoyun@me.com)
-	 *	Revision	: 04.00.00
-	 *	Release		: 04.11.2020
-	 ******************************************************************************/
-	
+	// ************************************************************
+	// Set Sensor Configuration
+	// ************************************************************
+
 	// Set Sensor Definations
-	struct Sensor_Settings {
-		int 	Resolution;
-		bool	EoB;
-		bool	OCH;
-		bool	OTP;
-		int		Range_Min;
-		int		Range_Max;
-		
-	};
-	Sensor_Settings SHT21[] {
-		
-		12,			// Measurement Resolution
-		false,		// Sensor End of Battery Setting
-		false,		// On Chip Heater Setting
-		false,		// OTP Read
-		0,			// Sensor Range Minimum
-		100			// Sensor Range Maximum
+	uint8_t		_Resolution 	= 12;		// Measurement Resolution (11,12,13,14)
+	bool		_EoB 			= false;	// Sensor End of Battery Setting
+	bool		_OCH 			= false;	// On Chip Heater Setting
+	bool		_OTP 			= false;	// OTP Read
+	float		_Range_Min 		= 0;		// Sensor Range Minimum
+	float		_Range_Max 		= 100;		// Sensor Range Maximum
 
-	};
-
-	// Declare Output Variable
-	float Value_;
-
-	// ************************************************************
-	// Set Sensor Configuration Byte
-	// ************************************************************
-	
 	// User Register Bit Definations
 	bool User_Reg_Bits_[8] = {false, false, false, false, false, false, false, false};
 	
 	// Set Resolution Bits
-	if (SHT21[0].Resolution == 12)	{ User_Reg_Bits_[7] = false	; User_Reg_Bits_[0] = false	;} // T: 12 bit
-	if (SHT21[0].Resolution == 11)	{ User_Reg_Bits_[7] = true	; User_Reg_Bits_[0] = true	;} // T: 11 bit
-	if (SHT21[0].Resolution == 10)	{ User_Reg_Bits_[7] = true	; User_Reg_Bits_[0] = false	;} // T: 10 bit
-	if (SHT21[0].Resolution == 8)	{ User_Reg_Bits_[7] = false	; User_Reg_Bits_[0] = true	;} // T: 08 bit
+	if (_Resolution == 14)	{ User_Reg_Bits_[7] = false	; User_Reg_Bits_[0] = false	;} // T: 14 bit
+	if (_Resolution == 12)	{ User_Reg_Bits_[7] = false	; User_Reg_Bits_[0] = true	;} // T: 12 bit
+	if (_Resolution == 13)	{ User_Reg_Bits_[7] = true	; User_Reg_Bits_[0] = false	;} // T: 13 bit
+	if (_Resolution == 11)	{ User_Reg_Bits_[7] = true	; User_Reg_Bits_[0] = true	;} // T: 11 bit
 	
 	// Set End of Battery Bits
-	if (SHT21[0].EoB == true) {User_Reg_Bits_[6] = true;} else {User_Reg_Bits_[6] = false;}
+	if (_EoB) {User_Reg_Bits_[6] = true;} else {User_Reg_Bits_[6] = false;}
 	
 	// On Chip Heater Bits
-	if (SHT21[0].OCH == true) {User_Reg_Bits_[2] = true;} else {User_Reg_Bits_[2] = false;}
+	if (_OCH) {User_Reg_Bits_[2] = true;} else {User_Reg_Bits_[2] = false;}
 	
 	// OTP Reload Bits
-	if (SHT21[0].OTP == true) {User_Reg_Bits_[1] = true;} else {User_Reg_Bits_[1] = false;}
+	if (_OTP) {User_Reg_Bits_[1] = true;} else {User_Reg_Bits_[1] = false;}
 	
 	// User Register Defination
 	uint8_t User_Reg_ = 0x00;
@@ -215,27 +156,15 @@ float Environment::SHT21_Humidity(const uint8_t Read_Count_, const uint8_t Avera
 	if (User_Reg_Bits_[6] == true) {User_Reg_ |= 0b01000000;} else {User_Reg_ &= 0b10111111;}	// User Register Bit 6
 	if (User_Reg_Bits_[7] == true) {User_Reg_ |= 0b10000000;} else {User_Reg_ &= 0b01111111;}	// User Register Bit 7
 	
-	// ************************************************************
-	// Reset Sensor
-	// ************************************************************
-	
 	// Send Soft Reset Command to SHT21
-	I2C.Write_Command(0b01000000, 0b11111110, false);
-	
-	// ************************************************************
-	// Read Current Sensor Settings
-	// ************************************************************
-	
+	I2C.Write_Command(__ADDR_SHT21__, __SHT21_SOFT_RESET_, false);
+
 	// Read User Register of SHT21
-	uint8_t SHT21_Config_Read = I2C.Read_Register(0b01000000, 0b11100110);
+	uint8_t SHT21_Config_Read = I2C.Read_Register(__ADDR_SHT21__, __SHT21_USER_REGISTER_);
 
-	// ************************************************************
-	// Write New Settings if Different
-	// ************************************************************
-	
 	// Control for Config Read Register
-	if (SHT21_Config_Read != User_Reg_) if (!I2C.Write_Register(0b01000000, 0b11100110, User_Reg_, false)) return(-102);
-
+	if (SHT21_Config_Read != User_Reg_) if (!I2C.Write_Register(__ADDR_SHT21__, __SHT21_USER_REGISTER_, User_Reg_, false)) return(-102);
+	
 	// ************************************************************
 	// Read Sensor Data
 	// ************************************************************
@@ -245,41 +174,46 @@ float Environment::SHT21_Humidity(const uint8_t Read_Count_, const uint8_t Avera
 
 	// Read Loop For Read Count
 	for (uint8_t Read_ID = 0; Read_ID < Read_Count_; Read_ID++) {
-	
+
 		// Define Data Variable
-		uint8_t SHT21_Data[3];
+		uint8_t SHT21_Data[4];
 
 		// Send Read Command to SHT21
-		I2C.Read_Multiple_Register(0b01000000, 0b11100011, SHT21_Data, 3, false);
+		I2C.Read_Multiple_Register(__ADDR_SHT21__, __SHT21_H_MEASUREMENT_, SHT21_Data, 3, false);
 
 		// Combine Read Bytes
 		uint16_t Measurement_Raw = ((uint16_t)SHT21_Data[0] << 8) | (uint16_t)SHT21_Data[1];
-				
+		
+		// Clear 2 Low Status Bit
+		if (_Resolution == 11) Measurement_Raw &= ~0x0006;
+		if (_Resolution == 12) Measurement_Raw &= ~0x0005;
+		if (_Resolution == 13) Measurement_Raw &= ~0x0004; 
+		if (_Resolution == 14) Measurement_Raw &= ~0x0003;
+
 		// Calculate Measurement
 		Measurement_Array[Read_ID] = -6 + 125 * (float)Measurement_Raw / pow(2,16);
+
+		// Clear Buffer Array
+		memset(SHT21_Data, '\0', 4);
 			
 	}
 	
 	// Calculate Data
 	uint16_t _Data_Size = sizeof(Measurement_Array) / sizeof(Measurement_Array[0]);
-	Value_ = Stats.Array_Average(Measurement_Array, _Data_Size, Average_Type_);
+	float Value_ = Stats.Array_Average(Measurement_Array, _Data_Size, Average_Type_);
 
-	// ************************************************************
 	// Control For Sensor Range
-	// ************************************************************
-	
-	if (Value_ < SHT21[0].Range_Min or Value_ > SHT21[0].Range_Max) return(-106);
+	if (Value_ < _Range_Min or Value_ > _Range_Max) return(-106);
 
-	// ************************************************************
 	// Calibrate Data
-	// ************************************************************
+	Value_ = (SHT21_T_Calibrarion_a * Value_) + SHT21_T_Calibrarion_b;
 
-	Value_ = (SHT21_H_Calibrarion_a * Value_) + SHT21_H_Calibrarion_b;
-	
 	// End Function
 	return(Value_);
 
 }
+
+// HDC2010 Functions
 float Environment::HDC2010_Temperature(const uint8_t Read_Count_, const uint8_t Average_Type_) {
 
 	// Set Sensor Definations
@@ -736,6 +670,8 @@ float Environment::HDC2010_Humidity(const uint8_t Read_Count_, const uint8_t Ave
 	return(Value_);
 		
 }
+
+// MPL3115A2 Functions
 float Environment::MPL3115A2_Pressure(void) {
 
 	/******************************************************************************
@@ -913,6 +849,8 @@ float Environment::MPL3115A2_Pressure(void) {
 	return(Value_);
 
 }
+
+// TSL2561 Functions
 float Environment::TSL2561_Light(void) {
 	
 	/******************************************************************************
@@ -1253,6 +1191,8 @@ float Environment::TSL2561_Light(void) {
 	return(Value_);
 	
 }
+
+// MCP3422 Functions
 float Environment::MCP3422_Pressure(const uint8_t _Channel, const uint8_t _Read_Count, const uint8_t _Average_Type) {
 	
 	/******************************************************************************
@@ -1406,6 +1346,8 @@ float Environment::MCP3422_Pressure(const uint8_t _Channel, const uint8_t _Read_
 	return(_Value);
 
 }
+
+// Analog Sensor Read Functions
 float Environment::Read_Analog_Pressure(uint8_t _Channel, uint8_t _Read_Count) {
 
 	// Calibration Parameters
