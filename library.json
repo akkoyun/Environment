@@ -1,6 +1,6 @@
 {
 	"name": "Environment",
-	"version": "3.2.16",
+	"version": "3.2.17",
 	"keywords": "Sensor, Environment, SHT21, HDC2010, TSL2561, MPL3115, Temperature, Humidity, Pressure, Light",
 	"description": "Function measures the value of given sensors. Library is used data mining for stable sensor data. Also cleared for lite use.",
 	"authors": {
@@ -19,6 +19,17 @@
 		"type": "git",
 		"url": "https://github.com/akkoyun/Environment.git"
 	},
+	"dependencies":
+	[
+		{
+			"owner": "akkoyun",
+			"name": "I2C_Functions"
+		},
+		{
+			"owner": "akkoyun",
+			"name": "Statistical"
+		}
+	],
 	"examples": [
 		{
 			"name": "HDC2010 Temperature Read",
