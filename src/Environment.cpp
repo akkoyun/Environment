@@ -56,13 +56,13 @@ float Environment::SHT21_Temperature(const uint8_t Read_Count_, const uint8_t Av
 	if (User_Reg_Bits_[7] == true) {User_Reg_ |= 0b10000000;} else {User_Reg_ &= 0b01111111;}	// User Register Bit 7
 	
 	// Send Soft Reset Command to SHT21
-	I2C.Write_Command(__ADDR_SHT21__, __SHT21_SOFT_RESET_, false);
+	I2C.Write_Command(I2C.SHT21.I2C_Address, __SHT21_SOFT_RESET_, false);
 
 	// Read User Register of SHT21
-	uint8_t SHT21_Config_Read = I2C.Read_Register(__ADDR_SHT21__, __SHT21_USER_REGISTER_);
+	uint8_t SHT21_Config_Read = I2C.Read_Register(I2C.SHT21.I2C_Address, __SHT21_USER_REGISTER_);
 
 	// Control for Config Read Register
-	if (SHT21_Config_Read != User_Reg_) if (!I2C.Write_Register(__ADDR_SHT21__, __SHT21_USER_REGISTER_, User_Reg_, false)) return(-102);
+	if (SHT21_Config_Read != User_Reg_) if (!I2C.Write_Register(I2C.SHT21.I2C_Address, __SHT21_USER_REGISTER_, User_Reg_, false)) return(-102);
 	
 	// ************************************************************
 	// Read Sensor Data
@@ -78,7 +78,7 @@ float Environment::SHT21_Temperature(const uint8_t Read_Count_, const uint8_t Av
 		uint8_t SHT21_Data[4];
 
 		// Send Read Command to SHT21
-		I2C.Read_Multiple_Register(__ADDR_SHT21__, __SHT21_T_MEASUREMENT_, SHT21_Data, 3, false);
+		I2C.Read_Multiple_Register(I2C.SHT21.I2C_Address, __SHT21_T_MEASUREMENT_, SHT21_Data, 3, false);
 
 		// Combine Read Bytes
 		uint16_t Measurement_Raw = ((uint16_t)SHT21_Data[0] << 8) | (uint16_t)SHT21_Data[1];
@@ -157,13 +157,13 @@ float Environment::SHT21_Humidity(const uint8_t Read_Count_, const uint8_t Avera
 	if (User_Reg_Bits_[7] == true) {User_Reg_ |= 0b10000000;} else {User_Reg_ &= 0b01111111;}	// User Register Bit 7
 	
 	// Send Soft Reset Command to SHT21
-	I2C.Write_Command(__ADDR_SHT21__, __SHT21_SOFT_RESET_, false);
+	I2C.Write_Command(I2C.SHT21.I2C_Address, __SHT21_SOFT_RESET_, false);
 
 	// Read User Register of SHT21
-	uint8_t SHT21_Config_Read = I2C.Read_Register(__ADDR_SHT21__, __SHT21_USER_REGISTER_);
+	uint8_t SHT21_Config_Read = I2C.Read_Register(I2C.SHT21.I2C_Address, __SHT21_USER_REGISTER_);
 
 	// Control for Config Read Register
-	if (SHT21_Config_Read != User_Reg_) if (!I2C.Write_Register(__ADDR_SHT21__, __SHT21_USER_REGISTER_, User_Reg_, false)) return(-102);
+	if (SHT21_Config_Read != User_Reg_) if (!I2C.Write_Register(I2C.SHT21.I2C_Address, __SHT21_USER_REGISTER_, User_Reg_, false)) return(-102);
 	
 	// ************************************************************
 	// Read Sensor Data
@@ -179,7 +179,7 @@ float Environment::SHT21_Humidity(const uint8_t Read_Count_, const uint8_t Avera
 		uint8_t SHT21_Data[4];
 
 		// Send Read Command to SHT21
-		I2C.Read_Multiple_Register(__ADDR_SHT21__, __SHT21_H_MEASUREMENT_, SHT21_Data, 3, false);
+		I2C.Read_Multiple_Register(I2C.SHT21.I2C_Address, __SHT21_H_MEASUREMENT_, SHT21_Data, 3, false);
 
 		// Combine Read Bytes
 		uint16_t Measurement_Raw = ((uint16_t)SHT21_Data[0] << 8) | (uint16_t)SHT21_Data[1];
@@ -262,7 +262,7 @@ float Environment::HDC2010_Temperature(const uint8_t Read_Count_, const uint8_t 
 		HDC2010_Reset_Read = (HDC2010_Reset_Read | 0b10000000);
 		
 		// Write Reset Command
-		I2C.Write_Register(0x040, 0x0E, HDC2010_Reset_Read, false);
+		I2C.Write_Register(I2C.HDC2010.I2C_Address, 0x0E, HDC2010_Reset_Read, false);
 		
 	}
 	
@@ -271,10 +271,10 @@ float Environment::HDC2010_Temperature(const uint8_t Read_Count_, const uint8_t 
 	// ************************************************************
 
 	// Read Register
-	uint8_t HDC2010_Config_Read = I2C.Read_Register(0x040, 0x0E);
+	uint8_t HDC2010_Config_Read = I2C.Read_Register(I2C.HDC2010.I2C_Address, 0x0E);
 
 	// Read Register
-	uint8_t HDC2010_MeasurementConfig_Read = I2C.Read_Register(0x40, 0x0F);
+	uint8_t HDC2010_MeasurementConfig_Read = I2C.Read_Register(I2C.HDC2010.I2C_Address, 0x0F);
 
 	// ************************************************************
 	// Set Sensor Configurations
@@ -392,10 +392,10 @@ float Environment::HDC2010_Temperature(const uint8_t Read_Count_, const uint8_t 
 		// ************************************************************
 
 		// Write Register
-		I2C.Write_Register(0x40, 0x0E, HDC2010_Config_Read, false);
+		I2C.Write_Register(I2C.HDC2010.I2C_Address, 0x0E, HDC2010_Config_Read, false);
 
 		// Write Register
-		I2C.Write_Register(0x40, 0x0F, HDC2010_MeasurementConfig_Read, false);
+		I2C.Write_Register(I2C.HDC2010.I2C_Address, 0x0F, HDC2010_MeasurementConfig_Read, false);
 
 		// Define Variables
 		uint8_t HDC2010_Data[2];
@@ -408,8 +408,8 @@ float Environment::HDC2010_Temperature(const uint8_t Read_Count_, const uint8_t 
 		// ************************************************************
 
 		// Read Register
-		HDC2010_Data[0] = I2C.Read_Register(0x40, 0x00);
-		HDC2010_Data[1] = I2C.Read_Register(0x40, 0x01);
+		HDC2010_Data[0] = I2C.Read_Register(I2C.HDC2010.I2C_Address, 0x00);
+		HDC2010_Data[1] = I2C.Read_Register(I2C.HDC2010.I2C_Address, 0x01);
 
 		// ************************************************************
 		// Combine Data
@@ -480,7 +480,7 @@ float Environment::HDC2010_Humidity(const uint8_t Read_Count_, const uint8_t Ave
 		// ************************************************************
 		
 		// Read User Register of HDC2010
-		uint8_t HDC2010_Reset_Read = I2C.Read_Register(0x40, 0x0E);
+		uint8_t HDC2010_Reset_Read = I2C.Read_Register(I2C.HDC2010.I2C_Address, 0x0E);
 
 		// ************************************************************
 		// Reset Sensor
@@ -490,7 +490,7 @@ float Environment::HDC2010_Humidity(const uint8_t Read_Count_, const uint8_t Ave
 		HDC2010_Reset_Read = (HDC2010_Reset_Read | 0b10000000);
 		
 		// Write Reset Command
-		I2C.Write_Register(0x040, 0x0E, HDC2010_Reset_Read, false);
+		I2C.Write_Register(I2C.HDC2010.I2C_Address, 0x0E, HDC2010_Reset_Read, false);
 		
 	}
 	
@@ -499,10 +499,10 @@ float Environment::HDC2010_Humidity(const uint8_t Read_Count_, const uint8_t Ave
 	// ************************************************************
 	
 	// Read Register
-	uint8_t HDC2010_Config_Read = I2C.Read_Register(0x040, 0x0E);
+	uint8_t HDC2010_Config_Read = I2C.Read_Register(I2C.HDC2010.I2C_Address, 0x0E);
 
 	// Read Register
-	uint8_t HDC2010_MeasurementConfig_Read = I2C.Read_Register(0x40, 0x0F);
+	uint8_t HDC2010_MeasurementConfig_Read = I2C.Read_Register(I2C.HDC2010.I2C_Address, 0x0F);
 
 	// ************************************************************
 	// Set Sensor Configurations
@@ -620,10 +620,10 @@ float Environment::HDC2010_Humidity(const uint8_t Read_Count_, const uint8_t Ave
 		// ************************************************************
 
 		// Write Register
-		I2C.Write_Register(0x40, 0x0E, HDC2010_Config_Read, false);
+		I2C.Write_Register(I2C.HDC2010.I2C_Address, 0x0E, HDC2010_Config_Read, false);
 
 		// Write Register
-		I2C.Write_Register(0x40, 0x0F, HDC2010_MeasurementConfig_Read, false);
+		I2C.Write_Register(I2C.HDC2010.I2C_Address, 0x0F, HDC2010_MeasurementConfig_Read, false);
 
 		// Define Variables
 		uint8_t HDC2010_Data[2];
@@ -636,8 +636,8 @@ float Environment::HDC2010_Humidity(const uint8_t Read_Count_, const uint8_t Ave
 		// ************************************************************
 
 		// Read Register
-		HDC2010_Data[0] = I2C.Read_Register(0x40, 0x02);
-		HDC2010_Data[1] = I2C.Read_Register(0x40, 0x03);
+		HDC2010_Data[0] = I2C.Read_Register(I2C.HDC2010.I2C_Address, 0x02);
+		HDC2010_Data[1] = I2C.Read_Register(I2C.HDC2010.I2C_Address, 0x03);
 
 		// ************************************************************
 		// Combine Data
