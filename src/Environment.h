@@ -25,66 +25,146 @@
 #include <Statistical.h>
 #endif
 
-class Environment {
-
-	public:
-		
-		// ************************************************************
-		// Public Functions
-		// ************************************************************
-
-		// SHT21
-		float SHT21_Temperature(const uint8_t Read_Count_, const uint8_t Average_Type_);
-		float SHT21_Humidity(const uint8_t Read_Count_, const uint8_t Average_Type_);
-
-		// HDC2010
-		float HDC2010_Temperature(const uint8_t Read_Count_, const uint8_t Average_Type_);
-		float HDC2010_Humidity(const uint8_t Read_Count_, const uint8_t Average_Type_);
-
-		// MPL3115A2
-		float MPL3115A2_Pressure(void);
-
-		// TSL2561
-		float TSL2561_Light(void);
-		
-		// MCP3422
-		float MCP3422_Pressure(const uint8_t _Channel, const uint8_t _Read_Count, const uint8_t _Average_Type);
-
-		// Analog Read
-		float Read_Analog_Pressure(uint8_t _Channel, uint8_t _Read_Count);
+// HDC2010 Class
+class HDC2010 {
 
 	private:
 
-		// ************************************************************
-		// Calibration Constants
-		// ************************************************************
+		// Read Count
+		uint8_t _Read_Count = 10;
 
-		// SHT21 Temperature
-		const float SHT21_T_Calibrarion_a = 1.0129; // MGM
-		const float SHT21_T_Calibrarion_b = 0.6075; // MGM
+		// Calibration Parameters
+		bool _Calibration = false;
 
-		// SHT21 Humidity
-		const float SHT21_H_Calibrarion_a = 0.9518; // MGM
-		const float SHT21_H_Calibrarion_b = 3.5316; // MGM
+	public:
 
-		// MPL3115A2 Pressure
-		const float MPL3115A2_P_Calibrarion_a = 1;
-		const float MPL3115A2_P_Calibrarion_b = 0;
+		// Constractor
+		HDC2010(uint8_t _Measurement_Count, bool _Calibration_Enable);
 
-		// HDC2010 Temperature
-		const float HDC2010_T_Calibrarion_a = 1.0053;
-		const float HDC2010_T_Calibrarion_b = -0.4102;
-		
-		// HDC2010 Humidity
-		const float HDC2010_H_Calibrarion_a = 0.9821;
-		const float HDC2010_H_Calibrarion_b = -0.3217;
+		// Temperature
+		float Temperature(void);
 
-		// MCP3422 Humidity
-		const float MCP3422_P_Calibrarion_a = 1; //1.5304
-		const float MCP3422_P_Calibrarion_b = 0; // -1,3437
+		// Humidity
+		float Humidity(void);
 
 };
 
-extern Environment Sensor;
+// SHT21 Class
+class SHT21 {
+
+	private:
+
+		// Read Count
+		uint8_t _Read_Count = 10;
+
+		// Calibration Parameters
+		bool _Calibration = true;
+
+	public:
+
+		// Constractor
+		SHT21(uint8_t _Measurement_Count, bool _Calibration_Enable);
+
+		// Temperature
+		float Temperature(void);
+
+		// Humidity
+		float Humidity(void);
+
+};
+
+// MPL3115A2 Class
+class MPL3115A2 {
+
+	private:
+
+		// Read Count
+		uint8_t _Read_Count = 10;
+
+		// Calibration Parameters
+		bool _Calibration = true;
+
+	public:
+
+		// Constractor
+		MPL3115A2(uint8_t _Measurement_Count, bool _Calibration_Enable);
+
+		// Pressure
+		float Pressure(void);
+
+};
+
+// TSL2561 Class
+class TSL2561 {
+
+	private:
+
+		// Read Count
+		uint8_t _Read_Count = 10;
+
+		// Calibration Parameters
+		bool _Calibration = true;
+
+	public:
+
+		// Constractor
+		TSL2561(uint8_t _Measurement_Count, bool _Calibration_Enable);
+
+		// Light
+		float Light(void);
+
+};
+
+// MCP3422 Class
+class MCP3422 {
+
+	private:
+
+		// Read Count
+		uint8_t _Read_Count = 10;
+
+		// Channel
+		uint8_t _Channel = 1;
+
+		// Calibration Parameters
+		bool _Calibration = true;
+
+	public:
+
+		// Constractor
+		MCP3422(uint8_t _Channel, uint8_t _Measurement_Count, bool _Calibration_Enable);
+
+		// Light
+		float Pressure(void);
+
+};
+
+// Analog Read Class
+class Analog {
+
+	private:
+
+		// Read Count
+		const uint8_t _Read_Count = 100;
+
+		// Calibration Parameters
+		const bool _Calibration = false;
+
+		// Calibration Parameters
+		const float _Cal_a = 1.5777;
+		const float _Cal_b = -1.1925;
+
+	public:
+
+		// Statistical Parameeters
+		float Standart_Deviation;
+
+		// Constractor
+		Analog(uint8_t _Channel);
+
+		// Read
+		double Read(void);
+
+};
 
 #endif /* defined(__Environment__) */

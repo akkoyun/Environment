@@ -9,85 +9,209 @@
 
 #include "Environment.h"
 
-// SHT21 Functions
-float Environment::SHT21_Temperature(const uint8_t Read_Count_, const uint8_t Average_Type_) {
-	
-	// ************************************************************
-	// Set Sensor Configuration
-	// ************************************************************
+// HDC2010 Functions
+HDC2010::HDC2010(uint8_t _Measurement_Count, bool _Calibration_Enable) {
 
-	// Set Sensor Definations
-	uint8_t		_Resolution 	= 14;		// Measurement Resolution (11,12,13,14)
-	bool		_EoB 			= true;		// Sensor End of Battery Setting
-	bool		_OCH 			= false;	// On Chip Heater Setting
-	bool		_OTP 			= true;		// OTP Read
-	float		_Range_Min 		= -40;		// Sensor Range Minimum
-	float		_Range_Max 		= 100;		// Sensor Range Maximum
+	// Set Measurement Count
+	this->_Read_Count = _Measurement_Count;
 
-	// User Register Bit Definations
-	bool User_Reg_Bits_[8] = {false, false, false, false, false, false, false, false};
-	
-	// Set Resolution Bits
-	if (_Resolution == 14)	{ User_Reg_Bits_[7] = false	; User_Reg_Bits_[0] = false	;} // T: 14 bit
-	if (_Resolution == 12)	{ User_Reg_Bits_[7] = false	; User_Reg_Bits_[0] = true	;} // T: 12 bit
-	if (_Resolution == 13)	{ User_Reg_Bits_[7] = true	; User_Reg_Bits_[0] = false	;} // T: 13 bit
-	if (_Resolution == 11)	{ User_Reg_Bits_[7] = true	; User_Reg_Bits_[0] = true	;} // T: 11 bit
-	
-	// Set End of Battery Bits
-	if (_EoB) {User_Reg_Bits_[6] = true;} else {User_Reg_Bits_[6] = false;}
-	
-	// On Chip Heater Bits
-	if (_OCH) {User_Reg_Bits_[2] = true;} else {User_Reg_Bits_[2] = false;}
-	
-	// OTP Reload Bits
-	if (_OTP) {User_Reg_Bits_[1] = true;} else {User_Reg_Bits_[1] = false;}
-	
-	// User Register Defination
-	uint8_t User_Reg_ = 0x00;
-	
-	// Set Config Register
-	if (User_Reg_Bits_[0] == true) {User_Reg_ |= 0b00000001;} else {User_Reg_ &= 0b11111110;}	// User Register Bit 0
-	if (User_Reg_Bits_[1] == true) {User_Reg_ |= 0b00000010;} else {User_Reg_ &= 0b11111101;}	// User Register Bit 1
-	if (User_Reg_Bits_[2] == true) {User_Reg_ |= 0b00000100;} else {User_Reg_ &= 0b11111011;}	// User Register Bit 2
-	if (User_Reg_Bits_[3] == true) {User_Reg_ |= 0b00001000;} else {User_Reg_ &= 0b11110111;}	// User Register Bit 3
-	if (User_Reg_Bits_[4] == true) {User_Reg_ |= 0b00010000;} else {User_Reg_ &= 0b11101111;}	// User Register Bit 4
-	if (User_Reg_Bits_[5] == true) {User_Reg_ |= 0b00100000;} else {User_Reg_ &= 0b11011111;}	// User Register Bit 5
-	if (User_Reg_Bits_[6] == true) {User_Reg_ |= 0b01000000;} else {User_Reg_ &= 0b10111111;}	// User Register Bit 6
-	if (User_Reg_Bits_[7] == true) {User_Reg_ |= 0b10000000;} else {User_Reg_ &= 0b01111111;}	// User Register Bit 7
-	
-	// Send Soft Reset Command to SHT21
-	I2C.Write_Command(__I2C__SHT21__Addr__, 0xFE, false);
+	// Enable Calibration
+	this->_Calibration = _Calibration_Enable;
 
-	// Read User Register of SHT21
-	uint8_t SHT21_Config_Read = I2C.Read_Register(__I2C__SHT21__Addr__, 0xE6);
+}
+float HDC2010::Temperature(void) {
 
-	// Control for Config Read Register
-	if (SHT21_Config_Read != User_Reg_) if (!I2C.Write_Register(__I2C__SHT21__Addr__, 0xE6, User_Reg_, false)) return(-102);
-	
-	// ************************************************************
-	// Read Sensor Data
-	// ************************************************************
-		
+	// Reset Sensor
+	I2C.Set_Register_Bit(0x40, 0x0E, 7, false);
+
+	// Read Register
+	uint8_t HDC2010_Config_Read = I2C.Read_Register(0x40, 0x0E);
+
+	// Read Register
+	uint8_t HDC2010_MeasurementConfig_Read = I2C.Read_Register(0x40, 0x0F);
+
+	// Set Measurement Rate
+	HDC2010_Config_Read &= 0x8F;
+
+	// Set Measurement Mode
+	HDC2010_MeasurementConfig_Read &= 0xFC;
+	HDC2010_MeasurementConfig_Read |= 0x02;
+
+	// Set Temperature Resolution (9 bit)
+	HDC2010_MeasurementConfig_Read &= 0xBF;
+	HDC2010_MeasurementConfig_Read |= 0x80;
+
+	// Set Humidity Resolution (9 bit)
+	HDC2010_MeasurementConfig_Read &= 0xEF;
+	HDC2010_MeasurementConfig_Read |= 0x20;
+
+	// Trigger Measurement
+	HDC2010_MeasurementConfig_Read |= 0x01;
+
+	// Write Register
+	I2C.Write_Register(0x40, 0x0E, HDC2010_Config_Read, false);
+
+	// Write Register
+	I2C.Write_Register(0x40, 0x0F, HDC2010_MeasurementConfig_Read, false);
+
 	// Define Measurement Read Array
-	float Measurement_Array[Read_Count_];
+	float Measurement_Array[_Read_Count];
 
 	// Read Loop For Read Count
-	for (uint8_t Read_ID = 0; Read_ID < Read_Count_; Read_ID++) {
+	for (int Read_ID = 0; Read_ID < _Read_Count; Read_ID++) {
+
+		// Define Variables
+		uint8_t HDC2010_Data[2];
+
+		// Read Delay
+		delay(5);
+
+		// Read Register
+		HDC2010_Data[0] = I2C.Read_Register(0x40, 0x00);
+		HDC2010_Data[1] = I2C.Read_Register(0x40, 0x01);
+
+		// Combine Read Bytes
+		uint16_t Measurement_Raw = ((uint16_t)(HDC2010_Data[1]) << 8 | (uint16_t)HDC2010_Data[0]);
+
+		// Calculate Measurement
+		Measurement_Array[Read_ID] = (float)Measurement_Raw * 165 / 65536 - 40;
+
+	}
+
+	// Construct Object
+	Array_Stats<float> Data_Array(Measurement_Array, _Read_Count);
+
+	// Calculate Average
+	float Value_ = Data_Array.Average(Data_Array.Arithmetic_Avg);
+
+	// Calibrate Data
+	if (_Calibration) Value_ = (1.0053 * Value_) -0.4102;
+
+	// Control For Sensor Range
+	if (Value_ < -40 or Value_ > 125) Value_ = -101;
+
+	// End Function
+	return(Value_);
+
+}
+float HDC2010::Humidity(void) {
+
+	// Reset Sensor
+	I2C.Set_Register_Bit(0x40, 0x0E, 7, false);
+
+	// Read Register
+	uint8_t HDC2010_Config_Read = I2C.Read_Register(0x40, 0x0E);
+
+	// Read Register
+	uint8_t HDC2010_MeasurementConfig_Read = I2C.Read_Register(0x40, 0x0F);
+
+	// Set Measurement Rate
+	HDC2010_Config_Read &= 0xDF;
+	HDC2010_Config_Read |= 0x50;
+
+	// Set Measurement Mode
+	HDC2010_MeasurementConfig_Read &= 0xFD;
+	HDC2010_MeasurementConfig_Read |= 0x04;
+
+	// Set Temperature Resolution (9 bit)
+	HDC2010_MeasurementConfig_Read &= 0xBF;
+	HDC2010_MeasurementConfig_Read |= 0x80;
+
+	// Set Humidity Resolution (9 bit)
+	HDC2010_MeasurementConfig_Read &= 0xEF;
+	HDC2010_MeasurementConfig_Read |= 0x20;
+
+	// Trigger Measurement
+	HDC2010_MeasurementConfig_Read |= 0x01;
+
+	// Write Register
+	I2C.Write_Register(0x40, 0x0E, HDC2010_Config_Read, false);
+
+	// Write Register
+	I2C.Write_Register(0x40, 0x0F, HDC2010_MeasurementConfig_Read, false);
+
+	// Define Measurement Read Array
+	float Measurement_Array[_Read_Count];
+
+	// Read Loop For Read Count
+	for (int Read_ID = 0; Read_ID < _Read_Count; Read_ID++) {
+
+		// Define Variables
+		uint8_t HDC2010_Data[2];
+
+		// Read Delay
+		delay(5);
+
+		// Read Register
+		HDC2010_Data[0] = I2C.Read_Register(0x40, 0x02);
+		HDC2010_Data[1] = I2C.Read_Register(0x40, 0x03);
+
+		// Combine Read Bytes
+		uint16_t Measurement_Raw = ((uint16_t)(HDC2010_Data[1]) << 8 | (uint16_t)HDC2010_Data[0]);
+
+		// Calculate Measurement
+		Measurement_Array[Read_ID] = (float)Measurement_Raw / 65536 * 100;
+
+	}
+
+	// Construct Object
+	Array_Stats<float> Data_Array(Measurement_Array, _Read_Count);
+
+	// Calculate Average
+	float Value_ = Data_Array.Average(Data_Array.Arithmetic_Avg);
+
+	// Calibrate Data
+	if (_Calibration) Value_ = (0.9821 * Value_) -0.3217;
+
+	// Control For Sensor Range
+	if (Value_ < 0 or Value_ > 100) Value_ = -101;
+
+	// End Function
+	return(Value_);
+
+}
+
+// SHT21 Functions
+SHT21::SHT21(uint8_t _Measurement_Count, bool _Calibration_Enable) {
+
+	// Set Measurement Count
+	this->_Read_Count = _Measurement_Count;
+
+	// Enable Calibration
+	this->_Calibration = _Calibration_Enable;
+
+}
+float SHT21::Temperature(void) {
+
+	// User Register Defination
+	uint8_t User_Reg_ = 0b01000010;
+	
+	// Send Soft Reset Command to SHT21
+	I2C.Write_Command(0x40, 0xFE, false);
+
+	// Read User Register of SHT21
+	uint8_t SHT21_Config_Read = I2C.Read_Register(0x40, 0xE6);
+
+	// Control for Config Read Register
+	if (SHT21_Config_Read != User_Reg_) if (!I2C.Write_Register(0x40, 0xE6, User_Reg_, false)) return(-102);
+
+	// Define Measurement Read Array
+	float Measurement_Array[this->_Read_Count];
+
+	// Read Loop For Read Count
+	for (uint8_t Read_ID = 0; Read_ID < this->_Read_Count; Read_ID++) {
 
 		// Define Data Variable
 		uint8_t SHT21_Data[4];
 
 		// Send Read Command to SHT21
-		I2C.Read_Multiple_Register(__I2C__SHT21__Addr__, 0xE3, SHT21_Data, 3, false);
+		I2C.Read_Multiple_Register(0x40, 0xE3, SHT21_Data, 3, false);
 
 		// Combine Read Bytes
 		uint16_t Measurement_Raw = ((uint16_t)SHT21_Data[0] << 8) | (uint16_t)SHT21_Data[1];
 		
 		// Clear 2 Low Status Bit
-		if (_Resolution == 11) Measurement_Raw &= ~0x0006;
-		if (_Resolution == 12) Measurement_Raw &= ~0x0005;
-		if (_Resolution == 13) Measurement_Raw &= ~0x0004; 
-		if (_Resolution == 14) Measurement_Raw &= ~0x0003;
+		Measurement_Raw &= ~0x0003;
 		
 		// Calculate Measurement
 		Measurement_Array[Read_ID] = -46.85 + 175.72 * (float)Measurement_Raw / pow(2,16);
@@ -96,100 +220,55 @@ float Environment::SHT21_Temperature(const uint8_t Read_Count_, const uint8_t Av
 		memset(SHT21_Data, '\0', 4);
 			
 	}
-	
-	// Calculate Data
-	uint16_t _Data_Size = sizeof(Measurement_Array) / sizeof(Measurement_Array[0]);
-	float Value_ = Stats.Array_Average(Measurement_Array, _Data_Size, Average_Type_);
 
-	// Control For Sensor Range
-	if (Value_ < _Range_Min or Value_ > _Range_Max) return(-106);
+	// Construct Object
+	Array_Stats<float> Data_Array(Measurement_Array, this->_Read_Count);
+
+	// Calculate Average
+	float Value_ = Data_Array.Average(Data_Array.Arithmetic_Avg);
+
+	// Control Limits
+	if (Value_ < -40 or Value_ > 125) Value_ = -101;
 
 	// Calibrate Data
-	Value_ = (SHT21_T_Calibrarion_a * Value_) + SHT21_T_Calibrarion_b;
+	if (this->_Calibration) Value_ = (1.0129 * Value_) + 0.6075;
 
 	// End Function
 	return(Value_);
 
 }
-float Environment::SHT21_Humidity(const uint8_t Read_Count_, const uint8_t Average_Type_) {
-	
-	// ************************************************************
-	// Set Sensor Configuration
-	// ************************************************************
+float SHT21::Humidity(void) {
 
-	// Set Sensor Definations
-	uint8_t		_Resolution 	= 12;		// Measurement Resolution (11,12,13,14)
-	bool		_EoB 			= false;	// Sensor End of Battery Setting
-	bool		_OCH 			= false;	// On Chip Heater Setting
-	bool		_OTP 			= false;	// OTP Read
-	float		_Range_Min 		= 0;		// Sensor Range Minimum
-	float		_Range_Max 		= 100;		// Sensor Range Maximum
-
-	// User Register Bit Definations
-	bool User_Reg_Bits_[8] = {false, false, false, false, false, false, false, false};
-	
-	// Set Resolution Bits
-	if (_Resolution == 14)	{ User_Reg_Bits_[7] = false	; User_Reg_Bits_[0] = false	;} // T: 14 bit
-	if (_Resolution == 12)	{ User_Reg_Bits_[7] = false	; User_Reg_Bits_[0] = true	;} // T: 12 bit
-	if (_Resolution == 13)	{ User_Reg_Bits_[7] = true	; User_Reg_Bits_[0] = false	;} // T: 13 bit
-	if (_Resolution == 11)	{ User_Reg_Bits_[7] = true	; User_Reg_Bits_[0] = true	;} // T: 11 bit
-	
-	// Set End of Battery Bits
-	if (_EoB) {User_Reg_Bits_[6] = true;} else {User_Reg_Bits_[6] = false;}
-	
-	// On Chip Heater Bits
-	if (_OCH) {User_Reg_Bits_[2] = true;} else {User_Reg_Bits_[2] = false;}
-	
-	// OTP Reload Bits
-	if (_OTP) {User_Reg_Bits_[1] = true;} else {User_Reg_Bits_[1] = false;}
-	
 	// User Register Defination
-	uint8_t User_Reg_ = 0x00;
-	
-	// Set Config Register
-	if (User_Reg_Bits_[0] == true) {User_Reg_ |= 0b00000001;} else {User_Reg_ &= 0b11111110;}	// User Register Bit 0
-	if (User_Reg_Bits_[1] == true) {User_Reg_ |= 0b00000010;} else {User_Reg_ &= 0b11111101;}	// User Register Bit 1
-	if (User_Reg_Bits_[2] == true) {User_Reg_ |= 0b00000100;} else {User_Reg_ &= 0b11111011;}	// User Register Bit 2
-	if (User_Reg_Bits_[3] == true) {User_Reg_ |= 0b00001000;} else {User_Reg_ &= 0b11110111;}	// User Register Bit 3
-	if (User_Reg_Bits_[4] == true) {User_Reg_ |= 0b00010000;} else {User_Reg_ &= 0b11101111;}	// User Register Bit 4
-	if (User_Reg_Bits_[5] == true) {User_Reg_ |= 0b00100000;} else {User_Reg_ &= 0b11011111;}	// User Register Bit 5
-	if (User_Reg_Bits_[6] == true) {User_Reg_ |= 0b01000000;} else {User_Reg_ &= 0b10111111;}	// User Register Bit 6
-	if (User_Reg_Bits_[7] == true) {User_Reg_ |= 0b10000000;} else {User_Reg_ &= 0b01111111;}	// User Register Bit 7
+	uint8_t User_Reg_ = 0b00000001;
 	
 	// Send Soft Reset Command to SHT21
-	I2C.Write_Command(__I2C__SHT21__Addr__, 0xFE, false);
+	I2C.Write_Command(0x40, 0xFE, false);
 
 	// Read User Register of SHT21
-	uint8_t SHT21_Config_Read = I2C.Read_Register(__I2C__SHT21__Addr__, 0xE6);
+	uint8_t SHT21_Config_Read = I2C.Read_Register(0x40, 0xE6);
 
 	// Control for Config Read Register
-	if (SHT21_Config_Read != User_Reg_) if (!I2C.Write_Register(__I2C__SHT21__Addr__, 0xE6, User_Reg_, false)) return(-102);
-	
-	// ************************************************************
-	// Read Sensor Data
-	// ************************************************************
-		
+	if (SHT21_Config_Read != User_Reg_) if (!I2C.Write_Register(0x40, 0xE6, User_Reg_, false)) return(-102);
+
 	// Define Measurement Read Array
-	float Measurement_Array[Read_Count_];
+	float Measurement_Array[this->_Read_Count];
 
 	// Read Loop For Read Count
-	for (uint8_t Read_ID = 0; Read_ID < Read_Count_; Read_ID++) {
+	for (uint8_t Read_ID = 0; Read_ID < this->_Read_Count; Read_ID++) {
 
 		// Define Data Variable
 		uint8_t SHT21_Data[4];
 
 		// Send Read Command to SHT21
-		I2C.Read_Multiple_Register(__I2C__SHT21__Addr__, 0xE5, SHT21_Data, 3, false);
+		I2C.Read_Multiple_Register(0x40, 0xE5, SHT21_Data, 3, false);
 
 		// Combine Read Bytes
 		uint16_t Measurement_Raw = ((uint16_t)SHT21_Data[0] << 8) | (uint16_t)SHT21_Data[1];
 		
 		// Clear 2 Low Status Bit
-		if (_Resolution == 11) Measurement_Raw &= ~0x0006;
-		if (_Resolution == 12) Measurement_Raw &= ~0x0005;
-		if (_Resolution == 13) Measurement_Raw &= ~0x0004; 
-		if (_Resolution == 14) Measurement_Raw &= ~0x0003;
-
+		Measurement_Raw &= ~0x0005;
+		
 		// Calculate Measurement
 		Measurement_Array[Read_ID] = -6 + 125 * (float)Measurement_Raw / pow(2,16);
 
@@ -197,509 +276,38 @@ float Environment::SHT21_Humidity(const uint8_t Read_Count_, const uint8_t Avera
 		memset(SHT21_Data, '\0', 4);
 			
 	}
-	
-	// Calculate Data
-	uint16_t _Data_Size = sizeof(Measurement_Array) / sizeof(Measurement_Array[0]);
-	float Value_ = Stats.Array_Average(Measurement_Array, _Data_Size, Average_Type_);
 
-	// Control For Sensor Range
-	if (Value_ < _Range_Min or Value_ > _Range_Max) return(-106);
+	// Construct Object
+	Array_Stats<float> Data_Array(Measurement_Array, this->_Read_Count);
+
+	// Calculate Average
+	float Value_ = Data_Array.Average(Data_Array.Arithmetic_Avg);
+
+	// Control Limits
+	if (Value_ < 0 or Value_ > 100) Value_ = -101;
 
 	// Calibrate Data
-	Value_ = (SHT21_T_Calibrarion_a * Value_) + SHT21_T_Calibrarion_b;
+	if (this->_Calibration) Value_ = (0.9518 * Value_) + 3.5316;
 
 	// End Function
 	return(Value_);
 
-}
-
-// HDC2010 Functions
-float Environment::HDC2010_Temperature(const uint8_t Read_Count_, const uint8_t Average_Type_) {
-
-	// Set Sensor Definations
-	struct Sensor {
-		float		Range_Min;
-		float		Range_Max;
-		uint8_t		Measurement_Rate;
-		uint8_t		Resolution_Temperature;
-		uint8_t		Resolution_Humidity;
-		bool		Sensor_Reset;
-		
-	};
-	Sensor HDC2010[] {
-		
-		-40,		// [Range_Min]
-		125,		// [Range_Max]
-		0,			// [Measurement_Rate]
-		9,			// [Resolution_Temperature]
-		9,			// [Resolution_Humidity]
-		true,		// [Sensor_Reset]
-
-	};
-
-	// Declare Output Variable
-	float Value_;
-
-	// ************************************************************
-	// Reset Sensor
-	// ************************************************************
-
-	// Reset Sensor
-	if (HDC2010[0].Sensor_Reset == true) {
-		
-		// ************************************************************
-		// Read Current Sensor Settings
-		// ************************************************************
-		
-		// Read User Register of HDC2010
-		uint8_t HDC2010_Reset_Read = I2C.Read_Register(0x40, 0x0E);
-
-		// ************************************************************
-		// Reset Sensor
-		// ************************************************************
-		
-		// Set Reset Bit
-		HDC2010_Reset_Read = (HDC2010_Reset_Read | 0b10000000);
-		
-		// Write Reset Command
-		I2C.Write_Register(__I2C__HDC2010__Addr__, 0x0E, HDC2010_Reset_Read, false);
-		
-	}
-	
-	// ************************************************************
-	// Read Current Sensor Settings
-	// ************************************************************
-
-	// Read Register
-	uint8_t HDC2010_Config_Read = I2C.Read_Register(__I2C__HDC2010__Addr__, 0x0E);
-
-	// Read Register
-	uint8_t HDC2010_MeasurementConfig_Read = I2C.Read_Register(__I2C__HDC2010__Addr__, 0x0F);
-
-	// ************************************************************
-	// Set Sensor Configurations
-	// ************************************************************
-
-	// Set Measurement Mode
-	HDC2010_MeasurementConfig_Read &= 0xFC;
-	HDC2010_MeasurementConfig_Read |= 0x02;
-
-	// Set Measurement Rate
-	switch(HDC2010[0].Measurement_Rate) {
-
-		case 0:	// Manual
-			HDC2010_Config_Read = (HDC2010_Config_Read & 0x8F);
-			break;
-			
-		case 1:	// 2 Minutes
-			HDC2010_Config_Read = (HDC2010_Config_Read & 0x9F);
-			HDC2010_Config_Read = (HDC2010_Config_Read | 0x10);
-			break;
-			
-		case 2:	// 1 Minutes
-			HDC2010_Config_Read = (HDC2010_Config_Read & 0xAF);
-			HDC2010_Config_Read = (HDC2010_Config_Read | 0x20);
-			break;
-		
-		case 3:	// 10 Second
-			HDC2010_Config_Read = (HDC2010_Config_Read & 0xBF);
-			HDC2010_Config_Read = (HDC2010_Config_Read | 0x30);
-			break;
-		
-		case 4:	// 5 Second
-			HDC2010_Config_Read = (HDC2010_Config_Read & 0xCF);
-			HDC2010_Config_Read = (HDC2010_Config_Read | 0x40);
-			break;
-		
-		case 5:	// 1 Second
-			HDC2010_Config_Read = (HDC2010_Config_Read & 0xDF);
-			HDC2010_Config_Read = (HDC2010_Config_Read | 0x50);
-			break;
-		
-		case 6:	// 0.5 Second
-			HDC2010_Config_Read = (HDC2010_Config_Read & 0xEF);
-			HDC2010_Config_Read = (HDC2010_Config_Read | 0x60);
-			break;
-		
-		case 7:	// 0.2 Second
-			HDC2010_Config_Read = (HDC2010_Config_Read | 0x70);
-			break;
-			
-		default:
-			HDC2010_Config_Read = (HDC2010_Config_Read & 0x8F);
-		
-	}
-	
-	// Set Temperature Resolution
-	switch(HDC2010[0].Resolution_Temperature) {
-		
-		case 14:	// 14 Bit
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0x3F);
-			break;
-			
-		case 11:	// 11 Bit
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0x7F);
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x40);
-			break;
-			
-		case 9:		// 9 Bit
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xBF);
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x80);
-			break;
-			
-		default:
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0x3F);
-			
-	}
-
-	// Set Humidity Resolution
-	switch(HDC2010[0].Resolution_Humidity) {
-		
-		case 14:	// 14 Bit
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xCF);
-			break;
-			
-		case 11:	// 11 Bit
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xDF);
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x10);
-			break;
-			
-		case 9:		// 9 Bit
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xEF);
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x20);
-			break;
-			
-		default:
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xCF);
-			
-	}
-
-	// Trigger Measurement
-	HDC2010_MeasurementConfig_Read |= 0x01;
-
-	// ************************************************************
-	// Read Temperature
-	// ************************************************************
-
-	// Define Measurement Read Array
-	float Measurement_Array[Read_Count_];
-
-	// Read Loop For Read Count
-	for (int Read_ID = 0; Read_ID < Read_Count_; Read_ID++) {
-
-		// ************************************************************
-		// Write Sensor Configurations
-		// ************************************************************
-
-		// Write Register
-		I2C.Write_Register(__I2C__HDC2010__Addr__, 0x0E, HDC2010_Config_Read, false);
-
-		// Write Register
-		I2C.Write_Register(__I2C__HDC2010__Addr__, 0x0F, HDC2010_MeasurementConfig_Read, false);
-
-		// Define Variables
-		uint8_t HDC2010_Data[2];
-			
-		// Read Delay
-		delay(5);
-
-		// ************************************************************
-		// Read Temperature Data
-		// ************************************************************
-
-		// Read Register
-		HDC2010_Data[0] = I2C.Read_Register(__I2C__HDC2010__Addr__, 0x00);
-		HDC2010_Data[1] = I2C.Read_Register(__I2C__HDC2010__Addr__, 0x01);
-
-		// ************************************************************
-		// Combine Data
-		// ************************************************************
-
-		// Combine Read Bytes
-		uint16_t Measurement_Raw = ((uint16_t)(HDC2010_Data[1]) << 8 | (uint16_t)HDC2010_Data[0]);
-
-		// Calculate Measurement
-		Measurement_Array[Read_ID] = (float)Measurement_Raw * 165 / 65536 - 40;
-		
-	}
-	
-	// Calculate Data
-	uint16_t _Data_Size = sizeof(Measurement_Array) / sizeof(Measurement_Array[0]);
-	Value_ = Stats.Array_Average(Measurement_Array, _Data_Size, Average_Type_);
-
-	// ************************************************************
-	// Control For Sensor Range
-	// ************************************************************
-	if (Value_ < HDC2010[0].Range_Min or Value_ > HDC2010[0].Range_Max) return(-106);
-
-	// ************************************************************
-	// Calibrate Data
-	// ************************************************************
-
-	Value_ = (HDC2010_T_Calibrarion_a * Value_) + HDC2010_T_Calibrarion_b;
-
-	// End Function
-	return(Value_);
-		
-}
-float Environment::HDC2010_Humidity(const uint8_t Read_Count_, const uint8_t Average_Type_) {
-
-	// Set Sensor Definations
-	struct Sensor {
-		float		Range_Min;
-		float		Range_Max;
-		uint8_t		Measurement_Rate;
-		uint8_t		Resolution_Temperature;
-		uint8_t		Resolution_Humidity;
-		bool		Sensor_Reset;
-
-	};
-	Sensor HDC2010[] {
-		
-		0,			// [Range_Min]
-		100,		// [Range_Max]
-		5,			// [Measurement_Rate]
-		14,			// [Resolution_Temperature]
-		14,			// [Resolution_Humidity]
-		true,		// [Sensor_Reset]
-		
-	};
-
-	// Declare Output Variable
-	float Value_;
-
-	// ************************************************************
-	// Reset Sensor
-	// ************************************************************
-
-	// Reset Sensor
-	if (HDC2010[0].Sensor_Reset == true) {
-		
-		// ************************************************************
-		// Read Current Sensor Settings
-		// ************************************************************
-		
-		// Read User Register of HDC2010
-		uint8_t HDC2010_Reset_Read = I2C.Read_Register(__I2C__HDC2010__Addr__, 0x0E);
-
-		// ************************************************************
-		// Reset Sensor
-		// ************************************************************
-		
-		// Set Reset Bit
-		HDC2010_Reset_Read = (HDC2010_Reset_Read | 0b10000000);
-		
-		// Write Reset Command
-		I2C.Write_Register(__I2C__HDC2010__Addr__, 0x0E, HDC2010_Reset_Read, false);
-		
-	}
-	
-	// ************************************************************
-	// Read Current Sensor Settings
-	// ************************************************************
-	
-	// Read Register
-	uint8_t HDC2010_Config_Read = I2C.Read_Register(__I2C__HDC2010__Addr__, 0x0E);
-
-	// Read Register
-	uint8_t HDC2010_MeasurementConfig_Read = I2C.Read_Register(__I2C__HDC2010__Addr__, 0x0F);
-
-	// ************************************************************
-	// Set Sensor Configurations
-	// ************************************************************
-
-	// Set Measurement Mode
-	HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xFD);
-	HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x04);
-
-	// Set Measurement Rate
-	switch(HDC2010[0].Measurement_Rate) {
-
-		case 0:	// Manual
-			HDC2010_Config_Read = (HDC2010_Config_Read & 0x8F);
-			break;
-			
-		case 1:	// 2 Minutes
-			HDC2010_Config_Read = (HDC2010_Config_Read & 0x9F);
-			HDC2010_Config_Read = (HDC2010_Config_Read | 0x10);
-			break;
-			
-		case 2:	// 1 Minutes
-			HDC2010_Config_Read = (HDC2010_Config_Read & 0xAF);
-			HDC2010_Config_Read = (HDC2010_Config_Read | 0x20);
-			break;
-		
-		case 3:	// 10 Second
-			HDC2010_Config_Read = (HDC2010_Config_Read & 0xBF);
-			HDC2010_Config_Read = (HDC2010_Config_Read | 0x30);
-			break;
-		
-		case 4:	// 5 Second
-			HDC2010_Config_Read = (HDC2010_Config_Read & 0xCF);
-			HDC2010_Config_Read = (HDC2010_Config_Read | 0x40);
-			break;
-		
-		case 5:	// 1 Second
-			HDC2010_Config_Read = (HDC2010_Config_Read & 0xDF);
-			HDC2010_Config_Read = (HDC2010_Config_Read | 0x50);
-			break;
-		
-		case 6:	// 0.5 Second
-			HDC2010_Config_Read = (HDC2010_Config_Read & 0xEF);
-			HDC2010_Config_Read = (HDC2010_Config_Read | 0x60);
-			break;
-		
-		case 7:	// 0.2 Second
-			HDC2010_Config_Read = (HDC2010_Config_Read | 0x70);
-			break;
-			
-		default:
-			HDC2010_Config_Read = (HDC2010_Config_Read & 0x8F);
-		
-	}
-	
-	// Set Temperature Resolution
-	switch(HDC2010[0].Resolution_Temperature) {
-		
-		case 14:	// 14 Bit
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0x3F);
-			break;
-			
-		case 11:	// 11 Bit
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0x7F);
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x40);
-			break;
-			
-		case 9:		// 9 Bit
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xBF);
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x80);
-			break;
-			
-		default:
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0x3F);
-			
-	}
-
-	// Set Humidity Resolution
-	switch(HDC2010[0].Resolution_Humidity) {
-		
-		case 14:	// 14 Bit
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xCF);
-			break;
-			
-		case 11:	// 11 Bit
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xDF);
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x10);
-			break;
-			
-		case 9:		// 9 Bit
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xEF);
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x20);
-			break;
-			
-		default:
-			HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read & 0xCF);
-			
-	}
-
-	// Trigger Measurement
-	HDC2010_MeasurementConfig_Read = (HDC2010_MeasurementConfig_Read | 0x01);
-	
-	// ************************************************************
-	// Read Temperature
-	// ************************************************************
-
-	// Define Measurement Read Array
-	float Measurement_Array[Read_Count_];
-
-	// Read Loop For Read Count
-	for (int Read_ID = 0; Read_ID < Read_Count_; Read_ID++) {
-
-		// ************************************************************
-		// Write Sensor Configurations
-		// ************************************************************
-
-		// Write Register
-		I2C.Write_Register(__I2C__HDC2010__Addr__, 0x0E, HDC2010_Config_Read, false);
-
-		// Write Register
-		I2C.Write_Register(__I2C__HDC2010__Addr__, 0x0F, HDC2010_MeasurementConfig_Read, false);
-
-		// Define Variables
-		uint8_t HDC2010_Data[2];
-			
-		// Read Delay
-		delay(5);
-
-		// ************************************************************
-		// Read Humidity LSB Data
-		// ************************************************************
-
-		// Read Register
-		HDC2010_Data[0] = I2C.Read_Register(__I2C__HDC2010__Addr__, 0x02);
-		HDC2010_Data[1] = I2C.Read_Register(__I2C__HDC2010__Addr__, 0x03);
-
-		// ************************************************************
-		// Combine Data
-		// ************************************************************
-
-		// Combine Read Bytes
-		uint16_t Measurement_Raw = ((uint16_t)(HDC2010_Data[1]) << 8 | (uint16_t)HDC2010_Data[0]);
-
-		// Calculate Measurement
-		Measurement_Array[Read_ID] = (float)Measurement_Raw / 65536 * 100;
-		
-	}
-	
-	// Calculate Data
-	uint16_t _Data_Size = sizeof(Measurement_Array) / sizeof(Measurement_Array[0]);
-	Value_ = Stats.Array_Average(Measurement_Array, _Data_Size, Average_Type_);
-
-	// ************************************************************
-	// Control For Sensor Range
-	// ************************************************************
-	if (Value_ < HDC2010[0].Range_Min or Value_ > HDC2010[0].Range_Max) return(-106);
-
-	// ************************************************************
-	// Calibrate Data
-	// ************************************************************
-
-	Value_ = (HDC2010_T_Calibrarion_a * Value_) + HDC2010_T_Calibrarion_b;
-
-	// End Function
-	return(Value_);
-		
 }
 
 // MPL3115A2 Functions
-float Environment::MPL3115A2_Pressure(void) {
+MPL3115A2::MPL3115A2(uint8_t _Measurement_Count, bool _Calibration_Enable) {
 
-	/******************************************************************************
-	 *	Project		: MPL3115A2 Pressure Read Function
-	 *	Developer	: Mehmet Gunce Akkoyun (akkoyun@me.com)
-	 *	Revision	: 04.00.00
-	 *	Release		: 04.11.2020
-	 ******************************************************************************/
+	// Set Measurement Count
+	this->_Read_Count = _Measurement_Count;
 
-	// Set Sensor Definations
-	struct Sensor_Settings {
-		int		Range_Min;
-		int		Range_Max;
-		
-	};
-	Sensor_Settings MPL3115A2[] {
-		
-		500,		// Sensor Range Minimum
-		11000,		// Sensor Range Maximum
+	// Enable Calibration
+	this->_Calibration = _Calibration_Enable;
 
-	};
-	
+}
+float MPL3115A2::Pressure(void) {
+
 	// Declare Output Variable
 	float Value_;
-
-	// ************************************************************
-	// Controll For WHO_AM_I Register
-	// ************************************************************
 
 	// Request WHO_AM_I Register
 	Wire.beginTransmission(0b01100000);
@@ -716,10 +324,6 @@ float Environment::MPL3115A2_Pressure(void) {
 
 	// Read WHO_AM_I Register
 	uint8_t MPL3115A2_Device_Signiture = Wire.read();
-
-	// ************************************************************
-	// Control for Sensor ID
-	// ************************************************************
 
 	// Control for Device Identifier
 	if (MPL3115A2_Device_Signiture == 0b11000100) {
@@ -833,17 +437,14 @@ float Environment::MPL3115A2_Pressure(void) {
 		Measurement_Raw >>= 4;
 		
 		// Calculate Pressure (mBar)
-		Value_ = (MPL3115A2_P_Calibrarion_a * ((Measurement_Raw / 4.00 ) / 100)) + MPL3115A2_P_Calibrarion_b;
+		Value_ = (1 * ((Measurement_Raw / 4.00 ) / 100)) + 0;
 
 		// Read Delay
 		delay(512);
 
 	}
 
-	// ************************************************************
-	// Control For Sensor Range
-	// ************************************************************
-	if (Value_ <= MPL3115A2[0].Range_Min or Value_ >= MPL3115A2[0].Range_Max) return(-108);
+	if (Value_ <= 500 or Value_ >= 11000) return(-108);
 
 	// End Function
 	return(Value_);
@@ -851,8 +452,17 @@ float Environment::MPL3115A2_Pressure(void) {
 }
 
 // TSL2561 Functions
-float Environment::TSL2561_Light(void) {
-	
+TSL2561::TSL2561(uint8_t _Measurement_Count, bool _Calibration_Enable) {
+
+	// Set Measurement Count
+	this->_Read_Count = _Measurement_Count;
+
+	// Enable Calibration
+	this->_Calibration = _Calibration_Enable;
+
+}
+float TSL2561::Light(void) {
+
 	/******************************************************************************
 	 *	Project		: TSL2561 Light Read Function
 	 *	Developer	: Mehmet Gunce Akkoyun (akkoyun@me.com)
@@ -1189,12 +799,24 @@ float Environment::TSL2561_Light(void) {
 	
 	// End Function
 	return(Value_);
-	
+
 }
 
 // MCP3422 Functions
-float Environment::MCP3422_Pressure(const uint8_t _Channel, const uint8_t _Read_Count, const uint8_t _Average_Type) {
-	
+MCP3422::MCP3422(uint8_t _Channel, uint8_t _Measurement_Count, bool _Calibration_Enable) {
+
+	// Set Measurement Count
+	this->_Read_Count = _Measurement_Count;
+
+	// Enable Calibration
+	this->_Calibration = _Calibration_Enable;
+
+	// Channel
+	this->_Channel = _Channel;
+
+}
+float MCP3422::Pressure(void) {
+
 	/******************************************************************************
 	 *	Project		: MCP3422 2 Channel ADC Converter Read Function
 	 *	Developer	: Mehmet Gunce Akkoyun (akkoyun@me.com)
@@ -1338,8 +960,12 @@ float Environment::MCP3422_Pressure(const uint8_t _Channel, const uint8_t _Read_
 
 	}
 
-	// Calculate Data
-	float _Value = (Stats.Array_Average(Pressure_RAW_Array, _Read_Count, _Average_Type) * _Sensor_Max);
+	// Construct Object
+	Array_Stats<float> Data_Array(Pressure_RAW_Array, sizeof(Pressure_RAW_Array) / sizeof(Pressure_RAW_Array[0]));
+
+	// Calculate Average
+	float _Value = Data_Array.Average(Data_Array.Arithmetic_Avg);
+
 	_Value = (_Value * 1.5304) - 1.3437;
 
 	// End Function
@@ -1347,40 +973,95 @@ float Environment::MCP3422_Pressure(const uint8_t _Channel, const uint8_t _Read_
 
 }
 
-// Analog Sensor Read Functions
-float Environment::Read_Analog_Pressure(uint8_t _Channel, uint8_t _Read_Count) {
+// Analog Read Functions
+Analog::Analog(uint8_t _Channel) {
 
-	// Calibration Parameters
-	float _Slope = 1.5777;
-	float _Offset = 1.1925;
+	// MUX3-0 
+	// 0-0-0-0 : ADC0
+	// 0-0-0-1 : ADC1
+	// 0-0-1-0 : ADC2
+	// 0-0-1-1 : ADC3
+	// 0-1-0-0 : ADC4
+	// 0-1-0-1 : ADC5
+	// 0-1-1-0 : ADC6
+	// 0-1-1-1 : ADC7
+
+	// REFS1 - REFS0 
+	//   0   -   0   : AREF used as VRef and internal VRef is turned off.
+	//   0   -   1   : AVCC with external capacitor at the AREF pin is used as VRef.
+	//   1   -   0   : Reserved.
+	//   1   -   1   : Internal referance voltage of 2v56 is used with an external capacitor at AREF pin for VRef.
+
+	// Set MUXx Bits
+	ADMUX = (ADMUX & 0xF0) | _Channel;
+	
+	// Set REFSx Bits
+	ADMUX = (ADMUX & 0x3F);
+	ADMUX |= (1<<REFS0);
+
+	// ADPS0-2
+	// 0-0-0 : 2
+	// 0-0-1 : 2
+	// 0-1-0 : 4
+	// 0-1-1 : 8
+	// 1-0-0 : 16
+	// 1-0-1 : 32
+	// 1-1-0 : 64
+	// 1-1-1 : 128
+	// 7.372.800 Hz / Prescaler = 230.400 Hz --> Prescaler = 32
+
+	// Set ADPSx (Prescaler)
+	ADCSRA = (ADCSRA & 0xF8) | 0x05;
+
+	// Set ADEN Bit (ADC Enable)
+	ADCSRA |= (1<<ADEN);
+
+}
+double Analog::Read(void) {
 
 	// Define Measurement Read Array
-	float Pressure_Array[_Read_Count];
+	double _Array[_Read_Count];
 
 	// Read Loop For Read Count
-	for (uint8_t Read_ID = 0; Read_ID < _Read_Count; Read_ID++) {
+	for (size_t Read_ID = 0; Read_ID < _Read_Count; Read_ID++) {
 
 		// Define Variable
-		uint16_t _Raw_Pressure = 0;
+		uint16_t _Raw_Data = 0;
 
-		// Read Analog Data
-		if (_Channel == 1) _Raw_Pressure = analogRead(A1);
-		if (_Channel == 2) _Raw_Pressure = analogRead(A2);
+		// Start Measurement
+		ADCSRA |= (1<<ADSC);
+
+		// Wait While Measurement
+		while(ADCSRA & (1 << ADSC));
+
+		// Get Measurement
+		_Raw_Data = ADC;
 
 		// Calculate Raw Pressure
-		float _Pressure = ((float)10 * (float)_Raw_Pressure) / (float)1024;
-		Pressure_Array[Read_ID] = (_Slope * _Pressure) - _Offset;
+		double _Pressure = ((float)10 * (float)_Raw_Data) / (float)1023;
+		
+		// Calibrate Measurement
+		if (_Calibration) _Array[Read_ID] = (_Cal_a * _Pressure) + _Cal_b;
+		if (!_Calibration) _Array[Read_ID] = _Pressure;
 
 	}
 
+	// Construct Object
+	Array_Stats<double> Data_Array(_Array, _Read_Count);
+
 	// Calculate Average
-	float Pressure = Stats.Array_Ext_RMS_Average(Pressure_Array, _Read_Count);
+	double _Data = Data_Array.Average(Data_Array.Ext_RMS_Avg);
+
+	// Set Statistical Parameter
+	Standart_Deviation = Data_Array.Standard_Deviation();
+
+	// Print Array
+//	Data_Array.Array();
 
 	// End Function
-	return(Pressure);
+	return(_Data);
 
 }
 
-Environment Sensor;
-
 // 1903
+
