@@ -974,23 +974,49 @@ float MCP3422::Pressure(void) {
 }
 
 // Analog Read Functions
-Analog::Analog(uint8_t _Channel) {
+Analog::Analog(uint8_t _Channel, uint8_t _Read_Count, bool _Calibration, float _Cal_a, float _Cal_b) {
 
-	// MUX3-0 
-	// 0-0-0-0 : ADC0
-	// 0-0-0-1 : ADC1
-	// 0-0-1-0 : ADC2
-	// 0-0-1-1 : ADC3
-	// 0-1-0-0 : ADC4
-	// 0-1-0-1 : ADC5
-	// 0-1-1-0 : ADC6
-	// 0-1-1-1 : ADC7
+	// Set Channel Variable
+	_Channel &= 0b00000111;
 
-	// REFS1 - REFS0 
-	//   0   -   0   : AREF used as VRef and internal VRef is turned off.
-	//   0   -   1   : AVCC with external capacitor at the AREF pin is used as VRef.
-	//   1   -   0   : Reserved.
-	//   1   -   1   : Internal referance voltage of 2v56 is used with an external capacitor at AREF pin for VRef.
+	// Set Variables
+	Measurement.Read_Count = _Read_Count;
+	Measurement.Calibration = _Calibration;
+	Measurement.Cal_a = _Cal_a;
+	Measurement.Cal_b = _Cal_b;
+
+	/*
+		MUX3-0 
+		------
+		0-0-0-0 : ADC0
+		0-0-0-1 : ADC1
+		0-0-1-0 : ADC2
+		0-0-1-1 : ADC3
+		0-1-0-0 : ADC4
+		0-1-0-1 : ADC5
+		0-1-1-0 : ADC6
+		0-1-1-1 : ADC7
+
+		REFS1-0
+		-------
+		0-0 : AREF used as VRef and internal VRef is turned off.
+		0-1 : AVCC with external capacitor at the AREF pin is used as VRef.
+		1-0 : Reserved.
+		1-1 : Internal referance voltage of 2v56 is used with an external capacitor at AREF pin for VRef.
+
+		ADPS2-0
+		-------
+		0-0-0 : 2
+		0-0-1 : 2
+		0-1-0 : 4
+		0-1-1 : 8
+		1-0-0 : 16
+		1-0-1 : 32
+		1-1-0 : 64
+		1-1-1 : 128
+		7.372.800 Hz / Prescaler = 230.400 Hz --> Prescaler = 32
+
+	*/
 
 	// Set MUXx Bits
 	ADMUX = (ADMUX & 0xF0) | _Channel;
@@ -998,17 +1024,6 @@ Analog::Analog(uint8_t _Channel) {
 	// Set REFSx Bits
 	ADMUX = (ADMUX & 0x3F);
 	ADMUX |= (1<<REFS0);
-
-	// ADPS0-2
-	// 0-0-0 : 2
-	// 0-0-1 : 2
-	// 0-1-0 : 4
-	// 0-1-1 : 8
-	// 1-0-0 : 16
-	// 1-0-1 : 32
-	// 1-1-0 : 64
-	// 1-1-1 : 128
-	// 7.372.800 Hz / Prescaler = 230.400 Hz --> Prescaler = 32
 
 	// Set ADPSx (Prescaler)
 	ADCSRA = (ADCSRA & 0xF8) | 0x05;
@@ -1020,34 +1035,40 @@ Analog::Analog(uint8_t _Channel) {
 double Analog::Read(void) {
 
 	// Define Measurement Read Array
-	double _Array[_Read_Count];
+	double _Array[Measurement.Read_Count];
 
 	// Read Loop For Read Count
-	for (size_t Read_ID = 0; Read_ID < _Read_Count; Read_ID++) {
-
-		// Define Variable
-		uint16_t _Raw_Data = 0;
+	for (size_t Read_ID = 0; Read_ID < Measurement.Read_Count; Read_ID++) {
 
 		// Start Measurement
 		ADCSRA |= (1<<ADSC);
 
 		// Wait While Measurement
-		while(ADCSRA & (1 << ADSC));
+		while(ADCSRA & (1 << ADIF));
 
 		// Get Measurement
-		_Raw_Data = ADC;
+		uint16_t _Raw_Data = ADC;
 
 		// Calculate Raw Pressure
 		double _Pressure = ((float)10 * (float)_Raw_Data) / (float)1023;
-		
+
 		// Calibrate Measurement
-		if (_Calibration) _Array[Read_ID] = (_Cal_a * _Pressure) + _Cal_b;
-		if (!_Calibration) _Array[Read_ID] = _Pressure;
+		if (Measurement.Calibration) { 
+
+			// Calibrate
+			_Array[Read_ID] = (Measurement.Cal_a * _Pressure) + Measurement.Cal_b;
+
+		} else {
+
+			// Dont Calibrate
+			_Array[Read_ID] = _Pressure;
+
+		}
 
 	}
 
 	// Construct Object
-	Array_Stats<double> Data_Array(_Array, _Read_Count);
+	Array_Stats<double> Data_Array(_Array, Measurement.Read_Count);
 
 	// Calculate Average
 	double _Data = Data_Array.Average(Data_Array.Ext_RMS_Avg);
@@ -1056,7 +1077,7 @@ double Analog::Read(void) {
 	Standart_Deviation = Data_Array.Standard_Deviation();
 
 	// Print Array
-//	Data_Array.Array();
+	//Data_Array.Array();
 
 	// End Function
 	return(_Data);

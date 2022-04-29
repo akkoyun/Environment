@@ -1,7 +1,7 @@
 #include "Environment.h"
 
 // Set Object
-Analog Pressure(0);
+Analog Pressure(0x01, 10, true, 1.5777, -1.1925);
 
 void setup() {
 

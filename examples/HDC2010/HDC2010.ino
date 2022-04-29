@@ -15,6 +15,9 @@ void setup() {
 	Serial.println("    HDC2010 T/H Sensor    ");
 	Serial.println("--------------------------");
 
+	// Set Multiplexer
+	I2C.Set_Multiplexer(0x70, 3);
+
 }
 
 void loop() {

@@ -144,15 +144,20 @@ class Analog {
 
 	private:
 
-		// Read Count
-		const uint8_t _Read_Count = 100;
+		// Analog Class Struct Defination
+		struct Analog_Struct {
 
-		// Calibration Parameters
-		const bool _Calibration = false;
+			// Read Count
+			uint8_t Read_Count;
 
-		// Calibration Parameters
-		const float _Cal_a = 1.5777;
-		const float _Cal_b = -1.1925;
+			// Calibration Parameters
+			bool Calibration;
+
+			// Calibration Parameters
+			float Cal_a;
+			float Cal_b;
+
+		} Measurement;
 
 	public:
 
@@ -160,7 +165,7 @@ class Analog {
 		float Standart_Deviation;
 
 		// Constractor
-		Analog(uint8_t _Channel);
+		Analog(uint8_t _Channel, uint8_t _Read_Count, bool _Calibration, float _Cal_a, float _Cal_b);
 
 		// Read
 		double Read(void);
