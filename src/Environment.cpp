@@ -10,7 +10,7 @@
 #include "Environment.h"
 
 // HDC2010 Functions
-HDC2010::HDC2010(uint8_t _Measurement_Count, bool _Calibration_Enable) {
+HDC2010::HDC2010(bool _Multiplexer_Enable, uint8_t _Multiplexer_Channel, uint8_t _Measurement_Count, bool _Calibration_Enable) {
 
 	// Set Measurement Count
 	this->_Read_Count = _Measurement_Count;
@@ -18,17 +18,24 @@ HDC2010::HDC2010(uint8_t _Measurement_Count, bool _Calibration_Enable) {
 	// Enable Calibration
 	this->_Calibration = _Calibration_Enable;
 
+	// Set Multiplexer Variables
+	this->_Mux_Enable = _Multiplexer_Enable;
+	this->_Mux_Channel = _Multiplexer_Channel;
+
 }
 float HDC2010::Temperature(void) {
 
+	// Create I2C Device
+	I2C_Functions HDC2010_Temperature(__I2C_Addr_HDC2010__, this->_Mux_Enable, this->_Mux_Channel);
+
 	// Reset Sensor
-	I2C.Set_Register_Bit(0x40, 0x0E, 7, false);
+	HDC2010_Temperature.Set_Register_Bit(0x0E, 7, false);
 
 	// Read Register
-	uint8_t HDC2010_Config_Read = I2C.Read_Register(0x40, 0x0E);
+	uint8_t HDC2010_Config_Read = HDC2010_Temperature.Read_Register(0x0E);
 
 	// Read Register
-	uint8_t HDC2010_MeasurementConfig_Read = I2C.Read_Register(0x40, 0x0F);
+	uint8_t HDC2010_MeasurementConfig_Read = HDC2010_Temperature.Read_Register(0x0F);
 
 	// Set Measurement Rate
 	HDC2010_Config_Read &= 0x8F;
@@ -49,10 +56,10 @@ float HDC2010::Temperature(void) {
 	HDC2010_MeasurementConfig_Read |= 0x01;
 
 	// Write Register
-	I2C.Write_Register(0x40, 0x0E, HDC2010_Config_Read, false);
+	HDC2010_Temperature.Write_Register(0x0E, HDC2010_Config_Read, false);
 
 	// Write Register
-	I2C.Write_Register(0x40, 0x0F, HDC2010_MeasurementConfig_Read, false);
+	HDC2010_Temperature.Write_Register(0x0F, HDC2010_MeasurementConfig_Read, false);
 
 	// Define Measurement Read Array
 	float Measurement_Array[_Read_Count];
@@ -67,8 +74,8 @@ float HDC2010::Temperature(void) {
 		delay(5);
 
 		// Read Register
-		HDC2010_Data[0] = I2C.Read_Register(0x40, 0x00);
-		HDC2010_Data[1] = I2C.Read_Register(0x40, 0x01);
+		HDC2010_Data[0] = HDC2010_Temperature.Read_Register(0x00);
+		HDC2010_Data[1] = HDC2010_Temperature.Read_Register(0x01);
 
 		// Combine Read Bytes
 		uint16_t Measurement_Raw = ((uint16_t)(HDC2010_Data[1]) << 8 | (uint16_t)HDC2010_Data[0]);
@@ -96,14 +103,17 @@ float HDC2010::Temperature(void) {
 }
 float HDC2010::Humidity(void) {
 
+	// Create I2C Device
+	I2C_Functions HDC2010_Humidity(__I2C_Addr_HDC2010__, this->_Mux_Enable, this->_Mux_Channel);
+
 	// Reset Sensor
-	I2C.Set_Register_Bit(0x40, 0x0E, 7, false);
+	HDC2010_Humidity.Set_Register_Bit(0x0E, 7, false);
 
 	// Read Register
-	uint8_t HDC2010_Config_Read = I2C.Read_Register(0x40, 0x0E);
+	uint8_t HDC2010_Config_Read = HDC2010_Humidity.Read_Register(0x0E);
 
 	// Read Register
-	uint8_t HDC2010_MeasurementConfig_Read = I2C.Read_Register(0x40, 0x0F);
+	uint8_t HDC2010_MeasurementConfig_Read = HDC2010_Humidity.Read_Register(0x0F);
 
 	// Set Measurement Rate
 	HDC2010_Config_Read &= 0xDF;
@@ -125,10 +135,10 @@ float HDC2010::Humidity(void) {
 	HDC2010_MeasurementConfig_Read |= 0x01;
 
 	// Write Register
-	I2C.Write_Register(0x40, 0x0E, HDC2010_Config_Read, false);
+	HDC2010_Humidity.Write_Register(0x0E, HDC2010_Config_Read, false);
 
 	// Write Register
-	I2C.Write_Register(0x40, 0x0F, HDC2010_MeasurementConfig_Read, false);
+	HDC2010_Humidity.Write_Register(0x0F, HDC2010_MeasurementConfig_Read, false);
 
 	// Define Measurement Read Array
 	float Measurement_Array[_Read_Count];
@@ -143,8 +153,8 @@ float HDC2010::Humidity(void) {
 		delay(5);
 
 		// Read Register
-		HDC2010_Data[0] = I2C.Read_Register(0x40, 0x02);
-		HDC2010_Data[1] = I2C.Read_Register(0x40, 0x03);
+		HDC2010_Data[0] = HDC2010_Humidity.Read_Register(0x02);
+		HDC2010_Data[1] = HDC2010_Humidity.Read_Register(0x03);
 
 		// Combine Read Bytes
 		uint16_t Measurement_Raw = ((uint16_t)(HDC2010_Data[1]) << 8 | (uint16_t)HDC2010_Data[0]);
@@ -172,7 +182,7 @@ float HDC2010::Humidity(void) {
 }
 
 // SHT21 Functions
-SHT21::SHT21(uint8_t _Measurement_Count, bool _Calibration_Enable) {
+SHT21::SHT21(bool _Multiplexer_Enable, uint8_t _Multiplexer_Channel, uint8_t _Measurement_Count, bool _Calibration_Enable) {
 
 	// Set Measurement Count
 	this->_Read_Count = _Measurement_Count;
@@ -180,20 +190,27 @@ SHT21::SHT21(uint8_t _Measurement_Count, bool _Calibration_Enable) {
 	// Enable Calibration
 	this->_Calibration = _Calibration_Enable;
 
+	// Set Multiplexer Variables
+	this->_Mux_Enable = _Multiplexer_Enable;
+	this->_Mux_Channel = _Multiplexer_Channel;
+
 }
 float SHT21::Temperature(void) {
+
+	// Create I2C Device
+	I2C_Functions SHT21_Temperature(__I2C_Addr_SHT21__, this->_Mux_Enable, this->_Mux_Channel);
 
 	// User Register Defination
 	uint8_t User_Reg_ = 0b01000010;
 	
 	// Send Soft Reset Command to SHT21
-	I2C.Write_Command(0x40, 0xFE, false);
+	SHT21_Temperature.Write_Command(0xFE, false);
 
 	// Read User Register of SHT21
-	uint8_t SHT21_Config_Read = I2C.Read_Register(0x40, 0xE6);
+	uint8_t SHT21_Config_Read = SHT21_Temperature.Read_Register(0xE6);
 
 	// Control for Config Read Register
-	if (SHT21_Config_Read != User_Reg_) if (!I2C.Write_Register(0x40, 0xE6, User_Reg_, false)) return(-102);
+	if (SHT21_Config_Read != User_Reg_) if (!SHT21_Temperature.Write_Register(0xE6, User_Reg_, false)) return(-102);
 
 	// Define Measurement Read Array
 	float Measurement_Array[this->_Read_Count];
@@ -205,7 +222,7 @@ float SHT21::Temperature(void) {
 		uint8_t SHT21_Data[4];
 
 		// Send Read Command to SHT21
-		I2C.Read_Multiple_Register(0x40, 0xE3, SHT21_Data, 3, false);
+		SHT21_Temperature.Read_Multiple_Register(0xE3, SHT21_Data, 3, false);
 
 		// Combine Read Bytes
 		uint16_t Measurement_Raw = ((uint16_t)SHT21_Data[0] << 8) | (uint16_t)SHT21_Data[1];
@@ -239,17 +256,20 @@ float SHT21::Temperature(void) {
 }
 float SHT21::Humidity(void) {
 
+	// Create I2C Device
+	I2C_Functions SHT21_Humidity(__I2C_Addr_SHT21__, this->_Mux_Enable, this->_Mux_Channel);
+
 	// User Register Defination
 	uint8_t User_Reg_ = 0b00000001;
 	
 	// Send Soft Reset Command to SHT21
-	I2C.Write_Command(0x40, 0xFE, false);
+	SHT21_Humidity.Write_Command(0xFE, false);
 
 	// Read User Register of SHT21
-	uint8_t SHT21_Config_Read = I2C.Read_Register(0x40, 0xE6);
+	uint8_t SHT21_Config_Read = SHT21_Humidity.Read_Register(0xE6);
 
 	// Control for Config Read Register
-	if (SHT21_Config_Read != User_Reg_) if (!I2C.Write_Register(0x40, 0xE6, User_Reg_, false)) return(-102);
+	if (SHT21_Config_Read != User_Reg_) if (!SHT21_Humidity.Write_Register(0xE6, User_Reg_, false)) return(-102);
 
 	// Define Measurement Read Array
 	float Measurement_Array[this->_Read_Count];
@@ -261,7 +281,7 @@ float SHT21::Humidity(void) {
 		uint8_t SHT21_Data[4];
 
 		// Send Read Command to SHT21
-		I2C.Read_Multiple_Register(0x40, 0xE5, SHT21_Data, 3, false);
+		SHT21_Humidity.Read_Multiple_Register(0xE5, SHT21_Data, 3, false);
 
 		// Combine Read Bytes
 		uint16_t Measurement_Raw = ((uint16_t)SHT21_Data[0] << 8) | (uint16_t)SHT21_Data[1];

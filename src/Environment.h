@@ -25,10 +25,17 @@
 #include <Statistical.h>
 #endif
 
+// I2C Library Definitions
+#define __I2C_Environment_Version__	"04.01.00"
+
 // HDC2010 Class
 class HDC2010 {
 
 	private:
+
+		// Mux Parameters
+		bool _Mux_Enable = false;
+		uint8_t _Mux_Channel = 0;
 
 		// Read Count
 		uint8_t _Read_Count = 10;
@@ -39,7 +46,7 @@ class HDC2010 {
 	public:
 
 		// Constractor
-		HDC2010(uint8_t _Measurement_Count, bool _Calibration_Enable);
+		HDC2010(bool _Multiplexer_Enable, uint8_t _Multiplexer_Channel, uint8_t _Measurement_Count = 1, bool _Calibration_Enable = false);
 
 		// Temperature
 		float Temperature(void);
@@ -54,6 +61,10 @@ class SHT21 {
 
 	private:
 
+		// Mux Parameters
+		bool _Mux_Enable = false;
+		uint8_t _Mux_Channel = 0;
+
 		// Read Count
 		uint8_t _Read_Count = 10;
 
@@ -63,7 +74,7 @@ class SHT21 {
 	public:
 
 		// Constractor
-		SHT21(uint8_t _Measurement_Count, bool _Calibration_Enable);
+		SHT21(bool _Multiplexer_Enable, uint8_t _Multiplexer_Channel, uint8_t _Measurement_Count, bool _Calibration_Enable);
 
 		// Temperature
 		float Temperature(void);
