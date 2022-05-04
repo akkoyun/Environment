@@ -1,7 +1,7 @@
 /* *******************************************************************************
  *  Copyright (C) 2014-2019 Mehmet Gunce Akkoyun Can not be copied and/or
  *	distributed without the express permission of Mehmet Gunce Akkoyun
- *	This library is a combined book of enviroment sensor library.
+ *	This library is a combined book of environment sensor library.
  *
  *	Library				: Environment Library.
  *	Code Developer		: Mehmet Gunce Akkoyun (akkoyun@me.com)
@@ -26,7 +26,7 @@
 #endif
 
 // I2C Library Definitions
-#define __I2C_Environment_Version__	"04.01.01"
+#define __I2C_Environment_Version__	"04.01.03"
 
 // HDC2010 Class
 class HDC2010 {
@@ -45,7 +45,7 @@ class HDC2010 {
 
 	public:
 
-		// Constractor
+		// Constructor
 		HDC2010(bool _Multiplexer_Enable, uint8_t _Multiplexer_Channel, uint8_t _Measurement_Count = 1, bool _Calibration_Enable = false);
 
 		// Temperature
@@ -73,7 +73,7 @@ class SHT21 {
 
 	public:
 
-		// Constractor
+		// Constructor
 		SHT21(bool _Multiplexer_Enable, uint8_t _Multiplexer_Channel, uint8_t _Measurement_Count, bool _Calibration_Enable);
 
 		// Temperature
@@ -97,7 +97,7 @@ class MPL3115A2 {
 
 	public:
 
-		// Constractor
+		// Constructor
 		MPL3115A2(uint8_t _Measurement_Count, bool _Calibration_Enable);
 
 		// Pressure
@@ -118,7 +118,7 @@ class TSL2561 {
 
 	public:
 
-		// Constractor
+		// Constructor
 		TSL2561(uint8_t _Measurement_Count, bool _Calibration_Enable);
 
 		// Light
@@ -142,7 +142,7 @@ class MCP3422 {
 
 	public:
 
-		// Constractor
+		// Constructor
 		MCP3422(uint8_t _Channel, uint8_t _Measurement_Count, bool _Calibration_Enable);
 
 		// Light
@@ -155,7 +155,7 @@ class Analog {
 
 	private:
 
-		// Analog Class Struct Defination
+		// Analog Class Struct Definition
 		struct Analog_Struct {
 
 			// Read Count
@@ -175,7 +175,7 @@ class Analog {
 		// Statistical Parameeters
 		float Standart_Deviation;
 
-		// Constractor
+		// Constructor
 		Analog(uint8_t _Channel, uint8_t _Read_Count, bool _Calibration, float _Cal_a, float _Cal_b);
 
 		// Read

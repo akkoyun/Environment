@@ -387,7 +387,7 @@ float MPL3115A2::Pressure(void) {
 		uint8_t Ready_Status_Try_Counter = 0;
 		
 		// ************************************************************
-		// Wait for Measurement Complate
+		// Wait for Measurement Complete
 		// ************************************************************
 		while ((MPL3115A2_Read_Status & 0b00000100) != 0b00000100) {
 			
@@ -910,7 +910,7 @@ float MCP3422::Pressure(void) {
 	// Mode Setting
 	if (_Mode == 1) {
 		Setting_Register |= 0b00010000;
-	} // Continious Mode
+	} // Continuous Mode
 	if (_Mode == 2) {
 		Setting_Register &= 0b11101111;
 	} // One Shot Mode
