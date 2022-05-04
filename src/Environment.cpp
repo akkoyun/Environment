@@ -1,7 +1,7 @@
 /* *******************************************************************************
  *  Copyright (C) 2014-2019 Mehmet Gunce Akkoyun Can not be copied and/or
  *	distributed without the express permission of Mehmet Gunce Akkoyun
- *	This library is a combined book of enviroment sensor library.
+ *	This library is a combined book of environment sensor library.
  *
  *	Library				: Environment Library.
  *	Code Developer		: Mehmet Gunce Akkoyun (akkoyun@me.com)
@@ -200,7 +200,7 @@ float SHT21::Temperature(void) {
 	// Create I2C Device
 	I2C_Functions SHT21_Temperature(__I2C_Addr_SHT21__, this->_Mux_Enable, this->_Mux_Channel);
 
-	// User Register Defination
+	// User Register Definition
 	uint8_t User_Reg_ = 0b01000010;
 	
 	// Send Soft Reset Command to SHT21
@@ -259,7 +259,7 @@ float SHT21::Humidity(void) {
 	// Create I2C Device
 	I2C_Functions SHT21_Humidity(__I2C_Addr_SHT21__, this->_Mux_Enable, this->_Mux_Channel);
 
-	// User Register Defination
+	// User Register Definition
 	uint8_t User_Reg_ = 0b00000001;
 	
 	// Send Soft Reset Command to SHT21
@@ -379,7 +379,7 @@ float MPL3115A2::Pressure(void) {
 		if (MPL3115A2_Sensor_PT_DATA_CFG_Register != 0) return(-103);
 		
 		// ************************************************************
-		// Read Sensor Datas
+		// Read Sensor Data
 		// ************************************************************
 		
 		// Define Variables

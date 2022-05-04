@@ -2,7 +2,7 @@
 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/akkoyun/Environment) ![arduino-library-badge](https://www.ardu-badge.com/badge/Environment.svg?) ![Visits Badge](https://badges.pufler.dev/visits/akkoyun/Environment) ![GitHub stars](https://img.shields.io/github/stars/akkoyun/Environment?style=flat&logo=github) ![Updated Badge](https://badges.pufler.dev/updated/akkoyun/Environment) ![GitHub](https://img.shields.io/github/license/akkoyun/Environment) ![PlatformIO Registry](https://badges.registry.platformio.org/packages/akkoyun/library/Environment.svg)
 
-	Library - 04.01.00
+	Library - 04.01.01
 ---
 
 **Abstract**
@@ -11,7 +11,7 @@ Many small embedded systems exist to collect data from sensors, analyse the data
 
 One of the many challenges of embedded systems design is the fact that parts you used today may be out of production tomorrow, or system requirements may change and you may need to choose a different sensor down the road.
 
-In real world environmet measurements are so important for electronics. This library able to measure most common sensors environment measurements. Also data mining and cleaning is so important for true data. Tnis library measures data more then one times and make some statistics works. The output of library is so cleand and trust data. We are working on other most common sensors. 
+In real world environment measurements are so important for electronics. This library able to measure most common sensors environment measurements. Also data mining and cleaning is so important for true data. Tnis library measures data more then one times and make some statistics works. The output of library is so cleaned and trust data. We are working on other most common sensors. 
 
 Below list is the recent sensor support. Thanks for interesting.
 
@@ -31,7 +31,7 @@ Below list is the recent sensor support. Thanks for interesting.
 	  |
 	  |-- I2C Functions
 	  |     |
-	  |     |-- Sensor Library (Definations)
+	  |     |-- Sensor Library (Definitions)
 	  |
 	  |-- Statistical
 

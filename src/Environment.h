@@ -26,7 +26,7 @@
 #endif
 
 // I2C Library Definitions
-#define __I2C_Environment_Version__	"04.01.00"
+#define __I2C_Environment_Version__	"04.01.01"
 
 // HDC2010 Class
 class HDC2010 {

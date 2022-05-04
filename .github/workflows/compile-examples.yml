@@ -47,8 +47,8 @@ jobs:
           libraries: |
             # Install the library from the local path.
             - source-path: ./
-            # Additional library dependencies can be listed here.
-            # See: https://github.com/arduino/compile-sketches#libraries
+            - name: I2C_Functions
+            - name: Statistical
           sketch-paths: |
             - examples
           enable-deltas-report: true
