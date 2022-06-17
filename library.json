@@ -1,6 +1,6 @@
 {
 	"name": "Environment",
-	"version": "4.1.3",
+	"version": "5.0.0",
 	"keywords": "Sensor, Environment, SHT21, HDC2010, TSL2561, MPL3115, Temperature, Humidity, Pressure, Light",
 	"description": "Function measures the value of given sensors. Library is used data mining for stable sensor data. Also cleared for lite use.",
 	"authors": {
@@ -35,31 +35,6 @@
 			"name": "HDC2010 T/H Read",
 			"base": "examples/HDC2010",
 			"files": ["HDC2010.ino"]
-		},
-		{
-			"name": "MPL3115A2 Pressure Read",
-			"base": "examples/MPL3115A2_Pressure",
-			"files": ["MPL3115A2_Pressure.ino"]
-		},
-		{
-			"name": "SHT21 Humidity Read",
-			"base": "examples/SHT21_Humidity",
-			"files": ["SHT21_Humidity.ino"]
-		},
-		{
-			"name": "SHT21 Temperature Read",
-			"base": "examples/SHT21_Temperature",
-			"files": ["SHT21_Temperature.ino"]
-		},
-		{
-			"name": "TSL2561 Light Read",
-			"base": "examples/TSL2561_Light",
-			"files": ["TSL2561_Light.ino"]
-		},
-		{
-			"name": "MCP3422 Pressure Read",
-			"base": "examples/MCP3422_Pressure",
-			"files": ["MCP3422_Pressure.ino"]
 		}
 	]
 }
