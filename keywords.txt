@@ -6,38 +6,21 @@
 # Datatypes (KEYWORD1)
 #######################################
 
-Sensor						KEYWORD1
+HDC2010						KEYWORD1
+Analog                      KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
 #######################################
 
-Read_Sensor					KEYWORD2
-SHT21_Temperature			KEYWORD2
-SHT21_Humidity				KEYWORD2
-MPL3115A2_Pressure			KEYWORD2
-TSL2561_Light				KEYWORD2
-HDC2010_Temperature			KEYWORD2
-HDC2010_Humidity			KEYWORD2
-MCP3422_Pressure			KEYWORD2
-Read_Analog_Pressure        KEYWORD2
+Sensor  					KEYWORD2
+Set_Calibration_Parameters  KEYWORD2
+Temperature                 KEYWORD2
+Humidity                    KEYWORD2
+Standard_Deviation          KEYWORD2
+Analog                      KEYWORD2
+Read                        KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
 #######################################
-
-SHT21_T_Calibrarion_a		LITERAL1
-SHT21_T_Calibrarion_b		LITERAL1
-SHT21_H_Calibrarion_a		LITERAL1
-SHT21_H_Calibrarion_b		LITERAL1
-MPL3115A2_P_Calibrarion_a	LITERAL1
-MPL3115A2_P_Calibrarion_b	LITERAL1
-HDC2010_T_Calibrarion_a		LITERAL1
-HDC2010_T_Calibrarion_b		LITERAL1
-HDC2010_H_Calibrarion_a		LITERAL1
-HDC2010_H_Calibrarion_b		LITERAL1
-MCP3422_P_Calibrarion_a		LITERAL1
-MCP3422_P_Calibrarion_b		LITERAL1
-
-
-SHT21_T_Version				LITERAL1

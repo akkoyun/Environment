@@ -3,26 +3,89 @@
 
 // Define Arduino Library
 #ifndef __Arduino__
-#include <Arduino.h>
+	#include <Arduino.h>
 #endif
 
-// HDC2010 Class
+// Define I2C Functions Library
+#ifndef __I2C_Functions__
+	#include <I2C_Functions.h>
+#endif
+
+// Include Statistical Library
+#ifndef __Statistical__
+	#include <Statistical.h>
+#endif
+
+/**
+ * @brief HDC2010 TH Sensor Class
+ * @version 01.00.00
+ */
 class HDC2010 : public I2C_Functions {
 
 	private:
 
-		// Sensor Variables
+		/**
+		 * @brief HDC2010 Sensor Variable Structure.
+		 */
 		struct HDC2010_Struct {
-			uint8_t TWI_Address = 0x40;
-			bool Mux_Enable = false;
-			uint8_t Mux_Channel = 0;
-			uint8_t Read_Count = 10;
-			bool Calibration = false;
+
+			/**
+			 * @brief HDC2010 Sensor Address Variable.
+			 */
+			uint8_t TWI_Address 		= 0x40;
+
+			/**
+			 * @brief Sensor Mux Variable (if after a I2C multiplexer).
+			 */
+			bool Mux_Enable 			= false;
+
+			/**
+			 * @brief Sensor Mux Channel (if after a I2C multiplexer).
+			 */
+			uint8_t Mux_Channel 		= 0;
+
+			/**
+			 * @brief Measurement Read Count Variable (if not defined 1 measurement make).
+			 */
+			uint8_t Read_Count 			= 1;
+
+			/**
+			 * @brief Measurement Calibration Enable Variable (if set true library make calibration).
+			 */
+			bool Calibration 			= false;
+
+			/**
+			 * @brief Temperature Calibration (aX+B) Gain Variable
+			 */
+			float Calibration_T_Gain	= 1.0053;
+			
+			/**
+			 * @brief Temperature Calibration (aX+B) Offset Variable
+			 */
+			float Calibration_T_Offset	= -0.4102;
+
+			/**
+			 * @brief Humidity Calibration (aX+B) Gain Variable
+			 */
+			float Calibration_H_Gain	= 0.9821;
+			
+			/**
+			 * @brief Humidity Calibration (aX+B) Offset Variable
+			 */
+			float Calibration_H_Offset	= -0.3217;
+
 		} Sensor;
 
 	public:
 
-		// Constructor
+		/**
+		 * @brief Construct a new HDC2010 object
+		 * @param _Multiplexer_Enable I2C Multiplexer Enable
+		 * @param _Multiplexer_Channel I2C Multiplexer Channel
+		 * @param _Measurement_Count Measurement Count
+		 * @param _Calibration_Enable Calibration Enable
+		 * @version 01.00.00
+		 */
 		HDC2010(bool _Multiplexer_Enable, uint8_t _Multiplexer_Channel, uint8_t _Measurement_Count = 1, bool _Calibration_Enable = false) : I2C_Functions(__I2C_Addr_HDC2010__, _Multiplexer_Enable, _Multiplexer_Channel) {
 
 			// Set Measurement Count
@@ -37,7 +100,45 @@ class HDC2010 : public I2C_Functions {
 
 		}
 
-		// Temperature
+		/**
+		 * @brief Calibration Parameters Set Function.
+		 * @param _Measurement_Type Measurement Type
+		 * 1 - Temperature
+		 * 2 - Humidity
+		 * @param _Gain Gain 
+		 * @param _Offset Offset
+		 */
+		void Set_Calibration_Parameters(uint8_t _Measurement_Type, float _Gain, float _Offset) {
+
+			// Set Temperature Calibration Parameters
+			if (_Measurement_Type == 1) {
+
+				// Set Gain
+				this->Sensor.Calibration_T_Gain = _Gain;
+
+				// Set Offset
+				this->Sensor.Calibration_T_Offset = _Offset;
+
+			}
+
+			// Set Humidity Calibration Parameters
+			if (_Measurement_Type == 2) {
+
+				// Set Gain
+				this->Sensor.Calibration_H_Gain = _Gain;
+
+				// Set Offset
+				this->Sensor.Calibration_H_Offset = _Offset;
+				
+			}
+
+		}
+
+		/**
+		 * @brief Read Temperature Function
+		 * @return float Temperature Measurement
+		 * @version 01.00.00
+		 */
 		float Temperature(void) {
 
 			// Read Register
@@ -101,7 +202,7 @@ class HDC2010 : public I2C_Functions {
 			float Value_ = Data_Array.Average(Data_Array.Arithmetic_Avg);
 
 			// Calibrate Data
-			if (this->Sensor.Calibration) Value_ = (1.0053 * Value_) -0.4102;
+			if (this->Sensor.Calibration) Value_ = (this->Sensor.Calibration_T_Gain * Value_) + this->Sensor.Calibration_T_Offset;
 
 			// Control For Sensor Range
 			if (Value_ < -40 or Value_ > 125) Value_ = -101;
@@ -111,11 +212,12 @@ class HDC2010 : public I2C_Functions {
 			
 		}
 
-		// Humidity
+		/**
+		 * @brief Read Humidity Function
+		 * @return float Humidity Measurement
+		 * @version 01.00.00
+		 */
 		float Humidity(void) {
-
-			// Reset Sensor
-			Set_Register_Bit(0x0E, 7, false);
 
 			// Read Register
 			uint8_t HDC2010_Config_Read = Read_Register(0x0E);
@@ -179,7 +281,7 @@ class HDC2010 : public I2C_Functions {
 			float Value_ = Data_Array.Average(Data_Array.Arithmetic_Avg);
 
 			// Calibrate Data
-			if (this->Sensor.Calibration) Value_ = (0.9821 * Value_) -0.3217;
+			if (this->Sensor.Calibration) Value_ = (this->Sensor.Calibration_H_Gain * Value_) + this->Sensor.Calibration_H_Offset;
 
 			// Control For Sensor Range
 			if (Value_ < 0 or Value_ > 100) Value_ = -101;
@@ -191,7 +293,10 @@ class HDC2010 : public I2C_Functions {
 
 };
 
-// Analog Read Class
+/**
+ * @brief AVR Analog Read Class
+ * @version 01.00.00
+ */
 class Analog {
 
 	private:
@@ -199,25 +304,42 @@ class Analog {
 		// Analog Class Struct Definition
 		struct Analog_Struct {
 
-			// Read Count
+			/**
+			 * @brief Measurement Read Count Variable (if not defined 1 measurement make).
+			 */
 			uint8_t Read_Count;
 
-			// Calibration Parameters
+			/**
+			 * @brief Measurement Calibration Enable Variable (if set true library make calibration).
+			 */
 			bool Calibration;
 
-			// Calibration Parameters
-			float Cal_a;
-			float Cal_b;
+			/**
+			 * @brief Calibration (aX+B) Gain Variable
+			 */
+			float Calibration_Gain;
+			
+			/**
+			 * @brief Calibration (aX+B) Offset Variable
+			 */
+			float Calibration_Offset;
 
 		} Measurement;
 
 	public:
 
-		// Statistical Parameeters
-		float Standart_Deviation;
+		// Statistical Parameters
+		float Standard_Deviation;
 
-		// Constructor
-		Analog(uint8_t _Channel, uint8_t _Read_Count, bool _Calibration, float _Cal_a, float _Cal_b) {
+		/**
+		 * @brief Construct a new Analog object
+		 * @param _Channel Analog Channel
+		 * @param _Read_Count Measurement Count (default 1)
+		 * @param _Calibration Measurement Calibration (default false)
+		 * @param _Cal_a Calibration Gain (default 1)
+		 * @param _Cal_b Calibration Offset (default 0)
+		 */
+		Analog(uint8_t _Channel, uint8_t _Read_Count = 1, bool _Calibration = false, float _Cal_a = 1, float _Cal_b = 0) {
 
 			// Set Channel Variable
 			_Channel &= 0b00000111;
@@ -225,8 +347,8 @@ class Analog {
 			// Set Variables
 			this->Measurement.Read_Count = _Read_Count;
 			this->Measurement.Calibration = _Calibration;
-			this->Measurement.Cal_a = _Cal_a;
-			this->Measurement.Cal_b = _Cal_b;
+			this->Measurement.Calibration_Gain = _Cal_a;
+			this->Measurement.Calibration_Offset = _Cal_b;
 
 			/*
 				MUX3-0 
@@ -245,7 +367,7 @@ class Analog {
 				0-0 : AREF used as VRef and internal VRef is turned off.
 				0-1 : AVCC with external capacitor at the AREF pin is used as VRef.
 				1-0 : Reserved.
-				1-1 : Internal referance voltage of 2v56 is used with an external capacitor at AREF pin for VRef.
+				1-1 : Internal reference voltage of 2v56 is used with an external capacitor at AREF pin for VRef.
 
 				ADPS2-0
 				-------
@@ -276,8 +398,12 @@ class Analog {
 			
 		}
 
-		// Read
-		double Read(void) {
+		/**
+		 * @brief Analog Read Function
+		 * @return float Measurement
+		 * @version 01.00.00
+		 */
+		float Read(void) {
 
 			// Define Measurement Read Array
 			double _Array[this->Measurement.Read_Count];
@@ -301,7 +427,7 @@ class Analog {
 				if (this->Measurement.Calibration) { 
 
 					// Calibrate
-					_Array[Read_ID] = (this->Measurement.Cal_a * _Pressure) + this->Measurement.Cal_b;
+					_Array[Read_ID] = (this->Measurement.Calibration_Gain * _Pressure) + this->Measurement.Calibration_Offset;
 
 				} else {
 
@@ -319,7 +445,7 @@ class Analog {
 			double _Data = Data_Array.Average(4);
 
 			// Set Statistical Parameter
-			this->Standart_Deviation = Data_Array.Standard_Deviation();
+			this->Standard_Deviation = Data_Array.Standard_Deviation();
 
 			// End Function
 			return(_Data);

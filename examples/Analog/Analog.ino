@@ -30,7 +30,7 @@ void loop() {
 
 	// Serial Print Data
 	Serial.print("Pressure      : "); Serial.print(_Measurement, 3); Serial.println(" Bar");
-	Serial.print("Deviation     : "); Serial.print(Pressure.Standart_Deviation, 3); Serial.println("");
+	Serial.print("Deviation     : "); Serial.print(Pressure.Standard_Deviation, 3); Serial.println("");
 	Serial.print("Function Time : "); Serial.print(DT); Serial.println(" mS");
 	Serial.println("--------------------------");
 

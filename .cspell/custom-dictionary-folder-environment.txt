@@ -1,0 +1,17 @@
+ADCSRA
+ADSC
+ADIF
+millis
+AREF
+AVCC
+Prescaler
+ADPS
+ADMUX
+Mehmet
+Gunce
+Akkoyun
+atmelavr
+atmelmegaavr
+Datatypes
+Günce
+Doxygen
