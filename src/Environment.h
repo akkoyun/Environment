@@ -17,6 +17,167 @@
 #endif
 
 /**
+ * @brief AVR Analog Read Class
+ * @version 01.00.00
+ */
+class Analog {
+
+	private:
+
+		// Analog Class Struct Definition
+		struct Analog_Struct {
+
+			/**
+			 * @brief Measurement Read Count Variable (if not defined 1 measurement make).
+			 */
+			uint8_t Read_Count;
+
+			/**
+			 * @brief Measurement Calibration Enable Variable (if set true library make calibration).
+			 */
+			bool Calibration;
+
+			/**
+			 * @brief Calibration (aX+B) Gain Variable
+			 */
+			float Calibration_Gain;
+			
+			/**
+			 * @brief Calibration (aX+B) Offset Variable
+			 */
+			float Calibration_Offset;
+
+		} Measurement;
+
+	public:
+
+		// Statistical Parameters
+		float Standard_Deviation;
+
+		/**
+		 * @brief Construct a new Analog object
+		 * @param _Channel Analog Channel
+		 * @param _Read_Count Measurement Count (default 1)
+		 * @param _Calibration Measurement Calibration (default false)
+		 * @param _Cal_a Calibration Gain (default 1)
+		 * @param _Cal_b Calibration Offset (default 0)
+		 */
+		Analog(uint8_t _Channel, uint8_t _Read_Count = 1, bool _Calibration = false, float _Cal_a = 1, float _Cal_b = 0) {
+
+			// Set Channel Variable
+			_Channel &= 0b00000111;
+
+			// Set Variables
+			this->Measurement.Read_Count = _Read_Count;
+			this->Measurement.Calibration = _Calibration;
+			this->Measurement.Calibration_Gain = _Cal_a;
+			this->Measurement.Calibration_Offset = _Cal_b;
+
+			/*
+				MUX3-0 
+				------
+				0-0-0-0 : ADC0
+				0-0-0-1 : ADC1
+				0-0-1-0 : ADC2
+				0-0-1-1 : ADC3
+				0-1-0-0 : ADC4
+				0-1-0-1 : ADC5
+				0-1-1-0 : ADC6
+				0-1-1-1 : ADC7
+
+				REFS1-0
+				-------
+				0-0 : AREF used as VRef and internal VRef is turned off.
+				0-1 : AVCC with external capacitor at the AREF pin is used as VRef.
+				1-0 : Reserved.
+				1-1 : Internal reference voltage of 2v56 is used with an external capacitor at AREF pin for VRef.
+
+				ADPS2-0
+				-------
+				0-0-0 : 2
+				0-0-1 : 2
+				0-1-0 : 4
+				0-1-1 : 8
+				1-0-0 : 16
+				1-0-1 : 32
+				1-1-0 : 64
+				1-1-1 : 128
+				7.372.800 Hz / Prescaler = 230.400 Hz --> Prescaler = 32
+
+			*/
+
+			// Set MUXx Bits
+			ADMUX = (ADMUX & 0xF0) | _Channel;
+			
+			// Set REFSx Bits
+			ADMUX = (ADMUX & 0x3F);
+			ADMUX |= (1<<REFS0);
+
+			// Set ADPSx (Prescaler)
+			ADCSRA = (ADCSRA & 0xF8) | 0x05;
+
+			// Set ADEN Bit (ADC Enable)
+			ADCSRA |= (1<<ADEN);
+			
+		}
+
+		/**
+		 * @brief Analog Read Function
+		 * @return float Measurement
+		 * @version 01.00.00
+		 */
+		float Read(void) {
+
+			// Define Measurement Read Array
+			double _Array[this->Measurement.Read_Count];
+
+			// Read Loop For Read Count
+			for (size_t Read_ID = 0; Read_ID < this->Measurement.Read_Count; Read_ID++) {
+
+				// Start Measurement
+				ADCSRA |= (1<<ADSC);
+
+				// Wait While Measurement
+				while(ADCSRA & (1 << ADIF));
+
+				// Get Measurement
+				uint16_t _Raw_Data = ADC;
+
+				// Calculate Raw Pressure
+				double _Pressure = ((float)10 * (float)_Raw_Data) / (float)1023;
+
+				// Calibrate Measurement
+				if (this->Measurement.Calibration) { 
+
+					// Calibrate
+					_Array[Read_ID] = (this->Measurement.Calibration_Gain * _Pressure) + this->Measurement.Calibration_Offset;
+
+				} else {
+
+					// Dont Calibrate
+					_Array[Read_ID] = _Pressure;
+
+				}
+
+			}
+
+			// Construct Object
+			Array_Stats<double> Data_Array(_Array, this->Measurement.Read_Count);
+
+			// Calculate Average
+			double _Data = Data_Array.Average(4);
+
+			// Set Statistical Parameter
+			this->Standard_Deviation = Data_Array.Standard_Deviation();
+
+			// End Function
+			return(_Data);
+			
+		}
+
+};
+
+/**
  * @brief HDC2010 TH Sensor Class
  * @version 01.00.00
  */
@@ -86,7 +247,7 @@ class HDC2010 : public I2C_Functions {
 		 * @param _Calibration_Enable Calibration Enable
 		 * @version 01.00.00
 		 */
-		HDC2010(bool _Multiplexer_Enable, uint8_t _Multiplexer_Channel, uint8_t _Measurement_Count = 1, bool _Calibration_Enable = false) : I2C_Functions(__I2C_Addr_HDC2010__, _Multiplexer_Enable, _Multiplexer_Channel) {
+		HDC2010(bool _Multiplexer_Enable, uint8_t _Multiplexer_Channel, uint8_t _Measurement_Count = 1, bool _Calibration_Enable = false) : I2C_Functions(this->Sensor.TWI_Address, _Multiplexer_Enable, _Multiplexer_Channel) {
 
 			// Set Measurement Count
 			this->Sensor.Read_Count = _Measurement_Count;
@@ -294,163 +455,186 @@ class HDC2010 : public I2C_Functions {
 };
 
 /**
- * @brief AVR Analog Read Class
+ * @brief MPL3115A2 Pressure Sensor Class
  * @version 01.00.00
  */
-class Analog {
+class MPL3115A2 : public I2C_Functions {
 
 	private:
 
-		// Analog Class Struct Definition
-		struct Analog_Struct {
+		/**
+		 * @brief MPL3115A2 Sensor Variable Structure.
+		 */
+		struct MPL3115A2_Struct {
+
+			/**
+			 * @brief MPL3115A2 Sensor Address Variable.
+			 */
+			uint8_t TWI_Address 		= 0x60;
+
+			/**
+			 * @brief Sensor Mux Variable (if after a I2C multiplexer).
+			 */
+			bool Mux_Enable 			= false;
+
+			/**
+			 * @brief Sensor Mux Channel (if after a I2C multiplexer).
+			 */
+			uint8_t Mux_Channel 		= 0;
 
 			/**
 			 * @brief Measurement Read Count Variable (if not defined 1 measurement make).
 			 */
-			uint8_t Read_Count;
+			uint8_t Read_Count 			= 1;
 
 			/**
 			 * @brief Measurement Calibration Enable Variable (if set true library make calibration).
 			 */
-			bool Calibration;
+			bool Calibration 			= false;
 
 			/**
-			 * @brief Calibration (aX+B) Gain Variable
+			 * @brief Pressure Calibration (aX+B) Gain Variable
 			 */
-			float Calibration_Gain;
+			float Calibration_P_Gain	= 1;
 			
 			/**
-			 * @brief Calibration (aX+B) Offset Variable
+			 * @brief Pressure Calibration (aX+B) Offset Variable
 			 */
-			float Calibration_Offset;
+			float Calibration_P_Offset	= 0;
 
-		} Measurement;
+		} Sensor;
 
 	public:
 
-		// Statistical Parameters
-		float Standard_Deviation;
-
 		/**
-		 * @brief Construct a new Analog object
-		 * @param _Channel Analog Channel
-		 * @param _Read_Count Measurement Count (default 1)
-		 * @param _Calibration Measurement Calibration (default false)
-		 * @param _Cal_a Calibration Gain (default 1)
-		 * @param _Cal_b Calibration Offset (default 0)
+		 * @brief Construct a new MPL3115A2 object
+		 * @param _Multiplexer_Enable I2C Multiplexer Enable
+		 * @param _Multiplexer_Channel I2C Multiplexer Channel
+		 * @param _Measurement_Count Measurement Count
+		 * @param _Calibration_Enable Calibration Enable
+		 * @version 01.00.00
 		 */
-		Analog(uint8_t _Channel, uint8_t _Read_Count = 1, bool _Calibration = false, float _Cal_a = 1, float _Cal_b = 0) {
+		MPL3115A2(bool _Multiplexer_Enable, uint8_t _Multiplexer_Channel, uint8_t _Measurement_Count = 1, bool _Calibration_Enable = false) : I2C_Functions(this->Sensor.TWI_Address, _Multiplexer_Enable, _Multiplexer_Channel) {
 
-			// Set Channel Variable
-			_Channel &= 0b00000111;
+			// Set Measurement Count
+			this->Sensor.Read_Count = _Measurement_Count;
 
-			// Set Variables
-			this->Measurement.Read_Count = _Read_Count;
-			this->Measurement.Calibration = _Calibration;
-			this->Measurement.Calibration_Gain = _Cal_a;
-			this->Measurement.Calibration_Offset = _Cal_b;
+			// Enable Calibration
+			this->Sensor.Calibration = _Calibration_Enable;
 
-			/*
-				MUX3-0 
-				------
-				0-0-0-0 : ADC0
-				0-0-0-1 : ADC1
-				0-0-1-0 : ADC2
-				0-0-1-1 : ADC3
-				0-1-0-0 : ADC4
-				0-1-0-1 : ADC5
-				0-1-1-0 : ADC6
-				0-1-1-1 : ADC7
+			// Set Multiplexer Variables
+			this->Sensor.Mux_Enable = _Multiplexer_Enable;
+			this->Sensor.Mux_Channel = _Multiplexer_Channel;
 
-				REFS1-0
-				-------
-				0-0 : AREF used as VRef and internal VRef is turned off.
-				0-1 : AVCC with external capacitor at the AREF pin is used as VRef.
-				1-0 : Reserved.
-				1-1 : Internal reference voltage of 2v56 is used with an external capacitor at AREF pin for VRef.
-
-				ADPS2-0
-				-------
-				0-0-0 : 2
-				0-0-1 : 2
-				0-1-0 : 4
-				0-1-1 : 8
-				1-0-0 : 16
-				1-0-1 : 32
-				1-1-0 : 64
-				1-1-1 : 128
-				7.372.800 Hz / Prescaler = 230.400 Hz --> Prescaler = 32
-
-			*/
-
-			// Set MUXx Bits
-			ADMUX = (ADMUX & 0xF0) | _Channel;
-			
-			// Set REFSx Bits
-			ADMUX = (ADMUX & 0x3F);
-			ADMUX |= (1<<REFS0);
-
-			// Set ADPSx (Prescaler)
-			ADCSRA = (ADCSRA & 0xF8) | 0x05;
-
-			// Set ADEN Bit (ADC Enable)
-			ADCSRA |= (1<<ADEN);
-			
 		}
 
 		/**
-		 * @brief Analog Read Function
-		 * @return float Measurement
+		 * @brief Calibration Parameters Set Function.
+		 * @param _Gain Gain 
+		 * @param _Offset Offset
+		 */
+		void Set_Calibration_Parameters(float _Gain, float _Offset) {
+
+			// Set Gain
+			this->Sensor.Calibration_P_Gain = _Gain;
+
+			// Set Offset
+			this->Sensor.Calibration_P_Offset = _Offset;
+
+		}
+
+		/**
+		 * @brief Read Pressure Function
+		 * @return float Pressure Measurement
 		 * @version 01.00.00
 		 */
-		float Read(void) {
+		float Pressure(void) {
 
-			// Define Measurement Read Array
-			double _Array[this->Measurement.Read_Count];
+			// Read Register
+			uint8_t MPL3115A2_Device_Signiture = Read_Register(0x0C);
 
-			// Read Loop For Read Count
-			for (size_t Read_ID = 0; Read_ID < this->Measurement.Read_Count; Read_ID++) {
+			// Control for Device Identifier
+			if (MPL3115A2_Device_Signiture == 0xC4) {
 
-				// Start Measurement
-				ADCSRA |= (1<<ADSC);
+				// Set CTRL_REG1 Register
+				Write_Register(0x26, 0x39, false);
 
-				// Wait While Measurement
-				while(ADCSRA & (1 << ADIF));
+				// Set PT_DATA_CFG Register
+				Write_Register(0x13, 0x07, false);
 
-				// Get Measurement
-				uint16_t _Raw_Data = ADC;
+				// Define Variables
+				uint8_t MPL3115A2_Read_Status = 0;
+				uint8_t Ready_Status_Try_Counter = 0;
 
-				// Calculate Raw Pressure
-				double _Pressure = ((float)10 * (float)_Raw_Data) / (float)1023;
+				// Wait for Measurement Complete
+				while ((MPL3115A2_Read_Status & 0b00000100) != 0b00000100) {
+					
+					//  Request Pressure Ready Status
+					MPL3115A2_Read_Status = Read_Register(0x00);
 
-				// Calibrate Measurement
-				if (this->Measurement.Calibration) { 
+					// Increase Counter
+					Ready_Status_Try_Counter += 1;
+					
+					// Control for Wait Counter
+					if (Ready_Status_Try_Counter > 50) return(0);
 
-					// Calibrate
-					_Array[Read_ID] = (this->Measurement.Calibration_Gain * _Pressure) + this->Measurement.Calibration_Offset;
+					// Ready Status Wait Delay
+					if ((MPL3115A2_Read_Status & 0b00000100) != 0b00000100) delay(50);
+					
+				}
 
-				} else {
+				// Define Measurement Read Array
+				float Measurement_Array[this->Sensor.Read_Count];
 
-					// Dont Calibrate
-					_Array[Read_ID] = _Pressure;
+				// Read Loop For Read Count
+				for (int Read_ID = 0; Read_ID < this->Sensor.Read_Count; Read_ID++) {
+
+					// Define Variables
+					uint8_t MPL3115A2_Data[3];
+
+					// Read Delay
+					delay(5);
+
+					// Read Register
+					Read_Multiple_Register(0x01, MPL3115A2_Data, 3, false);
+
+					// Define Variables
+					uint32_t Measurement_Raw = 0;
+
+					// Combine Read Bytes
+					Measurement_Raw = MPL3115A2_Data[0];
+					Measurement_Raw <<= 8;
+					Measurement_Raw |= MPL3115A2_Data[1];
+					Measurement_Raw <<= 8;
+					Measurement_Raw |= MPL3115A2_Data[2];
+					Measurement_Raw >>= 4;
+					
+					// Calculate Measurement
+					Measurement_Array[Read_ID] = (this->Sensor.Calibration_P_Gain * ((Measurement_Raw / 4.00 ) / 100)) + this->Sensor.Calibration_P_Offset;
+
+					// Read Delay
+					if (this->Sensor.Read_Count != 1) delay(512);
 
 				}
 
+				// Construct Object
+				Array_Stats<float> Data_Array(Measurement_Array, this->Sensor.Read_Count);
+
+				// Calculate Average
+				float Value_ = Data_Array.Average(Data_Array.Arithmetic_Avg);
+
+				// Control For Sensor Range
+				if (Value_ <= 500 or Value_ >= 11000) Value_ = 0;
+
+				// End Function
+				return(Value_);
+
 			}
 
-			// Construct Object
-			Array_Stats<double> Data_Array(_Array, this->Measurement.Read_Count);
-
-			// Calculate Average
-			double _Data = Data_Array.Average(4);
-
-			// Set Statistical Parameter
-			this->Standard_Deviation = Data_Array.Standard_Deviation();
-
 			// End Function
-			return(_Data);
-			
-		}
+			return(0);
+
+};
 
 };
 

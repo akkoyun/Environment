@@ -2,7 +2,6 @@
 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/akkoyun/Environment) ![arduino-library-badge](https://www.ardu-badge.com/badge/Environment.svg?) ![GitHub stars](https://img.shields.io/github/stars/akkoyun/Environment?style=flat&logo=github) ![GitHub](https://img.shields.io/github/license/akkoyun/Environment) ![PlatformIO Registry](https://badges.registry.platformio.org/packages/akkoyun/library/Environment.svg)
 
-	Library - 05.00.01
 ---
 
 ## Abstract
@@ -19,11 +18,13 @@ Below list is the recent sensor support. Thanks for interesting.
 
 	* HDC2010 - Temperature
 	* HDC2010 - Humidity
+	* MPL3115A2 - Pressure
 	* Analog Sensor Read
 
 ### Change Log
 
 * 05.00.01 - Doxygen update. Readme update. Function variables update.
+* 05.01.00 - MPL3115A2 function added.
 
 ---
 
