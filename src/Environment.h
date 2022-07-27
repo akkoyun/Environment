@@ -638,4 +638,104 @@ class MPL3115A2 : public I2C_Functions {
 
 };
 
+/**
+ * @brief SDP810 Delta Pressure Sensor Class
+ * @version 01.00.00
+ */
+class SDP810 : public I2C_Functions {
+
+	private:
+
+		/**
+		 * @brief SDP810 Sensor Variable Structure.
+		 */
+		struct SDP810_Struct {
+
+			/**
+			 * @brief MPL3115A2 Sensor Address Variable.
+			 */
+			uint8_t TWI_Address 		= 0x25;
+
+			/**
+			 * @brief Sensor Mux Variable (if after a I2C multiplexer).
+			 */
+			bool Mux_Enable 			= false;
+
+			/**
+			 * @brief Sensor Mux Channel (if after a I2C multiplexer).
+			 */
+			uint8_t Mux_Channel 		= 0;
+
+			/**
+			 * @brief Measurement Read Count Variable (if not defined 1 measurement make).
+			 */
+			uint8_t Read_Count 			= 1;
+
+			/**
+			 * @brief Measurement Calibration Enable Variable (if set true library make calibration).
+			 */
+			bool Calibration 			= false;
+
+			/**
+			 * @brief Pressure Calibration (aX+B) Gain Variable
+			 */
+			float Calibration_DP_Gain	= 1;
+			
+			/**
+			 * @brief Pressure Calibration (aX+B) Offset Variable
+			 */
+			float Calibration_DP_Offset	= 0;
+
+		} Sensor;
+
+	public:
+
+		/**
+		 * @brief Construct a new MPL3115A2 object
+		 * @param _Multiplexer_Enable I2C Multiplexer Enable
+		 * @param _Multiplexer_Channel I2C Multiplexer Channel
+		 * @param _Measurement_Count Measurement Count
+		 * @param _Calibration_Enable Calibration Enable
+		 * @version 01.00.00
+		 */
+		SDP810(bool _Multiplexer_Enable, uint8_t _Multiplexer_Channel, uint8_t _Measurement_Count = 1, bool _Calibration_Enable = false) : I2C_Functions(this->Sensor.TWI_Address, _Multiplexer_Enable, _Multiplexer_Channel) {
+
+			// Set Measurement Count
+			this->Sensor.Read_Count = _Measurement_Count;
+
+			// Enable Calibration
+			this->Sensor.Calibration = _Calibration_Enable;
+
+			// Set Multiplexer Variables
+			this->Sensor.Mux_Enable = _Multiplexer_Enable;
+			this->Sensor.Mux_Channel = _Multiplexer_Channel;
+
+		}
+
+		/**
+		 * @brief Stop Continuous Measurement
+		 * @version 01.00.00
+		 */
+		void Stop_Continuous_Measurement(void) {
+
+			// Declare Command
+			uint8_t Command[2] = {0x3F, 0xF9};
+
+			// Send Command
+			Write_Multiple_Command(Command, 2);
+
+		}
+
+		void Get_Product_Number(void) {
+
+			// Declare Identifier Array
+			uint8_t Identifier[18];
+
+			// Get Identifier 
+			Read_Multiple_Register_u16(0x367C, Identifier, 18, true);
+
+		}
+
+};
+
 #endif /* defined(__Environment__) */
