@@ -514,7 +514,7 @@ class MPL3115A2 : public I2C_Functions {
 		 * @param _Calibration_Enable Calibration Enable
 		 * @version 01.00.00
 		 */
-		MPL3115A2(bool _Multiplexer_Enable, uint8_t _Multiplexer_Channel, uint8_t _Measurement_Count = 1, bool _Calibration_Enable = false) : I2C_Functions(this->Sensor.TWI_Address, _Multiplexer_Enable, _Multiplexer_Channel) {
+		MPL3115A2(bool _Multiplexer_Enable, uint8_t _Multiplexer_Channel, uint8_t _Measurement_Count = 1, bool _Calibration_Enable = false) : I2C_Functions(__I2C_Addr_MPL3115A2__, _Multiplexer_Enable, _Multiplexer_Channel) {
 
 			// Set Measurement Count
 			this->Sensor.Read_Count = _Measurement_Count;
@@ -909,7 +909,7 @@ class TSL2561 : public I2C_Functions {
 		 * @param _Calibration_Enable Calibration Enable
 		 * @version 01.00.00
 		 */
-		TSL2561(bool _Multiplexer_Enable, uint8_t _Multiplexer_Channel, uint8_t _Measurement_Count = 1, bool _Calibration_Enable = false) : I2C_Functions(this->Sensor.TWI_Address, _Multiplexer_Enable, _Multiplexer_Channel) {
+		TSL2561(bool _Multiplexer_Enable, uint8_t _Multiplexer_Channel, uint8_t _Measurement_Count = 1, bool _Calibration_Enable = false) : I2C_Functions(__I2C_Addr_TSL2561__, _Multiplexer_Enable, _Multiplexer_Channel) {
 
 			// Set Measurement Count
 			this->Sensor.Read_Count = _Measurement_Count;
@@ -1064,7 +1064,7 @@ class SDP810 : public I2C_Functions {
 		 * @param _Calibration_Enable Calibration Enable
 		 * @version 01.00.00
 		 */
-		SDP810(bool _Multiplexer_Enable, uint8_t _Multiplexer_Channel, uint8_t _Measurement_Count = 1, bool _Calibration_Enable = false) : I2C_Functions(this->Sensor.TWI_Address, _Multiplexer_Enable, _Multiplexer_Channel) {
+		SDP810(bool _Multiplexer_Enable, uint8_t _Multiplexer_Channel, uint8_t _Measurement_Count = 1, bool _Calibration_Enable = false) : I2C_Functions(__I2C_Addr_SDP810__, _Multiplexer_Enable, _Multiplexer_Channel) {
 
 			// Set Measurement Count
 			this->Sensor.Read_Count = _Measurement_Count;
