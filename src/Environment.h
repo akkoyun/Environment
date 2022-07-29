@@ -247,7 +247,7 @@ class HDC2010 : public I2C_Functions {
 		 * @param _Calibration_Enable Calibration Enable
 		 * @version 01.00.00
 		 */
-		HDC2010(bool _Multiplexer_Enable, uint8_t _Multiplexer_Channel, uint8_t _Measurement_Count = 1, bool _Calibration_Enable = false) : I2C_Functions(this->Sensor.TWI_Address, _Multiplexer_Enable, _Multiplexer_Channel) {
+		HDC2010(bool _Multiplexer_Enable, uint8_t _Multiplexer_Channel, uint8_t _Measurement_Count = 1, bool _Calibration_Enable = false) : I2C_Functions(__I2C_Addr_HDC2010__, _Multiplexer_Enable, _Multiplexer_Channel) {
 
 			// Set Measurement Count
 			this->Sensor.Read_Count = _Measurement_Count;
@@ -341,12 +341,12 @@ class HDC2010 : public I2C_Functions {
 				// Define Variables
 				uint8_t HDC2010_Data[2];
 
-				// Read Delay
-				delay(5);
-
 				// Read Register
 				HDC2010_Data[0] = Read_Register(0x00);
 				HDC2010_Data[1] = Read_Register(0x01);
+
+				// Read Delay
+				delay(5);
 
 				// Combine Read Bytes
 				uint16_t Measurement_Raw = ((uint16_t)(HDC2010_Data[1]) << 8 | (uint16_t)HDC2010_Data[0]);
