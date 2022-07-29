@@ -1078,30 +1078,6 @@ class SDP810 : public I2C_Functions {
 
 		}
 
-		/**
-		 * @brief Stop Continuous Measurement
-		 * @version 01.00.00
-		 */
-		void Stop_Continuous_Measurement(void) {
-
-			// Declare Command
-			uint8_t Command[2] = {0x3F, 0xF9};
-
-			// Send Command
-			Write_Multiple_Command(Command, 2);
-
-		}
-
-		void Get_Product_Number(void) {
-
-			// Declare Identifier Array
-			uint8_t Identifier[18];
-
-			// Get Identifier 
-			Read_Multiple_Register_u16(0x367C, Identifier, 18, true);
-
-		}
-
 };
 
 #endif /* defined(__Environment__) */
