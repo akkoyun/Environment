@@ -19,12 +19,14 @@ Below list is the recent sensor support. Thanks for interesting.
 	* HDC2010 - Temperature
 	* HDC2010 - Humidity
 	* MPL3115A2 - Pressure
+	* TSL2561 - Light
 	* Analog Sensor Read
 
 ### Change Log
 
 * 05.00.01 - Doxygen update. Readme update. Function variables update.
 * 05.01.00 - MPL3115A2 function added.
+* 05.02.00 - TSL2561 Light Measurement Function Added.
 
 ---
 
