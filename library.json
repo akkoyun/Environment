@@ -1,6 +1,6 @@
 {
 	"name": "Environment",
-	"version": "5.2.3",
+	"version": "5.2.4",
 	"keywords": "Sensor, Environment, SHT21, HDC2010, TSL2561, MPL3115, Temperature, Humidity, Pressure, Light",
 	"description": "Function measures the value of given sensors. Library is used data mining for stable sensor data. Also cleared for lite use.",
 	"authors": {
@@ -27,6 +27,10 @@
 		{
 			"owner": "akkoyun",
 			"name": "Statistical"
+		},
+		{
+			"owner": "akkoyun",
+			"name": "Console"
 		}
 	],
 	"examples": [

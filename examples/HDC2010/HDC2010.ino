@@ -1,20 +1,26 @@
 #include <Environment.h>
+#include <Console.h>
+
+// Define Object
+Console Terminal(Serial);
 
 void setup() {
 
-	// Serial Communication Start
-	Serial.begin(115200);
-  
-	// Header
-	Serial.println(F("    HDC2010 T/H Sensor    "));
-	Serial.println(F("--------------------------"));
+	// Start Serial Stream
+    Serial.begin(115200);
+
+	// Start Terminal
+    Terminal.Begin();
+
+	// Draw Terminal Base
+	Terminal.HDC2010_TH_Meter();
 
 }
 
 void loop() {
 
 	// Define Sensor Object
-	HDC2010 _Sensor(true, 3, 5, true);
+	HDC2010 _Sensor(true, 3, 10, true);
 
 	// Set Start Time
 	unsigned long Time = millis();
@@ -26,13 +32,9 @@ void loop() {
 	// Calculate Delta Time
 	long DT = millis() - Time;
 
-	// Serial Print Data
-	Serial.print(F("Temperature   : ")); Serial.print(Temperature, 4); Serial.println(F(" C"));
-	Serial.print(F("Humidity      : ")); Serial.print(Humidity, 4); Serial.println(F(" %"));
-	Serial.print(F("Function Time : ")); Serial.print(DT); Serial.println(F(" mS"));
-	Serial.println(F("--------------------------"));
-
-	// Loop Delay
-	delay(1000);
+	// Print Terminal Text
+	Terminal.Text(3, 26, CYAN, String(Temperature, 4));
+	Terminal.Text(4, 26, CYAN, String(Humidity, 4));
+	Terminal.Text(7, 30, CYAN, String(DT));
 
 }

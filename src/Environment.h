@@ -191,49 +191,66 @@ class HDC2010 : public I2C_Functions {
 		struct HDC2010_Struct {
 
 			/**
-			 * @brief HDC2010 Sensor Address Variable.
-			 */
-			uint8_t TWI_Address 		= 0x40;
-
-			/**
-			 * @brief Sensor Mux Variable (if after a I2C multiplexer).
-			 */
-			bool Mux_Enable 			= false;
-
-			/**
-			 * @brief Sensor Mux Channel (if after a I2C multiplexer).
-			 */
-			uint8_t Mux_Channel 		= 0;
-
-			/**
 			 * @brief Measurement Read Count Variable (if not defined 1 measurement make).
 			 */
-			uint8_t Read_Count 			= 1;
+			uint8_t Read_Count 				= 1;
 
 			/**
-			 * @brief Measurement Calibration Enable Variable (if set true library make calibration).
+			 * @brief Calibration Structure
+			 * @version 01.00.00
 			 */
-			bool Calibration 			= false;
+			struct Calibration_Struct {
 
-			/**
-			 * @brief Temperature Calibration (aX+B) Gain Variable
-			 */
-			float Calibration_T_Gain	= 1.0053;
-			
-			/**
-			 * @brief Temperature Calibration (aX+B) Offset Variable
-			 */
-			float Calibration_T_Offset	= -0.4102;
+				/**
+				 * @brief Measurement Calibration Enable Variable (if set true library make calibration).
+				 */
+				bool Enable					= false;
 
-			/**
-			 * @brief Humidity Calibration (aX+B) Gain Variable
-			 */
-			float Calibration_H_Gain	= 0.9821;
-			
-			/**
-			 * @brief Humidity Calibration (aX+B) Offset Variable
-			 */
-			float Calibration_H_Offset	= -0.3217;
+				/**
+				 * @brief Temperature Calibration (aX+B) Gain Variable
+				 */
+				float Gain_T				= 1.0053;
+				
+				/**
+				 * @brief Temperature Calibration (aX+B) Offset Variable
+				 */
+				float Offset_T				= -0.4102;
+
+				/**
+				 * @brief Humidity Calibration (aX+B) Gain Variable
+				 */
+				float Gain_H				= 0.9821;
+				
+				/**
+				 * @brief Humidity Calibration (aX+B) Offset Variable
+				 */
+				float Offset_H				= -0.3217;
+
+			} Calibration;
+
+			struct Limit_Structure {
+
+				/**
+				 * @brief Lower Temperature Limit
+				 */
+				float Temperature_Lower 	= -40;
+
+				/**
+				 * @brief Upper Temperature Limit
+				 */
+				float Temperature_Upper 	= 125;
+
+				/**
+				 * @brief Lower Humidity Limit
+				 */
+				float Humidity_Lower 		= 0;
+
+				/**
+				 * @brief Upper Humidity Limit
+				 */
+				float Humidity_Upper 		= 100;
+
+			} Limit;
 
 		} Sensor;
 
@@ -253,11 +270,7 @@ class HDC2010 : public I2C_Functions {
 			this->Sensor.Read_Count = _Measurement_Count;
 
 			// Enable Calibration
-			this->Sensor.Calibration = _Calibration_Enable;
-
-			// Set Multiplexer Variables
-			this->Sensor.Mux_Enable = _Multiplexer_Enable;
-			this->Sensor.Mux_Channel = _Multiplexer_Channel;
+			this->Sensor.Calibration.Enable = _Calibration_Enable;
 
 		}
 
@@ -275,10 +288,10 @@ class HDC2010 : public I2C_Functions {
 			if (_Measurement_Type == 1) {
 
 				// Set Gain
-				this->Sensor.Calibration_T_Gain = _Gain;
+				this->Sensor.Calibration.Gain_T = _Gain;
 
 				// Set Offset
-				this->Sensor.Calibration_T_Offset = _Offset;
+				this->Sensor.Calibration.Offset_T = _Offset;
 
 			}
 
@@ -286,10 +299,10 @@ class HDC2010 : public I2C_Functions {
 			if (_Measurement_Type == 2) {
 
 				// Set Gain
-				this->Sensor.Calibration_H_Gain = _Gain;
+				this->Sensor.Calibration.Gain_H = _Gain;
 
 				// Set Offset
-				this->Sensor.Calibration_H_Offset = _Offset;
+				this->Sensor.Calibration.Offset_H = _Offset;
 				
 			}
 
@@ -298,18 +311,21 @@ class HDC2010 : public I2C_Functions {
 		/**
 		 * @brief Read Temperature Function
 		 * @return float Temperature Measurement
-		 * @version 01.00.00
+		 * @version 01.00.01
 		 */
 		float Temperature(void) {
 
 			// Read Register
 			uint8_t HDC2010_Config_Read = Read_Register(0x0E);
 
-			// Read Register
-			uint8_t HDC2010_MeasurementConfig_Read = Read_Register(0x0F);
-
 			// Set Measurement Rate
 			HDC2010_Config_Read &= 0x8F;
+
+			// Write Register
+			Write_Register(0x0E, HDC2010_Config_Read, false);
+
+			// Read Register
+			uint8_t HDC2010_MeasurementConfig_Read = Read_Register(0x0F);
 
 			// Set Measurement Mode
 			HDC2010_MeasurementConfig_Read &= 0xFC;
@@ -325,9 +341,6 @@ class HDC2010 : public I2C_Functions {
 
 			// Trigger Measurement
 			HDC2010_MeasurementConfig_Read |= 0x01;
-
-			// Write Register
-			Write_Register(0x0E, HDC2010_Config_Read, false);
 
 			// Write Register
 			Write_Register(0x0F, HDC2010_MeasurementConfig_Read, false);
@@ -363,10 +376,10 @@ class HDC2010 : public I2C_Functions {
 			float Value_ = Data_Array.Average(Data_Array.Arithmetic_Avg);
 
 			// Calibrate Data
-			if (this->Sensor.Calibration) Value_ = (this->Sensor.Calibration_T_Gain * Value_) + this->Sensor.Calibration_T_Offset;
+			if (this->Sensor.Calibration.Enable) Value_ = (this->Sensor.Calibration.Gain_T * Value_) + this->Sensor.Calibration.Offset_T;
 
 			// Control For Sensor Range
-			if (Value_ < -40 or Value_ > 125) Value_ = -101;
+			if (Value_ < this->Sensor.Limit.Temperature_Lower or Value_ > this->Sensor.Limit.Temperature_Upper) Value_ = -101;
 
 			// End Function
 			return(Value_);
@@ -376,19 +389,22 @@ class HDC2010 : public I2C_Functions {
 		/**
 		 * @brief Read Humidity Function
 		 * @return float Humidity Measurement
-		 * @version 01.00.00
+		 * @version 01.00.01
 		 */
 		float Humidity(void) {
 
 			// Read Register
 			uint8_t HDC2010_Config_Read = Read_Register(0x0E);
 
-			// Read Register
-			uint8_t HDC2010_MeasurementConfig_Read = Read_Register(0x0F);
-
 			// Set Measurement Rate
 			HDC2010_Config_Read &= 0xDF;
 			HDC2010_Config_Read |= 0x50;
+
+			// Write Register
+			Write_Register(0x0E, HDC2010_Config_Read, false);
+
+			// Read Register
+			uint8_t HDC2010_MeasurementConfig_Read = Read_Register(0x0F);
 
 			// Set Measurement Mode
 			HDC2010_MeasurementConfig_Read &= 0xFD;
@@ -404,9 +420,6 @@ class HDC2010 : public I2C_Functions {
 
 			// Trigger Measurement
 			HDC2010_MeasurementConfig_Read |= 0x01;
-
-			// Write Register
-			Write_Register(0x0E, HDC2010_Config_Read, false);
 
 			// Write Register
 			Write_Register(0x0F, HDC2010_MeasurementConfig_Read, false);
@@ -442,10 +455,10 @@ class HDC2010 : public I2C_Functions {
 			float Value_ = Data_Array.Average(Data_Array.Arithmetic_Avg);
 
 			// Calibrate Data
-			if (this->Sensor.Calibration) Value_ = (this->Sensor.Calibration_H_Gain * Value_) + this->Sensor.Calibration_H_Offset;
+			if (this->Sensor.Calibration.Enable) Value_ = (this->Sensor.Calibration.Gain_H * Value_) + this->Sensor.Calibration.Offset_H;
 
 			// Control For Sensor Range
-			if (Value_ < 0 or Value_ > 100) Value_ = -101;
+			if (Value_ < this->Sensor.Limit.Humidity_Lower or Value_ > this->Sensor.Limit.Humidity_Upper) Value_ = -101;
 
 			// End Function
 			return(Value_);
