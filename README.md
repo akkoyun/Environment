@@ -27,6 +27,7 @@ Below list is the recent sensor support. Thanks for interesting.
 * 05.00.01 - Doxygen update. Readme update. Function variables update.
 * 05.01.00 - MPL3115A2 function added.
 * 05.02.00 - TSL2561 Light Measurement Function Added.
+* 05.03.00 - Measurement function structure update (not working on older versions).
 
 ---
 
