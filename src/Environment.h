@@ -186,22 +186,8 @@
 			// HDC2010 Sensor Variable Structure.
 			struct HDC2010_Struct {
 
-				// Sensor Address Variable.
-				uint8_t TWI_Address 		= 0x40;
-
-				// Multiplexer Structure.
-				struct Multiplexer_Struct{
-
-					// Multiplexer Enable Variable (if set true library make multiplexer).
-					bool Enable 			= false;
-
-					// Multiplexer Channel Variable (if not defined 0 channel make).
-					uint8_t Channel 		= 0;
-
-				} Multiplexer;
-
 				// Pressure Calibration Structure.
-				struct Calibration_Struct{
+				struct Calibration_Struct {
 
 					// Measurement Calibration Enable Variable (if set true library make calibration).
 					bool Enable_T 			= false;
@@ -229,9 +215,13 @@
 			// Construct a new HDC2010 object
 			HDC2010(const bool _Multiplexer_Enable = false, const uint8_t _Multiplexer_Channel = 0) : I2C_Functions(__I2C_Addr_HDC2010__, _Multiplexer_Enable, _Multiplexer_Channel) {
 
-				// Set Multiplexer Variables
-				this->Sensor.Multiplexer.Enable = _Multiplexer_Enable;
-				this->Sensor.Multiplexer.Channel = _Multiplexer_Channel;
+			}
+
+			// HDC2010 Begin Function
+			void Begin(void) {
+
+				// Start I2C Communication
+				I2C_Functions::Begin();
 
 			}
 
@@ -462,6 +452,32 @@
 				
 			}
 
+			/* I2C Functions */
+
+			// Read address Function
+			uint8_t Address(void) {
+
+				// Return Address
+				return(I2C_Functions::Variables.Device.Address);
+
+			}
+
+			// Read detect Function
+			bool Detect(void) {
+
+				// Return Address
+				return(I2C_Functions::Variables.Device.Detect);
+
+			}
+
+			// Read Mux Channel Function
+			uint8_t Mux_Channel(void) {
+
+				// Return Address
+				return(I2C_Functions::Variables.Multiplexer.Channel);
+
+			}
+
 	};
 
 	// MPL3115A2 Pressure Sensor Class
@@ -472,20 +488,6 @@
 
 			// MPL3115A2 Sensor Variable Structure.
 			struct MPL3115A2_Struct {
-
-				// MPL3115A2 Sensor Address Variable.
-				uint8_t TWI_Address 		= 0x60;
-
-				// Multiplexer Structure.
-				struct Multiplexer_Struct{
-
-					// Multiplexer Enable Variable (if set true library make multiplexer).
-					bool Enable 			= false;
-
-					// Multiplexer Channel Variable (if not defined 0 channel make).
-					uint8_t Channel 		= 0;
-
-				} Multiplexer;
 
 				// Pressure Calibration Structure.
 				struct Calibration_Struct{
@@ -509,9 +511,13 @@
 			// Construct a new MPL3115A2 object
 			MPL3115A2(const bool _Multiplexer_Enable = false, const uint8_t _Multiplexer_Channel = 0) : I2C_Functions(__I2C_Addr_MPL3115A2__, _Multiplexer_Enable, _Multiplexer_Channel) {
 
-				// Set Multiplexer Variables
-				this->Sensor.Multiplexer.Enable = _Multiplexer_Enable;
-				this->Sensor.Multiplexer.Channel = _Multiplexer_Channel;
+			}
+
+			// MPL3115A2 Begin Function
+			void Begin(void) {
+
+				// Start I2C Communication
+				I2C_Functions::Begin();
 
 			}
 
@@ -539,23 +545,19 @@
 				I2C_Functions::Write_Register(0x13, 0x07, false);
 
 				// Define Variables
-				uint8_t _MPL3115A2_Read_Status = 0;
-				uint8_t _Ready_Status_Try_Counter = 0;
+				uint8_t Ready_Status_Try_Counter = 0;
 
 				// Wait for Measurement Complete
-				while ((_MPL3115A2_Read_Status & 0b00000100) != 0b00000100) {
+				while (!I2C_Functions::Read_Register_Bit(0x00, 2)) {
 					
-					//  Request Pressure Ready Status
-					_MPL3115A2_Read_Status = I2C_Functions::Read_Register(0x00);
-
 					// Increase Counter
-					_Ready_Status_Try_Counter += 1;
+					Ready_Status_Try_Counter += 1;
 					
 					// Control for Wait Counter
-					if (_Ready_Status_Try_Counter > 50) return(-102);
+					if (Ready_Status_Try_Counter > 50) return(-102);
 
 					// Ready Status Wait Delay
-					if ((_MPL3115A2_Read_Status & 0b00000100) != 0b00000100) delay(50);
+					delay(1);
 					
 				}
 
@@ -563,10 +565,10 @@
 				float _Measurement_Array[_Measurement_Count];
 
 				// Read Loop For Read Count
-				for (uint8_t _Read_ID = 0; _Read_ID < _Measurement_Count; _Read_ID++) {
+				for (int Read_ID = 0; Read_ID < _Measurement_Count; Read_ID++) {
 
 					// Define Variables
-					uint8_t _MPL3115A2_Data[3] = {0x00, 0x00, 0x00};
+					uint8_t _MPL3115A2_Data[3];
 
 					// Read Delay
 					delay(5);
@@ -578,21 +580,23 @@
 					uint32_t _Measurement_Raw = 0;
 
 					// Combine Read Bytes
-					_Measurement_Raw |= (uint32_t)_MPL3115A2_Data[0] << 16;
-					_Measurement_Raw |= (uint32_t)_MPL3115A2_Data[1] << 8;
-					_Measurement_Raw |= (uint32_t)_MPL3115A2_Data[2];
+					_Measurement_Raw = _MPL3115A2_Data[0];
+					_Measurement_Raw <<= 8;
+					_Measurement_Raw |= _MPL3115A2_Data[1];
+					_Measurement_Raw <<= 8;
+					_Measurement_Raw |= _MPL3115A2_Data[2];
 					_Measurement_Raw >>= 4;
-				
+					
 					// Control for Calibration
 					if (this->Sensor.Calibration.Enable) {
 
 						// Calculate Measurement
-						_Measurement_Array[_Read_ID] = (this->Sensor.Calibration.Gain * ((_Measurement_Raw / 4.00 ) / 100)) + this->Sensor.Calibration.Offset;
+						_Measurement_Array[Read_ID] = (this->Sensor.Calibration.Gain * ((_Measurement_Raw / 4.00 ) / 100)) + this->Sensor.Calibration.Offset;
 
 					} else {
 
 						// Calculate Measurement
-						_Measurement_Array[_Read_ID] = (_Measurement_Raw / 4.00 ) / 100;
+						_Measurement_Array[Read_ID] = (_Measurement_Raw / 4.00 ) / 100;
 
 					}
 
@@ -618,15 +622,41 @@
 
 				} else {
 
-					// Control For Sensor Range
-					if (_Measurement_Array[0] <= 500 or _Measurement_Array[0] >= 11000) return(-103);
+						// Control For Sensor Range
+						if (_Measurement_Array[0] <= 500 or _Measurement_Array[0] >= 11000) return(-103);
 
-					// End Function
-					return(_Measurement_Array[0]);
+						// End Function
+						return(_Measurement_Array[0]);
 
-				} 
+					} 
 
 			};
+
+			/* I2C Functions */
+
+			// Read address Function
+			uint8_t Address(void) {
+
+				// Return Address
+				return(I2C_Functions::Variables.Device.Address);
+
+			}
+
+			// Read detect Function
+			bool Detect(void) {
+
+				// Return Address
+				return(I2C_Functions::Variables.Device.Detect);
+
+			}
+
+			// Read Mux Channel Function
+			uint8_t Mux_Channel(void) {
+
+				// Return Address
+				return(I2C_Functions::Variables.Multiplexer.Channel);
+
+			}
 
 	};
 
@@ -1047,490 +1077,186 @@
 	// Si1145-A19 Light Sensor Class
 	class SI1145 : private I2C_Functions {
 
+		// Private Context
 		private:
 
-			// SI1145 Sensor Variable Structure.
-			struct SI1145_Struct {
-
-				// SI1145 Sensor Address Variable.
-				uint8_t TWI_Address 		= 0x60;
-
-				// Sensor Mux Variable (if after a I2C multiplexer).
-				bool Mux_Enable 			= false;
-
-				// Sensor Mux Channel (if after a I2C multiplexer).
-				uint8_t Mux_Channel 		= 0;
-
-			} Sensor;
-
-			// Set Parameter Function
-			uint8_t _Set_Parameter(uint8_t _Parameter, uint8_t _CMD) {
-
-				// Set Parameter
-				_Parameter |= 0xA0;
-
-				// Write Parameter
-				I2C_Functions::Write_Register(0x17, _CMD, false);
-
-				// Write Value
-				I2C_Functions::Write_Register(0x18, _Parameter, false);
-
-				// Read Parameter
-				return(I2C_Functions::Read_Register(0x2E));
-
-			}
-
-			// Get Parameter Function
-			uint8_t _Get_Parameter(uint8_t _Parameter) {
-
-				// Set Parameter
-				_Parameter |= 0x80;
-
-				// Write Value
-				I2C_Functions::Write_Register(0x18, _Parameter, false);
-
-				// Read Parameter
-				return(I2C_Functions::Read_Register(0x2E));
-
-			}
-
-			// Init Function
-			void Init(void) {
-
-				// Reset IC
-				this->Reset();
-
-				// Calibrate UV Sensor
-				I2C_Functions::Write_Register(0x13, 0x29, false);
-				I2C_Functions::Write_Register(0x14, 0x89, false);
-				I2C_Functions::Write_Register(0x15, 0x02, false);
-				I2C_Functions::Write_Register(0x16, 0x00, false);
-
-				// Enable Interrupt
-				this->Enable_Interrupt();
-
-				// Set Measurement Rate
-				this->Set_Measurement_Rate(0x00FF);
-
-				// Set LED Current
-				this->Set_LED_Current(3);
-
-				// Prox Sensor 1 Uses LED 1
-				this->_Set_Parameter(0x02, 0x01);
-
-				// Select Ps Photodiode Type
-				this->Select_Ps_Diode();
-
-				// Set ADC Gain
-				this->Set_Ps_ADC_Gain(0);
-				this->Disable_High_Signal_Ps_Range();
-
-				// Set IR Photodiode Type
-				this->Select_IR_Diode();
-
-				// Set Visible ADC Gain
-				this->Set_Als_Visible_ADC_Gain(0);
-				this->Disable_High_Signal_Visible_Range();
-
-				// Set IR ADC Gain
-				this->Set_Als_IR_ADC_Gain(0);
-				this->Disable_High_Signal_IR_Range();
-
-
-
-			}
-
-			// Reset SI1145 Function
+			// Reset Function
 			void Reset(void) {
 
-				// Reset SI1145
-				I2C_Functions::Write_Register(0x18, 0x01, false);
+				// Set MEAS_RATE0 Register
+				I2C_Functions::Write_Register(0X08, 0x00, true);
 
-				// Reset Delay
+				// Set MEAS_RATE1 Register
+				I2C_Functions::Write_Register(0X09, 0x00, true);
+
+				// Set IRQ_ENABLE Register
+				I2C_Functions::Write_Register(0X04, 0x00, true);
+
+				// Set IRQ_MODE1 Register
+				I2C_Functions::Write_Register(0X05, 0x00, true);
+
+				// Set IRQ_MODE2 Register
+				I2C_Functions::Write_Register(0X06, 0x00, true);
+
+				// Set INT_CFG Register
+				I2C_Functions::Write_Register(0X03, 0x00, true);
+
+				// Set IRQ_STATUS Register
+				I2C_Functions::Write_Register(0X21, 0xFF, true);
+
+				// Set COMMAND Register
+				I2C_Functions::Write_Register(0X18, 0x01, true);
+
+				// Command Delay
 				delay(10);
 
-				// Set HwKey
-				this->Set_HwKey();
+				// Set HW_KEY Register
+				I2C_Functions::Write_Register(0X07, 0x17, true);
 
-				// Reset Delay
+				// Command Delay
 				delay(10);
 
 			}
 
-			// Enable Measurement Function
-			void Enable_Measurement(void) {
+			// Read Parameter Data Function
+			uint8_t Read_Param_Data(uint8_t _Reg) {
 
-				// Set Parameter
-				this->_Set_Parameter(0x01, 0b10110001);
+				// Write Command
+				I2C_Functions::Write_Register(0X18, _Reg | 0X80, true);
 
-				// Set Parameter
-				I2C_Functions::Write_Register(0x18, 0b10001111, false);
-
-				// Delay
-				delay(10);
+				// Read Byte
+				return(I2C_Functions::Read_Register(0X2E));
 
 			}
 
-			// Start Single Measurement Function
-			void Start_Single_Measurement(void) {
+			// Write Parameter Data Function
+			uint8_t Write_Param_Data(uint8_t _Reg, uint8_t _Value) {
 
-				// Set Parameter
-				I2C_Functions::Write_Register(0x18, 0b10001111, false);
+				// Write Value
+				I2C_Functions::Write_Register(0X17, _Value, true);
 
-			}
+				// Write Command
+				I2C_Functions::Write_Register(0X18, _Reg | 0XA0, true);
 
-			// Enable Interrupt Function
-			void Enable_Interrupt(void) {
-
-				// Enable Interrupt
-				I2C_Functions::Write_Register(0x03, 0x01, false);
-
-				// Set Parameter
-				I2C_Functions::Write_Register(0x04, 0x20, false);
+				// Read Byte
+				return(I2C_Functions::Read_Register(0X2E));
 
 			}
 
-			// Diasable All Interrupt Function
-			void Disable_All_Interrupt(void) {
+			// Initialize Function
+			void Init(void) {
 
-				// Disable All Interrupt
-				I2C_Functions::Write_Register(0x03, 0x00, false);
+				// Enable UV reading
+				I2C_Functions::Write_Register(0X13, 0X29, true);
+				I2C_Functions::Write_Register(0X14, 0X89, true);
+				I2C_Functions::Write_Register(0X15, 0X02, true);
+				I2C_Functions::Write_Register(0X16, 0X00, true);
+				this->Write_Param_Data(0x01, 0x80 | 0x20 | 0x10 | 0x01);
 
-			}
+				// Set LED1 CURRENT(22.4mA)(It is a normal value for many LED)
+				this->Write_Param_Data(0x07, 0x03);
+				I2C_Functions::Write_Register(0X0F, 0X03, true);
+				this->Write_Param_Data(0x02, 0x01);
 
-			// Set Measurement Rate Function
-			void Set_Measurement_Rate(uint16_t _Rate) {
+				// Set ADC ENABLE
+				this->Write_Param_Data(0x0B, 0x00);
+				this->Write_Param_Data(0x0A, 0x07);
+				this->Write_Param_Data(0x0C, 0x20 | 0x04);
 
-				// Declare Variable
-				uint8_t _Data[2];
+				// Visible Light ADC Setting
+				this->Write_Param_Data(0x11, 0x00);
+				this->Write_Param_Data(0x10, 0x07);
+				this->Write_Param_Data(0x12, 0x20);
 
-				// Declare Register Low and High address
-				_Data[0] = (uint8_t)(0x00FF & (uint16_t)_Rate);
-				_Data[1] = (uint8_t)((0xFF00 & (uint16_t)_Rate) >> 8);
+				// IR ADC Setting
+				this->Write_Param_Data(0x1E, 0x00);
+				this->Write_Param_Data(0x1D, 0x07);
+				this->Write_Param_Data(0x1F, 0x20);
 
-				// Set Parameter
-				I2C_Functions::Write_Multiple_Register(0x08, _Data, false);
+				// Set interrupt enable
+				I2C_Functions::Write_Register(0X03, 0X01, true);
+				I2C_Functions::Write_Register(0X04, 0X01, true);
 
-			}
-
-			// Set Sensor HwKey Function
-			void Set_HwKey(void) {
-				
-				// Set HwKey
-				I2C_Functions::Write_Register(0x07, 0x17, false);
-
-			}
-
-			// Set LED Current Function
-			void Set_LED_Current(uint8_t _Current) {
-
-				// Set Parameter
-				I2C_Functions::Write_Register(0x0F, _Current, false);
-
-			}
-
-			// Select Ps Diode Function
-			void Select_Ps_Diode(void) {
-
-				// Set Parameter
-				this->_Set_Parameter(0x07, 0b00000000);
+				// Auto Run Enable
+				I2C_Functions::Write_Register(0X08, 0XFF, true);
+				I2C_Functions::Write_Register(0X18, 0X0F, true);
 
 			}
 
-			// Select IR Diode Function
-			void Select_IR_Diode(void) {
-
-				// Set Parameter
-				this->_Set_Parameter(0x0E, 0x00);
-
-			}
-
-			// Enable High Resolution Ps Function
-			void Enable_High_Resolution_Ps(void) {
-
-				// Set Parameter
-				this->_Set_Parameter(0x05, 0b0001000);
-				
-			}
-
-			// Disable High Resolution Ps Function
-			void Disable_High_Resolution_Ps(void) {
-
-				// Set Parameter
-				this->_Set_Parameter(0x05, 0x00);
-				
-			}
-
-			// Enable High Resolution Visible Function
-			void Enable_High_Resolution_Visible(void) {
-
-				// Get Parameter
-				uint8_t _Parameter = this->_Get_Parameter(0x06);
-
-				// Set Data
-				_Parameter |= 0b00010000;
-
-				// Set Parameter
-				this->_Set_Parameter(0x06, _Parameter);
-				
-			}
-
-			// Disable High Resolution Visible Function
-			void Disable_High_Resolution_Visible(void) {
-
-				// Set Parameter
-				this->_Set_Parameter(0x06, 0x00);
-				
-			}
-
-			// Enable High Resolution IR Function
-			void Enable_High_Resolution_IR(void) {
-
-				// Get Parameter
-				uint8_t _Parameter = this->_Get_Parameter(0x06);
-
-				// Set Data
-				_Parameter |= 0b00100000;
-
-				// Set Parameter
-				this->_Set_Parameter(0x06, _Parameter);
-				
-			}
-
-			// Disable High Resolution IR Function
-			void Disable_High_Resolution_IR(void) {
-
-				// Get Parameter
-				uint8_t _Parameter = this->_Get_Parameter(0x06);
-
-				// Set Data
-				_Parameter &= 0b11011111;
-
-				// Set Parameter
-				this->_Set_Parameter(0x06, _Parameter);
-				
-			}
-
-			// Set Ps ADC Gain Function
-			void Set_Ps_ADC_Gain(uint8_t _Gain) {
-
-				// Set Parameter
-				this->_Set_Parameter(0x0B, _Gain);
-
-				// Set Data
-				byte _Ps_ADC_Rex = ((~_Gain) & 0x07) << 4;
-
-				// Set Parameter
-				this->_Set_Parameter(0x0A, _Ps_ADC_Rex);
-
-			}
-
-			// Enable High Signal Ps Range Function
-			void Enable_High_Signal_Ps_Range(void) {
-
-				// Set Parameter
-				this->_Set_Parameter(0x0C, 0x24);
-
-			}
-
-			// Disable High Signal Ps Range Function
-			void Disable_High_Signal_Ps_Range(void) {
-
-				// Set Parameter
-				this->_Set_Parameter(0x0C, 0x04);
-
-			}
-
-			// Set ALS Visible ADC Gain Function
-			void Set_Als_Visible_ADC_Gain(uint8_t _Gain) {
-
-				// Set Parameter
-				this->_Set_Parameter(0x11, _Gain);
-
-				// Set Data
-				byte _Visible_ADC_Rex = ((~_Gain) & 0x07) << 4;
-
-				// Set Parameter
-				this->_Set_Parameter(0x10, _Visible_ADC_Rex);
-
-			}
-
-			// Enable High Signal Visible Range Function
-			void Enable_High_Signal_Visible_Range(void) {
-
-				// Set Parameter
-				this->_Set_Parameter(0x12, 0x20);
-
-			}
-
-			// Disable High Signal Visible Range Function
-			void Disable_High_Signal_Visible_Range(void) {
-
-				// Set Parameter
-				this->_Set_Parameter(0x12, 0x00);
-
-			}
-
-			// Set Als IR ADC Gain Function
-			void Set_Als_IR_ADC_Gain(uint8_t _Gain) {
-
-				// Set Parameter
-				this->_Set_Parameter(0x1E, _Gain);
-
-				// Set Data
-				byte _IR_ADC_Rex = ((~_Gain) & 0x07) << 4;
-
-				// Set Parameter
-				this->_Set_Parameter(0x1D, _IR_ADC_Rex);
-
-			}
-
-			// Enable High Signal IR Range Function
-			void Enable_High_Signal_IR_Range(void) {
-
-				// Set Parameter
-				I2C_Functions::Write_Register(0x1F, 0x20, false);
-
-			}
-
-			// Disable High Signal IR Range Function
-			void Disable_High_Signal_IR_Range(void) {
-
-				// Set Parameter
-				I2C_Functions::Write_Register(0x1F, 0x00, false);
-
-			}
-
-			// Get Als Visible Data Function
-			uint16_t Get_Als_Visible_Data(void) {
-
-				// Declare Variables
-				uint8_t _Data[2];
-
-				// Get Als Visible Data
-				I2C_Functions::Read_Multiple_Register(0x22, _Data, 2, false);
-
-				// Return Data
-				return(((uint16_t)_Data[1] << 8) | (uint16_t)_Data[0]);
-
-			}
-
-			// Get Als IR Data Function
-			uint16_t Get_Als_IR_Data(void) {
-
-				// Declare Variables
-				uint8_t _Data[2];
-
-				// Get Als IR Data
-				I2C_Functions::Read_Multiple_Register(0x24, _Data, 2, false);
-
-				// Return Data
-				return(((uint16_t)_Data[1] << 8) | (uint16_t)_Data[0]);
-
-			}
-
-			// Get Ps Data Function
-			uint16_t Get_Ps_Data(void) {
-
-				// Declare Variables
-				uint8_t _Data[2];
-
-				// Get Ps Data
-				I2C_Functions::Read_Multiple_Register(0x26, _Data, 2, false);
-
-				// Return Data
-				return(((uint16_t)_Data[1] << 8) | (uint16_t)_Data[0]);
-
-			}
-
-			// Get Failure Mode Function
-			uint8_t Get_Failure_Mode(void) {
-
-				// Get Failure Mode
-				return(I2C_Functions::Read_Register(0x20));
-
-			}
-
-			// Clear Failures Function
-			void Clear_Failure(void) {
-
-				// Clear Failure
-				I2C_Functions::Write_Register(0x18, 0x00, false);
-
-			}
-
-			// Clear All Interrupt Function
-			void Clear_All_Interrupt(void) {
-
-				// Clear All Interrupt
-				I2C_Functions::Write_Register(0x21, 0xFF, false);
-
-			}
-
-			// Clear ALS Interrupt Function
-			void Clear_Als_Interrupt(void) {
-
-				// Clear Als Interrupt
-				I2C_Functions::Write_Register(0x21, 0x01, false);
-
-			}
-
-			// Clear Ps Interrupt Function
-			void Clear_Ps_Interrupt(void) {
-
-				// Clear Ps Interrupt
-				I2C_Functions::Write_Register(0x21, 0x04, false);
-
-			}
-
-			// Clear Cmd Interrupt Function
-			void Clear_Cmd_Interrupt(void) {
-
-				// Clear Cmd Interrupt
-				I2C_Functions::Write_Register(0x21, 0x20, false);
-
-			}
-
-			// Get Interrupt Status Function
-			uint8_t Get_Interrupt_Status(void) {
-
-				// Read Interrupt Status
-				return(I2C_Functions::Read_Register(0x21));
-
-			}
-
+		// Public Context
 		public:
 
 			// Construct a new SI1145 object
-			SI1145(bool _Multiplexer_Enable, uint8_t _Multiplexer_Channel) : I2C_Functions(__I2C_Addr_SDP810__, _Multiplexer_Enable, _Multiplexer_Channel) {
-
-				// Set Multiplexer Variables
-				this->Sensor.Mux_Enable = _Multiplexer_Enable;
-				this->Sensor.Mux_Channel = _Multiplexer_Channel;
+			SI1145(bool _Multiplexer_Enable, uint8_t _Multiplexer_Channel) : I2C_Functions(__I2C_Addr_SI1145__, _Multiplexer_Enable, _Multiplexer_Channel) {
 
 			}
 
 			// Begin Sensor
 			void Begin(void) {
 
-				// Init Sensor
+				// Start I2C Communication
+				I2C_Functions::Begin();
+
+				// Reset Sensor
+				this->Reset();
+
+				// Initialize Sensor
 				this->Init();
-
-				this->Enable_High_Signal_Visible_Range();
-				this->Enable_High_Signal_IR_Range();
-
-				this->Enable_Measurement();
 
 			}
 
-			// Read UV Index
-			float Get_UV_Index(void) {
+			// Read Visible Light Function
+			uint16_t Read_Visible(void) {
 
-				// Read UV Index
-				float UV_Index = (float)I2C_Functions::Read_Register(0x2C) / 100.0;
+				// Read Register
+				return(I2C_Functions::Read_Register_Word(0X22));
 
-				// End Function
-				return(UV_Index);
+			}
+
+			// Read IR Light Function
+			uint16_t Read_IR(void) {
+
+				// Read Register
+				return(I2C_Functions::Read_Register_Word(0X24));
+
+			}
+
+			// Read Proximity Function
+			uint16_t Read_Proximity(void) {
+
+			}
+
+			// Read UV Function
+			float Read_UV(void) {
+
+				// Read Register
+				return((float)I2C_Functions::Read_Register_Word(0X2C) / 100.0);
+
+			}
+
+			/* I2C Functions */
+
+			// Read address Function
+			uint8_t Address(void) {
+
+				// Return Address
+				return(I2C_Functions::Variables.Device.Address);
+
+			}
+
+			// Read detect Function
+			bool Detect(void) {
+
+				// Return Address
+				return(I2C_Functions::Variables.Device.Detect);
+
+			}
+
+			// Read Mux Channel Function
+			uint8_t Mux_Channel(void) {
+
+				// Return Address
+				return(I2C_Functions::Variables.Multiplexer.Channel);
 
 			}
 
