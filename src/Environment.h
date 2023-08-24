@@ -1221,11 +1221,6 @@
 
 			}
 
-			// Read Proximity Function
-			uint16_t Read_Proximity(void) {
-
-			}
-
 			// Read UV Function
 			float Read_UV(void) {
 
