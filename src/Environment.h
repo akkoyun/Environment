@@ -209,6 +209,383 @@
 
 			} Sensor;
 
+			// Enable the interrupt pin for DRDY operation
+			void Enable_DRDY_Interrupt(void) {
+
+				// Set Bit
+				I2C_Functions::Set_Register_Bit(0x07, 7, true);
+
+			}
+
+			// Disable the interrupt pin for DRDY operation
+			void Disable_DRDY_Interrupt(void) {
+
+				// Clear Bit
+				I2C_Functions::Clear_Register_Bit(0x07, 7, true);
+
+			}
+
+			// Enable the interrupt pin for threshold operation
+			void Enable_Threshold_Interrupt(void) {
+
+				// Read Register
+				uint8_t _HDC2010_Config_Read = I2C_Functions::Read_Register(0x07);
+
+				// Set Bit
+				_HDC2010_Config_Read |= 0x78;
+
+				// Write Register
+				I2C_Functions::Write_Register(0x07, _HDC2010_Config_Read, true);
+			
+			}
+
+			// Disable the interrupt pin for threshold operation
+			void Disable_Threshold_Interrupt(void) {
+
+				// Read Register
+				uint8_t _HDC2010_Config_Read = I2C_Functions::Read_Register(0x07);
+
+				// Clear Bit
+				_HDC2010_Config_Read &= 0x87;
+
+				// Write Register
+				I2C_Functions::Write_Register(0x07, _HDC2010_Config_Read, true);
+			
+			}
+
+			// Set Interrupt Mode Function
+			void Set_Interrupt_Mode(uint8_t _Mode) {
+
+				// Read Register
+				uint8_t _HDC2010_INT_DRDY_Read = I2C_Functions::Read_Register(0x0E);
+
+				// Set Mode 
+				if (_Mode == 0) {
+
+					// Level Mode
+
+					// Set Bit
+					_HDC2010_INT_DRDY_Read &= 0xFE;
+
+				} else {
+
+					// Comparator Mode
+
+					// Clear Bit
+					_HDC2010_INT_DRDY_Read |= 0x01;
+
+				}
+
+				// Write Register
+				I2C_Functions::Write_Register(0x04, _HDC2010_INT_DRDY_Read, true);
+
+			}
+
+			// Set Interrupt Polarity Function
+			void Set_Interrupt_Polarity(bool _Polarity) {
+
+				// Read Register
+				uint8_t _HDC2010_CONFIG_Read = I2C_Functions::Read_Register(0x0E);
+
+				// Set Polarity 
+				if (_Polarity) {
+
+					// Active High
+
+					// Set Bit
+					_HDC2010_CONFIG_Read |= 0x02;
+
+				} else {
+
+					// Active Low
+
+					// Clear Bit
+					_HDC2010_CONFIG_Read &= 0xFD;
+
+				}
+
+				// Write Register
+				I2C_Functions::Write_Register(0x0E, _HDC2010_CONFIG_Read, true);
+
+			}
+
+			// Set Rate Function
+			void Set_Rate(uint8_t _Rate) {
+
+				// Read Register
+				uint8_t _HDC2010_MEASUREMENT_CONFIG_Read = I2C_Functions::Read_Register(0x0E);
+
+				// Set Rate 
+				if (_Rate == 0) {
+
+					// Manual
+
+					// Clear Bits
+					_HDC2010_MEASUREMENT_CONFIG_Read &= 0x8F;
+
+				} else if (_Rate == 1) {
+
+					// 2 Minutes
+
+					// Clear Bits
+					_HDC2010_MEASUREMENT_CONFIG_Read &= 0x9F;
+
+					// Set Bit
+					_HDC2010_MEASUREMENT_CONFIG_Read |= 0x10;
+
+				} else if (_Rate == 2) {
+
+					// 1 Minute
+
+					// Clear Bits
+					_HDC2010_MEASUREMENT_CONFIG_Read &= 0xAF;
+
+					// Set Bit
+					_HDC2010_MEASUREMENT_CONFIG_Read |= 0x20;
+
+				} else if (_Rate == 3) {
+
+					// 10 Seconds
+
+					// Clear Bits
+					_HDC2010_MEASUREMENT_CONFIG_Read &= 0xBF;
+
+					// Set Bit
+					_HDC2010_MEASUREMENT_CONFIG_Read |= 0x30;
+
+				} else if (_Rate == 4) {
+
+					// 5 Seconds
+
+					// Clear Bits
+					_HDC2010_MEASUREMENT_CONFIG_Read &= 0xCF;
+
+					// Set Bit
+					_HDC2010_MEASUREMENT_CONFIG_Read |= 0x40;
+
+				} else if (_Rate == 5) {
+
+					// 1 Second
+
+					// Clear Bits
+					_HDC2010_MEASUREMENT_CONFIG_Read &= 0xDF;
+
+					// Set Bit
+					_HDC2010_MEASUREMENT_CONFIG_Read |= 0x50;
+
+				} else if (_Rate == 6) {
+
+					// 2 Hz
+
+					// Clear Bits
+					_HDC2010_MEASUREMENT_CONFIG_Read &= 0xEF;
+
+					// Set Bit
+					_HDC2010_MEASUREMENT_CONFIG_Read |= 0x60;
+
+				} else if (_Rate == 7) {
+
+					// 5 Hz
+
+					// Clear Bits
+					_HDC2010_MEASUREMENT_CONFIG_Read &= 0xFF;
+
+					// Set Bit
+					_HDC2010_MEASUREMENT_CONFIG_Read |= 0x70;
+
+				} else {
+
+					// Manual
+
+					// Clear Bits
+					_HDC2010_MEASUREMENT_CONFIG_Read &= 0x8F;
+
+				}
+
+				// Write Register
+				I2C_Functions::Write_Register(0x0E, _HDC2010_MEASUREMENT_CONFIG_Read, true);
+
+			}
+
+			// Reset Sensor Function
+			void Reset(void) {
+
+				// Set Reset Bit
+				I2C_Functions::Set_Register_Bit(0x0E, 7, true);
+
+				// Delay
+				delay(50);
+
+			}
+
+			// Trigger Measurement Function
+			void Trigger_Measurement(void) {
+
+				// Set Trigger Bit
+				I2C_Functions::Set_Register_Bit(0x0F, 0, true);
+
+			}
+
+			// Set Measurement Mode Function
+			void Set_Measurement_Mode(uint8_t _Mode) {
+
+				// Read Register
+				uint8_t _HDC2010_MeasurementConfig_Read = I2C_Functions::Read_Register(0x0F);
+
+				// Set Mode 
+				if (_Mode == 0) {
+
+					// Temperature and Humidity
+
+					// Clear Bits
+					_HDC2010_MeasurementConfig_Read &= 0xF9;
+
+				} else if (_Mode == 1) {
+
+					// Temperature Only
+
+					// Clear Bits
+					_HDC2010_MeasurementConfig_Read &= 0xFC;
+
+					// Set Bit
+					_HDC2010_MeasurementConfig_Read |= 0x02;
+
+				} else if (_Mode == 2) {
+
+					// Humidity Only
+
+					// Clear Bits
+					_HDC2010_MeasurementConfig_Read &= 0xFD;
+
+					// Set Bit
+					_HDC2010_MeasurementConfig_Read |= 0x04;
+
+				} else {
+
+					// Temperature and Humidity
+
+					// Clear Bits
+					_HDC2010_MeasurementConfig_Read &= 0xF9;
+
+				}
+
+				// Write Register
+				I2C_Functions::Write_Register(0x0F, _HDC2010_MeasurementConfig_Read, true);
+
+			}
+
+			// Set Temperature Resolution Function
+			void Set_Temperature_Resolution(uint8_t _Resolution) {
+
+				// Read Register
+				uint8_t _HDC2010_MeasurementConfig_Read = I2C_Functions::Read_Register(0x0F);
+
+				// Set Resolution 
+				if (_Resolution == 14) {
+
+					// 14 Bit
+
+					// Clear Bits
+					_HDC2010_MeasurementConfig_Read &= 0x3F;
+
+				} else if (_Resolution == 11) {
+
+					// 11 Bit
+
+					// Clear Bits
+					_HDC2010_MeasurementConfig_Read &= 0x7F;
+
+					// Set Bit
+					_HDC2010_MeasurementConfig_Read |= 0x40;
+
+				} else if (_Resolution == 9) {
+
+					// 9 Bit
+
+					// Clear Bits
+					_HDC2010_MeasurementConfig_Read &= 0xBF;
+
+					// Set Bit
+					_HDC2010_MeasurementConfig_Read |= 0x80;
+
+				} else {
+
+					// 14 Bit
+
+					// Clear Bits
+					_HDC2010_MeasurementConfig_Read &= 0x3F;
+
+				}
+
+				// Write Register
+				I2C_Functions::Write_Register(0x0F, _HDC2010_MeasurementConfig_Read, true);
+
+			}
+
+			// Set Humidity Resolution Function
+			void Set_Humidity_Resolution(uint8_t _Resolution) {
+
+				// Read Register
+				uint8_t _HDC2010_MeasurementConfig_Read = I2C_Functions::Read_Register(0x0F);
+
+				// Set Resolution 
+				if (_Resolution == 14) {
+
+					// 14 Bit
+
+					// Clear Bits
+					_HDC2010_MeasurementConfig_Read &= 0xCF;
+
+				} else if (_Resolution == 11) {
+
+					// 11 Bit
+
+					// Clear Bits
+					_HDC2010_MeasurementConfig_Read &= 0xDF;
+
+					// Set Bit
+					_HDC2010_MeasurementConfig_Read |= 0x10;
+
+				} else if (_Resolution == 9) {
+
+					// 9 Bit
+
+					// Clear Bits
+					_HDC2010_MeasurementConfig_Read &= 0xEF;
+
+					// Set Bit
+					_HDC2010_MeasurementConfig_Read |= 0x20;
+
+				} else {
+
+					// 14 Bit
+
+					// Clear Bits
+					_HDC2010_MeasurementConfig_Read &= 0xCF;
+
+				}
+
+				// Write Register
+				I2C_Functions::Write_Register(0x0F, _HDC2010_MeasurementConfig_Read, true);
+
+			}
+
+			// Enable Heater Function
+			void Enable_Heater(void) {
+
+				// Set Bit
+				I2C_Functions::Set_Register_Bit(0x0E, 3, true);
+
+			}
+
+			// Disable Heater Function
+			void Disable_Heater(void) {
+
+				// Clear Bit
+				I2C_Functions::Clear_Register_Bit(0x0E, 3, true);
+
+			}
+
 		// Public Context
 		public:
 
@@ -222,6 +599,30 @@
 
 				// Start I2C Communication
 				I2C_Functions::Begin();
+
+				// Reset Sensor
+				this->Reset();
+
+				// Set Measurement Limit
+				this->Set_High_Temperature_Threshold(50);
+				this->Set_Low_Temperature_Threshold(-20);
+				this->Set_High_Humidity_Threshold(60);
+				this->Set_Low_Humidity_Threshold(20);
+
+				// Set Interrupt Pin
+				this->Enable_Interrupt();
+				this->Enable_Threshold_Interrupt();
+				this->Set_Interrupt_Polarity(true);
+				this->Set_Interrupt_Mode(1);
+
+				// Configure Measurements
+				this->Set_Measurement_Mode(0);
+				this->Set_Rate(5);
+				this->Set_Temperature_Resolution(14);
+				this->Set_Humidity_Resolution(14);
+
+				// Begin Measurement
+				this->Trigger_Measurement();
 
 			}
 
@@ -263,38 +664,195 @@
 
 			}
 
+			// Read Max Temperature Function
+			float Read_Max_Temperature(void) {
+
+				// Read Register
+				uint8_t _HDC2010_TEMP_MAX_Read = I2C_Functions::Read_Register(0x05);
+
+				// Calculate Temperature
+				float _Temperature = (float)_HDC2010_TEMP_MAX_Read * 165 / 256 - 40;
+
+				// End Function
+				return(_Temperature);
+
+			}
+
+			// Read Max Humidity Function
+			float Read_Max_Humidity(void) {
+
+				// Read Register
+				uint8_t _HDC2010_HUMID_MAX_Read = I2C_Functions::Read_Register(0x06);
+
+				// Calculate Humidity
+				float _Humidity = (float)_HDC2010_HUMID_MAX_Read / 256 * 100;
+
+				// End Function
+				return(_Humidity);
+
+			}
+
+			// Clear Max Temperature Function
+			void Clear_Max_Temperature(void) {
+
+				// Write Register
+				I2C_Functions::Write_Register(0x05, 0x00, true);
+
+			}
+
+			// Clear Max Humidity Function
+			void Clear_Max_Humidity(void) {
+
+				// Write Register
+				I2C_Functions::Write_Register(0x06, 0x00, true);
+
+			}
+
+			// Read Interrupt Status Function	
+			uint8_t Read_Interrupt_Status(void) {
+
+				// Read Register
+				uint8_t _HDC2010_INT_DRDY_Read = I2C_Functions::Read_Register(0x04);
+
+				// End Function
+				return(_HDC2010_INT_DRDY_Read);
+
+			}
+
+			// Enable Interrupt Function
+			void Enable_Interrupt(void) {
+
+				// Set Interrupt Enable Bit
+				I2C_Functions::Set_Register_Bit(0x0E, 2, true);
+
+			}
+
+			// Disable Interrupt Function
+			void Disable_Interrupt(void) {
+
+				// Clear Interrupt Enable Bit
+				I2C_Functions::Clear_Register_Bit(0x0E, 2, true);
+
+			}
+
+			// Read Low Humidity Threshold Function
+			float Read_Low_Humidity_Threshold(void) {
+
+				// Read Register
+				uint8_t _HDC2010_HUMID_THR_L_Read = I2C_Functions::Read_Register(0x0C);
+
+				// Calculate Humidity
+				float _Humidity = (float)_HDC2010_HUMID_THR_L_Read * 100 / 256;
+
+				// End Function
+				return(_Humidity);
+
+			}
+
+			// Read High Humidity Threshold Function
+			float Read_High_Humidity_Threshold(void) {
+
+				// Read Register
+				uint8_t _HDC2010_HUMID_THR_H_Read = I2C_Functions::Read_Register(0x0D);
+
+				// Calculate Humidity
+				float _Humidity = (float)_HDC2010_HUMID_THR_H_Read * 100 / 256;
+
+				// End Function
+				return(_Humidity);
+
+			}
+
+			// Read Low Temperature Threshold Function
+			float Read_Low_Temperature_Threshold(void) {
+
+				// Read Register
+				uint8_t _HDC2010_TEMP_THR_L_Read = I2C_Functions::Read_Register(0x0A);
+
+				// Calculate Temperature
+				float _Temperature = (float)_HDC2010_TEMP_THR_L_Read * 165 / 256 - 40;
+
+				// End Function
+				return(_Temperature);
+
+			}
+
+			// Read High Temperature Threshold Function
+			float Read_High_Temperature_Threshold(void) {
+
+				// Read Register
+				uint8_t _HDC2010_TEMP_THR_H_Read = I2C_Functions::Read_Register(0x0B);
+
+				// Calculate Temperature
+				float _Temperature = (float)_HDC2010_TEMP_THR_H_Read * 165 / 256 - 40;
+
+				// End Function
+				return(_Temperature);
+
+			}
+
+			// Set Low Temperature Threshold Function
+			void Set_Low_Temperature_Threshold(float _Temperature) {
+
+				// Verify user is not trying to set value outside bounds
+				if (_Temperature < -40) _Temperature = -40;
+				if (_Temperature > 125) _Temperature = 125;
+
+				// Calculate value to load into register
+				uint8_t _Temperature_Threshold = (uint8_t)(256 * (_Temperature + 40) / 165);
+
+				// Write Register
+				I2C_Functions::Write_Register(0x0A, _Temperature_Threshold, true);
+
+			}
+		
+			// Set High Temperature Threshold Function
+			void Set_High_Temperature_Threshold(float _Temperature) {
+
+				// Verify user is not trying to set value outside bounds
+				if (_Temperature < -40) _Temperature = -40;
+				if (_Temperature > 125) _Temperature = 125;
+
+				// Calculate value to load into register
+				uint8_t _Temperature_Threshold = (uint8_t)(256 * (_Temperature + 40) / 165);
+
+				// Write Register
+				I2C_Functions::Write_Register(0x0B, _Temperature_Threshold, true);
+
+			}
+
+			// Set High Humidity Threshold Function
+			void Set_High_Humidity_Threshold(float _Humidity) {
+
+				// Verify user is not trying to set value outside bounds
+				if (_Humidity < 0) _Humidity = 0;
+				if (_Humidity > 100) _Humidity = 100;
+
+				// Calculate value to load into register
+				uint8_t _Humidity_Threshold = (uint8_t)(256 * (_Humidity) / 100);
+
+				// Write Register
+				I2C_Functions::Write_Register(0x0D, _Humidity_Threshold, true);
+
+			}
+
+			// Set Low Humidity Threshold Function
+			void Set_Low_Humidity_Threshold(float _Humidity) {
+
+				// Verify user is not trying to set value outside bounds
+				if (_Humidity < 0) _Humidity = 0;
+				if (_Humidity > 100) _Humidity = 100;
+
+				// Calculate value to load into register
+				uint8_t _Humidity_Threshold = (uint8_t)(256 * (_Humidity) / 100);
+
+				// Write Register
+				I2C_Functions::Write_Register(0x0C, _Humidity_Threshold, true);
+
+			}
+
 			// Read Temperature Function
 			float Temperature(const uint8_t _Measurement_Count = 1) {
-
-				// Read Register
-				uint8_t _HDC2010_Config_Read = I2C_Functions::Read_Register(0x0E);
-
-				// Read Register
-				uint8_t _HDC2010_MeasurementConfig_Read = I2C_Functions::Read_Register(0x0F);
-
-				// Set Measurement Rate
-				_HDC2010_Config_Read &= 0x8F;
-
-				// Set Measurement Mode
-				_HDC2010_MeasurementConfig_Read &= 0xFC;
-				_HDC2010_MeasurementConfig_Read |= 0x02;
-
-				// Set Temperature Resolution (9 bit)
-				_HDC2010_MeasurementConfig_Read &= 0xBF;
-				_HDC2010_MeasurementConfig_Read |= 0x80;
-
-				// Set Humidity Resolution (9 bit)
-				_HDC2010_MeasurementConfig_Read &= 0xEF;
-				_HDC2010_MeasurementConfig_Read |= 0x20;
-
-				// Trigger Measurement
-				_HDC2010_MeasurementConfig_Read |= 0x01;
-
-				// Write Register
-				I2C_Functions::Write_Register(0x0E, _HDC2010_Config_Read, false);
-
-				// Write Register
-				I2C_Functions::Write_Register(0x0F, _HDC2010_MeasurementConfig_Read, false);
 
 				// Define Measurement Read Array
 				float _Measurement_Array[_Measurement_Count];
@@ -360,37 +918,6 @@
 			// Read Humidity Function
 			float Humidity(const uint8_t _Measurement_Count = 1) {
 
-				// Read Register
-				uint8_t _HDC2010_Config_Read = I2C_Functions::Read_Register(0x0E);
-
-				// Read Register
-				uint8_t _HDC2010_MeasurementConfig_Read = I2C_Functions::Read_Register(0x0F);
-
-				// Set Measurement Rate
-				_HDC2010_Config_Read &= 0xDF;
-				_HDC2010_Config_Read |= 0x50;
-
-				// Set Measurement Mode
-				_HDC2010_MeasurementConfig_Read &= 0xFD;
-				_HDC2010_MeasurementConfig_Read |= 0x04;
-
-				// Set Temperature Resolution (9 bit)
-				_HDC2010_MeasurementConfig_Read &= 0xBF;
-				_HDC2010_MeasurementConfig_Read |= 0x80;
-
-				// Set Humidity Resolution (9 bit)
-				_HDC2010_MeasurementConfig_Read &= 0xEF;
-				_HDC2010_MeasurementConfig_Read |= 0x20;
-
-				// Trigger Measurement
-				_HDC2010_MeasurementConfig_Read |= 0x01;
-
-				// Write Register
-				I2C_Functions::Write_Register(0x0E, _HDC2010_Config_Read, false);
-
-				// Write Register
-				I2C_Functions::Write_Register(0x0F, _HDC2010_MeasurementConfig_Read, false);
-
 				// Define Measurement Read Array
 				float _Measurement_Array[_Measurement_Count];
 
@@ -414,12 +941,12 @@
 					if (this->Sensor.Calibration.Enable_H) {
 
 						// Calculate Measurement
-						_Measurement_Array[_Read_ID] = (this->Sensor.Calibration.Gain_H * (((float)_Measurement_Raw / 4.00 ) / 100.0)) + this->Sensor.Calibration.Offset_H;
+						_Measurement_Array[_Read_ID] = (this->Sensor.Calibration.Gain_H * (((float)_Measurement_Raw / 65536 ) * 100.0)) + this->Sensor.Calibration.Offset_H;
 
 					} else {
 
 						// Calculate Measurement
-						_Measurement_Array[_Read_ID] = ((float)_Measurement_Raw / 4.00 ) / 100.0;
+						_Measurement_Array[_Read_ID] = ((float)_Measurement_Raw / 65536 ) * 100.0;
 
 					}
 

@@ -20,6 +20,9 @@ Below list is the recent sensor support. Thanks for interesting.
 	* HDC2010 - Humidity
 	* MPL3115A2 - Pressure
 	* TSL2561 - Light
+	* SI1145 - Visible Light
+	* SI1145 - IR Light
+	* SI1145 - UV Index
 	* Analog Sensor Read
 
 ### Change Log
@@ -28,6 +31,7 @@ Below list is the recent sensor support. Thanks for interesting.
 * 05.01.00 - MPL3115A2 function added.
 * 05.02.00 - TSL2561 Light Measurement Function Added.
 * 05.03.00 - Measurement function structure update (not working on older versions).
+* 05.06.04 - I2C Communication update. SI1145 Sensor added. HDC2010 Sensor update.
 
 ---
 
