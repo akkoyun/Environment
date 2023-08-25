@@ -23,6 +23,7 @@ Below list is the recent sensor support. Thanks for interesting.
 	* SI1145 - Visible Light
 	* SI1145 - IR Light
 	* SI1145 - UV Index
+	* SDP810 - Differential Pressure
 	* Analog Sensor Read
 
 ### Change Log

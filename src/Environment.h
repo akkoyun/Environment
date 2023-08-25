@@ -1558,20 +1558,6 @@
 			// SDP810 Sensor Variable Structure.
 			struct SDP810_Struct {
 
-				// SDP810 Sensor Address Variable.
-				uint8_t TWI_Address 		= 0x25;
-
-				// Multiplexer Structure.
-				struct Multiplexer_Struct{
-
-					// Multiplexer Enable Variable (if set true library make multiplexer).
-					bool Enable 			= false;
-
-					// Multiplexer Channel Variable (if not defined 0 channel make).
-					uint8_t Channel 		= 0;
-
-				} Multiplexer;
-
 				// Calibration Structure.
 				struct Calibration_Struct{
 
@@ -1588,14 +1574,206 @@
 
 			} Sensor;
 
+			// Stop Continuous Measurement Function
+			void Stop_Continuous_Measurement(void) {
+
+				// Write Command
+				I2C_Functions::Write_Register(0x3F, 0xF9, true);
+
+			}
+
+			// Start Continuous Measurement Function
+			void Start_Continuous_Measurement_With_Diff_Pressure_TComp(void) {
+
+				// Write Command
+				I2C_Functions::Write_Register(0x36, 0x1E, true);
+
+				// Command Delay
+				delay(20);
+
+			}
+
+			// Read Measurement Raw Function
+			void Read_Measurement_RAW(uint16_t & _DP, uint16_t & _Temp) {
+
+				// Define Variables
+				uint8_t _SDP810_Data[9];
+
+				// Read Register
+				I2C_Functions::Read_Multiple_Register_u16_NoCMD(_SDP810_Data, 9);
+
+				//  0	  1      2	     3      4      5      6      7      8
+				// ------------------------------------------------------------
+				// DP     DP     CRC    Temp   Temp   CRC    Scale  Scale  CRC
+				// ------------------------------------------------------------
+				// 0x00 - 0x02 - 0xE3 - 0x13 - 0x65 - 0x8C - 0x00 - 0x3C - 0x39
+				// 0xFF - 0xFD - 0xCE - 0x13 - 0x66 - 0xDF - 0x00 - 0x3C - 0x39
+
+				// Combine Read Bytes
+				_DP = ((uint16_t)_SDP810_Data[0] << 8) | ((uint16_t)_SDP810_Data[1]);
+
+				// Combine Read Bytes
+				_Temp = ((uint16_t)_SDP810_Data[3] << 8) | ((uint16_t)_SDP810_Data[4]);
+
+			}
+
+			// Convert Temperature Raw To Celsius Function
+			float Convert_Temperature_Raw_To_Celsius(int16_t _Temperature_Raw) {
+
+				// Return Temperature
+				return((float)_Temperature_Raw / 200.0);
+
+			}
+
+			// Read Measurement Function
+			void Read_Measurement(float & _DP, float & _Temp) {
+
+				// Define Variables
+				uint16_t _DP_Raw, _Temp_Raw;
+
+				// Read Measurement Raw
+				this->Read_Measurement_RAW(_DP_Raw, _Temp_Raw);
+
+				// Convert to Signed Value
+				int _DP_Raw_Signed = static_cast<int>(_DP_Raw);
+
+				// Calculate Measurement
+				_DP = (float)_DP_Raw_Signed / 60;
+
+				// Calculate Measurement
+				_Temp = this->Convert_Temperature_Raw_To_Celsius(_Temp_Raw);
+
+			}
+
 		public:
+
+			// Declare Variables
+			char Product_Number[11];
+			char Serial_Number[19];
 
 			// Construct a new SDP810 object
 			SDP810(bool _Multiplexer_Enable, uint8_t _Multiplexer_Channel) : I2C_Functions(__I2C_Addr_SDP810__, _Multiplexer_Enable, _Multiplexer_Channel) {
 
-				// Set Multiplexer Variables
-				this->Sensor.Multiplexer.Enable = _Multiplexer_Enable;
-				this->Sensor.Multiplexer.Channel = _Multiplexer_Channel;
+			}
+
+			// Begin Sensor
+			void Begin(void) {
+
+				// Start I2C Communication
+				I2C_Functions::Begin();
+
+				// Stop Continuous Measurement
+				this->Stop_Continuous_Measurement();
+
+				// Read Product Identification
+				this->Read_Product_Identifier();
+
+				// Start Continuous Measurement
+				this->Start_Continuous_Measurement_With_Diff_Pressure_TComp();
+
+			}
+
+			// Read Product Identification Function
+			void Read_Product_Identifier(void) {
+
+				// Write Command
+				I2C_Functions::Write_Register(0x36, 0x7C, true);
+
+				// Declare Variables
+				uint8_t _SDP810_Data[18];
+
+				// Read Register
+				I2C_Functions::Read_Multiple_Register_u16(0xE102, _SDP810_Data, 18, true);
+
+				//  0      1      2	     3      4      5      6      7      8      9      10     11     12     13    14     15     16     17
+				// 0x03 - 0x02 - 0xCE - 0x0A - 0x01 - 0x5E - 0x00 - 0x00 - 0x81 - 0x00 - 0x00 - 0x81 - 0x89 - 0xD6 - 0xC3 - 0x57 - 0x7B - 0xDA
+
+				// Clear Arrays
+				memset(this->Product_Number, '\0', 11);
+
+				// Convert the 64-bit serial number to a hex string
+				sprintf(this->Product_Number, "0x%02X%02X%02X%02X", _SDP810_Data[0], _SDP810_Data[1], _SDP810_Data[3], _SDP810_Data[4]);
+
+				// Clear Arrays
+				memset(this->Serial_Number, '\0', 19);
+
+				// Convert the 64-bit serial number to a hex string
+				sprintf(this->Serial_Number, "0x%02X%02X%02X%02X%02X%02X%02X%02X", _SDP810_Data[6], _SDP810_Data[7], _SDP810_Data[9], _SDP810_Data[10], _SDP810_Data[12], _SDP810_Data[13], _SDP810_Data[15], _SDP810_Data[16]);
+
+			}
+
+			// Read Pressure Function
+			float Pressure(const uint8_t _Measurement_Count = 1) {
+
+				// Define Measurement Read Array
+				float _Pressure_Measurement_Array[_Measurement_Count];
+				float _Temperature_Measurement_Array[_Measurement_Count];
+
+				// Read Loop For Read Count
+				for (uint8_t _Read_ID = 0; _Read_ID < _Measurement_Count; _Read_ID++) this->Read_Measurement(_Pressure_Measurement_Array[_Read_ID], _Temperature_Measurement_Array[_Read_ID]);
+
+				// Control for Read Count
+				if (_Measurement_Count > 1) {
+					
+					// Construct Object
+					Array_Stats<float> Data_Array(_Pressure_Measurement_Array, _Measurement_Count);
+
+					// Declare Variables
+					float _Value;
+
+					// Calculate Average
+					if (_Measurement_Count < 5)	_Value = Data_Array.Average(_Arithmetic_Average_);
+					if (_Measurement_Count >= 5) _Value = Data_Array.Average(_Sigma_Average_);
+
+					// End Function
+					return(_Value);
+
+				} else {
+
+					// End Function
+					return(_Pressure_Measurement_Array[0]);
+
+				} 
+
+			}
+
+			// Read Temperature Function
+			float Temperature(void) {
+
+				// Define Variables
+				float _DP, _Temp;
+
+				// Read Measurement
+				this->Read_Measurement(_DP, _Temp);
+
+				// End Function
+				return(_Temp);
+
+			}
+
+			/* I2C Functions */
+
+			// Read address Function
+			uint8_t Address(void) {
+
+				// Return Address
+				return(I2C_Functions::Variables.Device.Address);
+
+			}
+
+			// Read detect Function
+			bool Detect(void) {
+
+				// Return Address
+				return(I2C_Functions::Variables.Device.Detect);
+
+			}
+
+			// Read Mux Channel Function
+			uint8_t Mux_Channel(void) {
+
+				// Return Address
+				return(I2C_Functions::Variables.Multiplexer.Channel);
 
 			}
 

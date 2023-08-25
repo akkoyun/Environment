@@ -1,7 +1,7 @@
 #include <Environment.h>
 
 // Define Sensor Object
-HDC2010 Sensor(true, __B108AA_MUX_HDC2010__);
+SDP810 Sensor(true, __B108AA_MUX_SDP810_X__);
 
 void setup() {
 
@@ -10,8 +10,6 @@ void setup() {
 
 	// Start I2C Communication
 	Sensor.Begin();
-	Sensor.Set_Calibration_Parameters(1, 1.0053, -0.4102);
-	Sensor.Set_Calibration_Parameters(2, 0.9821, -0.3217);
 
 }
 
@@ -21,14 +19,13 @@ void loop() {
 	unsigned long Time = millis();
 
 	// Measure
-	float Temperature = Sensor.Temperature();
-	float Humidity = Sensor.Humidity();
+	float Pressure = Sensor.Pressure(50);
 
 	// Calculate Delta Time
 	long DT = millis() - Time;
 
 	// Header
-	Serial.println(F("    HDC2010 T/H Sensor    "));
+	Serial.println(F("     SPD810 DP Sensor    "));
 	Serial.println(F("--------------------------"));
 	Serial.print(F("Device Address : 0x")); Serial.println(Sensor.Address(), HEX);
 	Serial.print(F("Mux Channel    : ")); Serial.println(Sensor.Mux_Channel());
@@ -36,8 +33,7 @@ void loop() {
 	Serial.println(F("--------------------------"));
 
 	// Serial Print Data
-	Serial.print(F("Temperature    : ")); Serial.print(Temperature, 4); Serial.println(F(" C"));
-	Serial.print(F("Humidity       : ")); Serial.print(Humidity, 4); Serial.println(F(" %"));
+	Serial.print(F("Delta Pressure : ")); Serial.print(Pressure, 4); Serial.println(F(" Pa"));
 	Serial.print(F("Function Time  : ")); Serial.print(DT); Serial.println(F(" mS"));
 	Serial.println(F("--------------------------"));
 
