@@ -2097,7 +2097,7 @@
 				_Wind_Speed.Axis_3.Speed = sqrt(2 * Sensor_Axis_3.Pressure(50) / _Rho);
 
 				// Calculate Wind Direction Axis 1
-				if (_Wind_Speed.Axis_1.Speed > 0) {
+				if (_Wind_Speed.Axis_1.Speed >= 0) {
 
 					// Calculate Wind Direction X Vector
 					_Wind_Speed.Axis_1.X = _Wind_Speed.Axis_1.Speed * cos(radians(0));
@@ -2113,18 +2113,10 @@
 					// Calculate Wind Direction Y Vector
 					_Wind_Speed.Axis_1.Y = abs(_Wind_Speed.Axis_1.Speed) * sin(radians(180));
 
-				} else if (_Wind_Speed.Axis_1.Speed == 0) {
-
-					// Calculate Wind Direction X Vector
-					_Wind_Speed.Axis_1.X = 0;
-
-					// Calculate Wind Direction Y Vector
-					_Wind_Speed.Axis_1.Y = 0;
-
-				}
+				} 
 
 				// Calculate Wind Direction Axis 2
-				if (_Wind_Speed.Axis_2.Speed > 0) {
+				if (_Wind_Speed.Axis_2.Speed >=0) {
 
 					// Calculate Wind Direction X Vector
 					_Wind_Speed.Axis_2.X = _Wind_Speed.Axis_2.Speed * cos(radians(60));
@@ -2140,18 +2132,10 @@
 					// Calculate Wind Direction Y Vector
 					_Wind_Speed.Axis_2.Y = abs(_Wind_Speed.Axis_2.Speed) * sin(radians(240));
 
-				} else if (_Wind_Speed.Axis_2.Speed == 0) {
-
-					// Calculate Wind Direction X Vector
-					_Wind_Speed.Axis_2.X = 0;
-
-					// Calculate Wind Direction Y Vector
-					_Wind_Speed.Axis_2.Y = 0;
-
-				}
+				} 
 
 				// Calculate Wind Direction Axis 3
-				if (_Wind_Speed.Axis_3.Speed > 0) {
+				if (_Wind_Speed.Axis_3.Speed >= 0) {
 
 					// Calculate Wind Direction X Vector
 					_Wind_Speed.Axis_3.X = _Wind_Speed.Axis_3.Speed * cos(radians(120));
@@ -2167,15 +2151,7 @@
 					// Calculate Wind Direction Y Vector
 					_Wind_Speed.Axis_3.Y = abs(_Wind_Speed.Axis_3.Speed) * sin(radians(300));
 
-				} else if (_Wind_Speed.Axis_3.Speed == 0) {
-
-					// Calculate Wind Direction X Vector
-					_Wind_Speed.Axis_3.X = 0;
-
-					// Calculate Wind Direction Y Vector
-					_Wind_Speed.Axis_3.Y = 0;
-
-				}
+				} 
 
 				// Calculate X Vectors Sum
 				_Wind_Speed.X_Vectors_SUM = _Wind_Speed.Axis_1.X + _Wind_Speed.Axis_2.X + _Wind_Speed.Axis_3.X;
@@ -2184,13 +2160,17 @@
 				_Wind_Speed.Y_Vector_SUM = _Wind_Speed.Axis_1.Y + _Wind_Speed.Axis_2.Y + _Wind_Speed.Axis_3.Y;
 
 				// Calculate Wind Total Speed
-				_WS = sqrt(pow(_Wind_Speed.X_Vectors_SUM, 2) + pow(_Wind_Speed.Y_Vector_SUM, 2));
+				_WS = sqrt(pow((float)_Wind_Speed.X_Vectors_SUM, 2) + pow((float)_Wind_Speed.Y_Vector_SUM, 2));
 
 				// Calculate Wind Direction
-				_WD = degrees(atan2(_Wind_Speed.Y_Vector_SUM, _Wind_Speed.X_Vectors_SUM));
+				_WD = degrees(atan2((float)_Wind_Speed.Y_Vector_SUM, (float)_Wind_Speed.X_Vectors_SUM));
 
 				// Control for Wind Direction
 				if (_WD < 0) _WD += 360;
+
+				// Control for Nan
+				if (isnan(_WD)) _WD = 0;
+				if (isnan(_WS)) _WS = 0;
 
 			}
 
