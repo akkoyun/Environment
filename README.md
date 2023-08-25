@@ -33,6 +33,8 @@ Below list is the recent sensor support. Thanks for interesting.
 * 05.02.00 - TSL2561 Light Measurement Function Added.
 * 05.03.00 - Measurement function structure update (not working on older versions).
 * 05.06.04 - I2C Communication update. SI1145 Sensor added. HDC2010 Sensor update.
+* 05.07.00 - SDP810 Sensor added.
+* 05.07.01 - SDP810 Sensor update.
 
 ---
 

@@ -1586,7 +1586,8 @@
 			void Start_Continuous_Measurement_With_Diff_Pressure_TComp(void) {
 
 				// Write Command
-				I2C_Functions::Write_Register(0x36, 0x1E, true);
+//				I2C_Functions::Write_Register(0x36, 0x1E, true);	// Instant
+				I2C_Functions::Write_Register(0x36, 0x15, true);	// Average
 
 				// Command Delay
 				delay(20);
