@@ -2014,13 +2014,16 @@
 					// Define Variables
 					uint8_t _NA2302_Data[3];
 
+					// Read Command
+					I2C_Functions::Write_Register(0x30, 0x0B, true);
+
+					// Wait for Measurement
+					delay(2);
+
 					// Read Register
 					_NA2302_Data[0] = I2C_Functions::Read_Register(0x06);	// 23:16
 					_NA2302_Data[1] = I2C_Functions::Read_Register(0x07);	// 15:8
 					_NA2302_Data[2] = I2C_Functions::Read_Register(0x08);	// 0:7
-
-					// Read Delay
-					delay(5);
 
 					// Combine Read Bytes
 					uint32_t _Measurement_Raw = ((uint32_t)(_NA2302_Data[0]) << 16 | (uint32_t)(_NA2302_Data[1]) << 8 | (uint32_t)_NA2302_Data[2]);
@@ -2063,6 +2066,85 @@
 
 					// End Function
 					return(_Pressure_Measurement_Array[0]);
+
+				} 
+
+			}
+
+			// TODO: Not Working
+			// Read Temperature Function
+			float Temperature(const uint8_t _Measurement_Count = 1) {
+
+				// Define Measurement Read Array
+				float _Temperature_Measurement_Array[_Measurement_Count];
+
+				// Read Loop For Read Count
+				for (uint8_t _Read_ID = 0; _Read_ID < _Measurement_Count; _Read_ID++) {
+
+					// Define Variables
+					uint8_t _NA2302_Data[3];
+
+					// Read Command
+					I2C_Functions::Write_Register(0x30, 0x0B, true);
+
+					// Wait for Measurement
+					delay(2);
+
+					// Read Register
+					_NA2302_Data[0] = I2C_Functions::Read_Register(0x09);	// 15:8
+					_NA2302_Data[1] = I2C_Functions::Read_Register(0x0A);	// 0:7
+
+					// Combine Read Bytes
+					uint32_t _Measurement_Raw = ((uint32_t)(_NA2302_Data[1]) << 16 | (uint32_t)(_NA2302_Data[2]) << 8);
+
+					// Update RAW Measurement
+					if (_Measurement_Raw > 8388608) {
+
+						// Re Calculate
+						_Measurement_Raw = (_Measurement_Raw - 16777216) / 65535;
+
+					} else {
+
+						// Re Calculate
+						_Measurement_Raw = _Measurement_Raw / 65535;
+
+					}
+
+					// Control for Calibration
+					if (this->Sensor.Calibration.Enable) {
+
+						// Calculate Measurement
+						_Temperature_Measurement_Array[_Read_ID] = (this->Sensor.Calibration.Gain * ((float)_Measurement_Raw / 8388608)) + this->Sensor.Calibration.Offset;
+
+					} else {
+
+						// Calculate Measurement
+						_Temperature_Measurement_Array[_Read_ID] = ((float)_Measurement_Raw / 65535);
+
+					}
+
+				}
+
+				// Control for Read Count
+				if (_Measurement_Count > 1) {
+					
+					// Construct Object
+					Array_Stats<float> Data_Array(_Temperature_Measurement_Array, _Measurement_Count);
+
+					// Declare Variables
+					float _Value;
+
+					// Calculate Average
+					if (_Measurement_Count < 5)	_Value = Data_Array.Average(_Arithmetic_Average_);
+					if (_Measurement_Count >= 5) _Value = Data_Array.Average(_Sigma_Average_);
+
+					// End Function
+					return(_Value);
+
+				} else {
+
+					// End Function
+					return(_Temperature_Measurement_Array[0]);
 
 				} 
 
