@@ -1963,6 +1963,139 @@
 
 	};
 
+	// NA2302 Pressure Sensor Class
+	class NA2302 : private I2C_Functions {
+
+		private:
+
+			// NA2302 Sensor Variable Structure.
+			struct NA2302_Struct {
+
+				// Calibration Structure.
+				struct Calibration_Struct{
+
+					// Measurement Calibration Enable Variable (if set true library make calibration).
+					bool Enable 			= false;
+
+					// Calibration (aX+B) Gain Variable
+					float Gain 				= 1;
+
+					// Calibration (aX+B) Offset Variable
+					float Offset 			= 0;
+
+				} Calibration;
+
+			} Sensor;
+
+		public:
+
+			// Construct a new NA2302 object
+			NA2302(bool _Multiplexer_Enable, uint8_t _Multiplexer_Channel) : I2C_Functions(__I2C_Addr_NA2302__, _Multiplexer_Enable, _Multiplexer_Channel) {
+
+			}
+
+			// Begin Sensor
+			void Begin(void) {
+
+				// Start I2C Communication
+				I2C_Functions::Begin();
+
+			}
+
+			// Read Pressure Function
+			float Pressure(const uint8_t _Measurement_Count = 1) {
+
+				// Define Measurement Read Array
+				float _Pressure_Measurement_Array[_Measurement_Count];
+
+				// Read Loop For Read Count
+				for (uint8_t _Read_ID = 0; _Read_ID < _Measurement_Count; _Read_ID++) {
+
+					// Define Variables
+					uint8_t _NA2302_Data[3];
+
+					// Read Register
+					_NA2302_Data[0] = I2C_Functions::Read_Register(0x06);	// 23:16
+					_NA2302_Data[1] = I2C_Functions::Read_Register(0x07);	// 15:8
+					_NA2302_Data[2] = I2C_Functions::Read_Register(0x08);	// 0:7
+
+					// Read Delay
+					delay(5);
+
+					// Combine Read Bytes
+					uint32_t _Measurement_Raw = ((uint32_t)(_NA2302_Data[0]) << 16 | (uint32_t)(_NA2302_Data[1]) << 8 | (uint32_t)_NA2302_Data[2]);
+
+					// Clear 24-31 bits
+					_Measurement_Raw &= 0x00FFFFFF;
+
+					// Control for Calibration
+					if (this->Sensor.Calibration.Enable) {
+
+						// Calculate Measurement
+						_Pressure_Measurement_Array[_Read_ID] = (this->Sensor.Calibration.Gain * (((((float)_Measurement_Raw / 8388608) - 0.2) / 0.7) * 10)) + this->Sensor.Calibration.Offset;
+
+					} else {
+
+						// Calculate Measurement
+						_Pressure_Measurement_Array[_Read_ID] = ((((float)_Measurement_Raw / 8388608) - 0.2) / 0.7) * 10;
+
+					}
+
+				}
+
+				// Control for Read Count
+				if (_Measurement_Count > 1) {
+					
+					// Construct Object
+					Array_Stats<float> Data_Array(_Pressure_Measurement_Array, _Measurement_Count);
+
+					// Declare Variables
+					float _Value;
+
+					// Calculate Average
+					if (_Measurement_Count < 5)	_Value = Data_Array.Average(_Arithmetic_Average_);
+					if (_Measurement_Count >= 5) _Value = Data_Array.Average(_Sigma_Average_);
+
+					// End Function
+					return(_Value);
+
+				} else {
+
+					// End Function
+					return(_Pressure_Measurement_Array[0]);
+
+				} 
+
+			}
+
+			/* I2C Functions */
+
+			// Read address Function
+			uint8_t Address(void) {
+
+				// Return Address
+				return(I2C_Functions::Variables.Device.Address);
+
+			}
+
+			// Read detect Function
+			bool Detect(void) {
+
+				// Return Address
+				return(I2C_Functions::Variables.Device.Detect);
+
+			}
+
+			// Read Mux Channel Function
+			uint8_t Mux_Channel(void) {
+
+				// Return Address
+				return(I2C_Functions::Variables.Multiplexer.Channel);
+
+			}
+
+	};
+
 	// Weather Sensor Class
 	class B108AA_Environment : private HDC2010, private MPL3115A2, private SI1145 {
 
