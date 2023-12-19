@@ -595,34 +595,47 @@
 			}
 
 			// HDC2010 Begin Function
-			void Begin(void) {
+			bool Begin(void) {
 
-				// Start I2C Communication
+				// Start I2C
 				I2C_Functions::Begin();
 
-				// Reset Sensor
-				this->Reset();
+				// Control for Device
+				if (I2C_Functions::Variables.Device.Detect) {
 
-				// Set Measurement Limit
-				this->Set_High_Temperature_Threshold(50);
-				this->Set_Low_Temperature_Threshold(-20);
-				this->Set_High_Humidity_Threshold(60);
-				this->Set_Low_Humidity_Threshold(20);
+					// Reset Sensor
+					this->Reset();
 
-				// Set Interrupt Pin
-				this->Enable_Interrupt();
-				this->Enable_Threshold_Interrupt();
-				this->Set_Interrupt_Polarity(true);
-				this->Set_Interrupt_Mode(1);
+					// Set Measurement Limit
+					this->Set_High_Temperature_Threshold(50);
+					this->Set_Low_Temperature_Threshold(-20);
+					this->Set_High_Humidity_Threshold(60);
+					this->Set_Low_Humidity_Threshold(20);
 
-				// Configure Measurements
-				this->Set_Measurement_Mode(0);
-				this->Set_Rate(5);
-				this->Set_Temperature_Resolution(14);
-				this->Set_Humidity_Resolution(14);
+					// Set Interrupt Pin
+					this->Enable_Interrupt();
+					this->Enable_Threshold_Interrupt();
+					this->Set_Interrupt_Polarity(true);
+					this->Set_Interrupt_Mode(1);
 
-				// Begin Measurement
-				this->Trigger_Measurement();
+					// Configure Measurements
+					this->Set_Measurement_Mode(0);
+					this->Set_Rate(5);
+					this->Set_Temperature_Resolution(14);
+					this->Set_Humidity_Resolution(14);
+
+					// Begin Measurement
+					this->Trigger_Measurement();
+					
+					// End Function
+					return(true);
+
+				} else {
+
+					// End Function
+					return(false);
+
+				}
 
 			}
 
@@ -1963,221 +1976,6 @@
 
 	};
 
-	// NA2302 Pressure Sensor Class
-	class NA2302 : private I2C_Functions {
-
-		private:
-
-			// NA2302 Sensor Variable Structure.
-			struct NA2302_Struct {
-
-				// Calibration Structure.
-				struct Calibration_Struct{
-
-					// Measurement Calibration Enable Variable (if set true library make calibration).
-					bool Enable 			= false;
-
-					// Calibration (aX+B) Gain Variable
-					float Gain 				= 1;
-
-					// Calibration (aX+B) Offset Variable
-					float Offset 			= 0;
-
-				} Calibration;
-
-			} Sensor;
-
-		public:
-
-			// Construct a new NA2302 object
-			NA2302(bool _Multiplexer_Enable, uint8_t _Multiplexer_Channel) : I2C_Functions(__I2C_Addr_NA2302__, _Multiplexer_Enable, _Multiplexer_Channel) {
-
-			}
-
-			// Begin Sensor
-			void Begin(void) {
-
-				// Start I2C Communication
-				I2C_Functions::Begin();
-
-			}
-
-			// Read Pressure Function
-			float Pressure(const uint8_t _Measurement_Count = 1) {
-
-				// Define Measurement Read Array
-				float _Pressure_Measurement_Array[_Measurement_Count];
-
-				// Read Loop For Read Count
-				for (uint8_t _Read_ID = 0; _Read_ID < _Measurement_Count; _Read_ID++) {
-
-					// Define Variables
-					uint8_t _NA2302_Data[3];
-
-					// Read Command
-					I2C_Functions::Write_Register(0x30, 0x0B, true);
-
-					// Wait for Measurement
-					delay(2);
-
-					// Read Register
-					_NA2302_Data[0] = I2C_Functions::Read_Register(0x06);	// 23:16
-					_NA2302_Data[1] = I2C_Functions::Read_Register(0x07);	// 15:8
-					_NA2302_Data[2] = I2C_Functions::Read_Register(0x08);	// 0:7
-
-					// Combine Read Bytes
-					uint32_t _Measurement_Raw = ((uint32_t)(_NA2302_Data[0]) << 16 | (uint32_t)(_NA2302_Data[1]) << 8 | (uint32_t)_NA2302_Data[2]);
-
-					// Clear 24-31 bits
-					_Measurement_Raw &= 0x00FFFFFF;
-
-					// Control for Calibration
-					if (this->Sensor.Calibration.Enable) {
-
-						// Calculate Measurement
-						_Pressure_Measurement_Array[_Read_ID] = (this->Sensor.Calibration.Gain * (((((float)_Measurement_Raw / 8388608) - 0.2) / 0.7) * 10)) + this->Sensor.Calibration.Offset;
-
-					} else {
-
-						// Calculate Measurement
-						_Pressure_Measurement_Array[_Read_ID] = ((((float)_Measurement_Raw / 8388608) - 0.2) / 0.7) * 10;
-
-					}
-
-				}
-
-				// Control for Read Count
-				if (_Measurement_Count > 1) {
-					
-					// Construct Object
-					Array_Stats<float> Data_Array(_Pressure_Measurement_Array, _Measurement_Count);
-
-					// Declare Variables
-					float _Value;
-
-					// Calculate Average
-					if (_Measurement_Count < 5)	_Value = Data_Array.Average(_Arithmetic_Average_);
-					if (_Measurement_Count >= 5) _Value = Data_Array.Average(_Sigma_Average_);
-
-					// End Function
-					return(_Value);
-
-				} else {
-
-					// End Function
-					return(_Pressure_Measurement_Array[0]);
-
-				} 
-
-			}
-
-			// TODO: Not Working
-			// Read Temperature Function
-			float Temperature(const uint8_t _Measurement_Count = 1) {
-
-				// Define Measurement Read Array
-				float _Temperature_Measurement_Array[_Measurement_Count];
-
-				// Read Loop For Read Count
-				for (uint8_t _Read_ID = 0; _Read_ID < _Measurement_Count; _Read_ID++) {
-
-					// Define Variables
-					uint8_t _NA2302_Data[3];
-
-					// Read Command
-					I2C_Functions::Write_Register(0x30, 0x0B, true);
-
-					// Wait for Measurement
-					delay(2);
-
-					// Read Register
-					_NA2302_Data[0] = I2C_Functions::Read_Register(0x09);	// 15:8
-					_NA2302_Data[1] = I2C_Functions::Read_Register(0x0A);	// 0:7
-
-					// Combine Read Bytes
-					uint32_t _Measurement_Raw = ((uint32_t)(_NA2302_Data[1]) << 16 | (uint32_t)(_NA2302_Data[2]) << 8);
-
-					// Update RAW Measurement
-					if (_Measurement_Raw > 8388608) {
-
-						// Re Calculate
-						_Measurement_Raw = (_Measurement_Raw - 16777216) / 65535;
-
-					} else {
-
-						// Re Calculate
-						_Measurement_Raw = _Measurement_Raw / 65535;
-
-					}
-
-					// Control for Calibration
-					if (this->Sensor.Calibration.Enable) {
-
-						// Calculate Measurement
-						_Temperature_Measurement_Array[_Read_ID] = (this->Sensor.Calibration.Gain * ((float)_Measurement_Raw / 8388608)) + this->Sensor.Calibration.Offset;
-
-					} else {
-
-						// Calculate Measurement
-						_Temperature_Measurement_Array[_Read_ID] = ((float)_Measurement_Raw / 65535);
-
-					}
-
-				}
-
-				// Control for Read Count
-				if (_Measurement_Count > 1) {
-					
-					// Construct Object
-					Array_Stats<float> Data_Array(_Temperature_Measurement_Array, _Measurement_Count);
-
-					// Declare Variables
-					float _Value;
-
-					// Calculate Average
-					if (_Measurement_Count < 5)	_Value = Data_Array.Average(_Arithmetic_Average_);
-					if (_Measurement_Count >= 5) _Value = Data_Array.Average(_Sigma_Average_);
-
-					// End Function
-					return(_Value);
-
-				} else {
-
-					// End Function
-					return(_Temperature_Measurement_Array[0]);
-
-				} 
-
-			}
-
-			/* I2C Functions */
-
-			// Read address Function
-			uint8_t Address(void) {
-
-				// Return Address
-				return(I2C_Functions::Variables.Device.Address);
-
-			}
-
-			// Read detect Function
-			bool Detect(void) {
-
-				// Return Address
-				return(I2C_Functions::Variables.Device.Detect);
-
-			}
-
-			// Read Mux Channel Function
-			uint8_t Mux_Channel(void) {
-
-				// Return Address
-				return(I2C_Functions::Variables.Multiplexer.Channel);
-
-			}
-
-	};
-
 	// Weather Sensor Class
 	class B108AA_Environment : private HDC2010, private MPL3115A2, private SI1145 {
 
@@ -2312,7 +2110,7 @@
 				_Wind_Speed.Axis_3.Speed = sqrt(2 * Sensor_Axis_3.Pressure(50) / _Rho);
 
 				// Calculate Wind Direction Axis 1
-				if (_Wind_Speed.Axis_1.Speed >= 0) {
+				if (_Wind_Speed.Axis_1.Speed > 0) {
 
 					// Calculate Wind Direction X Vector
 					_Wind_Speed.Axis_1.X = _Wind_Speed.Axis_1.Speed * cos(radians(0));
@@ -2328,10 +2126,18 @@
 					// Calculate Wind Direction Y Vector
 					_Wind_Speed.Axis_1.Y = abs(_Wind_Speed.Axis_1.Speed) * sin(radians(180));
 
-				} 
+				} else if (_Wind_Speed.Axis_1.Speed == 0) {
+
+					// Calculate Wind Direction X Vector
+					_Wind_Speed.Axis_1.X = 0;
+
+					// Calculate Wind Direction Y Vector
+					_Wind_Speed.Axis_1.Y = 0;
+
+				}
 
 				// Calculate Wind Direction Axis 2
-				if (_Wind_Speed.Axis_2.Speed >=0) {
+				if (_Wind_Speed.Axis_2.Speed > 0) {
 
 					// Calculate Wind Direction X Vector
 					_Wind_Speed.Axis_2.X = _Wind_Speed.Axis_2.Speed * cos(radians(60));
@@ -2347,10 +2153,18 @@
 					// Calculate Wind Direction Y Vector
 					_Wind_Speed.Axis_2.Y = abs(_Wind_Speed.Axis_2.Speed) * sin(radians(240));
 
-				} 
+				} else if (_Wind_Speed.Axis_2.Speed == 0) {
+
+					// Calculate Wind Direction X Vector
+					_Wind_Speed.Axis_2.X = 0;
+
+					// Calculate Wind Direction Y Vector
+					_Wind_Speed.Axis_2.Y = 0;
+
+				}
 
 				// Calculate Wind Direction Axis 3
-				if (_Wind_Speed.Axis_3.Speed >= 0) {
+				if (_Wind_Speed.Axis_3.Speed > 0) {
 
 					// Calculate Wind Direction X Vector
 					_Wind_Speed.Axis_3.X = _Wind_Speed.Axis_3.Speed * cos(radians(120));
@@ -2366,7 +2180,15 @@
 					// Calculate Wind Direction Y Vector
 					_Wind_Speed.Axis_3.Y = abs(_Wind_Speed.Axis_3.Speed) * sin(radians(300));
 
-				} 
+				} else if (_Wind_Speed.Axis_3.Speed == 0) {
+
+					// Calculate Wind Direction X Vector
+					_Wind_Speed.Axis_3.X = 0;
+
+					// Calculate Wind Direction Y Vector
+					_Wind_Speed.Axis_3.Y = 0;
+
+				}
 
 				// Calculate X Vectors Sum
 				_Wind_Speed.X_Vectors_SUM = _Wind_Speed.Axis_1.X + _Wind_Speed.Axis_2.X + _Wind_Speed.Axis_3.X;
@@ -2375,17 +2197,13 @@
 				_Wind_Speed.Y_Vector_SUM = _Wind_Speed.Axis_1.Y + _Wind_Speed.Axis_2.Y + _Wind_Speed.Axis_3.Y;
 
 				// Calculate Wind Total Speed
-				_WS = sqrt(pow((float)_Wind_Speed.X_Vectors_SUM, 2) + pow((float)_Wind_Speed.Y_Vector_SUM, 2));
+				_WS = sqrt(pow(_Wind_Speed.X_Vectors_SUM, 2) + pow(_Wind_Speed.Y_Vector_SUM, 2));
 
 				// Calculate Wind Direction
-				_WD = degrees(atan2((float)_Wind_Speed.Y_Vector_SUM, (float)_Wind_Speed.X_Vectors_SUM));
+				_WD = degrees(atan2(_Wind_Speed.Y_Vector_SUM, _Wind_Speed.X_Vectors_SUM));
 
 				// Control for Wind Direction
 				if (_WD < 0) _WD += 360;
-
-				// Control for Nan
-				if (isnan(_WD)) _WD = 0;
-				if (isnan(_WS)) _WS = 0;
 
 			}
 
