@@ -571,7 +571,7 @@
 					// Set Interrupt Pin
 					this->Interrupt_Config(false, true, true, true, true);	// Enable Threshold Interrupts
 					this->Interrupt_Mode(false);							// Transparent Mode
-					this->Interrupt_Polarity(true);							// Active High
+					this->Interrupt_Polarity(false);						// Active Low
 					this->Interrupt(true);									// Enable Interrupt
 
 					// Configure Measurements
