@@ -209,103 +209,57 @@
 
 			} Sensor;
 
-			// Enable the interrupt pin for DRDY operation
-			void Enable_DRDY_Interrupt(void) {
-
-				// Set Bit
-				I2C_Functions::Set_Register_Bit(0x07, 7, true);
-
-			}
-
-			// Disable the interrupt pin for DRDY operation
-			void Disable_DRDY_Interrupt(void) {
-
-				// Clear Bit
-				I2C_Functions::Clear_Register_Bit(0x07, 7, true);
-
-			}
-
 			// Enable the interrupt pin for threshold operation
-			void Enable_Threshold_Interrupt(void) {
+			void Interrupt_Config(bool _DRDY = false, bool _TH = false, bool _TL = false, bool _HH = false, bool _HL = false) {
 
 				// Read Register
-				uint8_t _HDC2010_Config_Read = I2C_Functions::Read_Register(0x07);
+				uint8_t _HDC2010_Interrupt_Config_Register = I2C_Functions::Read_Register(0x07);
 
-				// Set Bit
-				_HDC2010_Config_Read |= 0x78;
-
-				// Write Register
-				I2C_Functions::Write_Register(0x07, _HDC2010_Config_Read, true);
-			
-			}
-
-			// Disable the interrupt pin for threshold operation
-			void Disable_Threshold_Interrupt(void) {
-
-				// Read Register
-				uint8_t _HDC2010_Config_Read = I2C_Functions::Read_Register(0x07);
-
-				// Clear Bit
-				_HDC2010_Config_Read &= 0x87;
+				// Set Bits
+				if (_DRDY) {bitSet(_HDC2010_Interrupt_Config_Register, 7);} else {bitClear(_HDC2010_Interrupt_Config_Register, 7);}
+				if (_TH) {bitSet(_HDC2010_Interrupt_Config_Register, 6);} else {bitClear(_HDC2010_Interrupt_Config_Register, 6);}
+				if (_TL) {bitSet(_HDC2010_Interrupt_Config_Register, 5);} else {bitClear(_HDC2010_Interrupt_Config_Register, 5);}
+				if (_HH) {bitSet(_HDC2010_Interrupt_Config_Register, 4);} else {bitClear(_HDC2010_Interrupt_Config_Register, 4);}
+				if (_HL) {bitSet(_HDC2010_Interrupt_Config_Register, 3);} else {bitClear(_HDC2010_Interrupt_Config_Register, 3);}
 
 				// Write Register
-				I2C_Functions::Write_Register(0x07, _HDC2010_Config_Read, true);
+				I2C_Functions::Write_Register(0x07, _HDC2010_Interrupt_Config_Register, true);
 			
 			}
 
 			// Set Interrupt Mode Function
-			void Set_Interrupt_Mode(uint8_t _Mode) {
+			void Interrupt_Mode(bool _Mode = false) {
 
-				// Read Register
-				uint8_t _HDC2010_INT_DRDY_Read = I2C_Functions::Read_Register(0x0E);
-
-				// Set Mode 
-				if (_Mode == 0) {
-
-					// Level Mode
+				// Control for Mode
+				if (_Mode) {
 
 					// Set Bit
-					_HDC2010_INT_DRDY_Read &= 0xFE;
+					I2C_Functions::Set_Register_Bit(0x0E, 0, true);	// Latched Mode
 
 				} else {
 
-					// Comparator Mode
-
 					// Clear Bit
-					_HDC2010_INT_DRDY_Read |= 0x01;
+					I2C_Functions::Clear_Register_Bit(0x0E, 0, true);	// Transparent Mode
 
 				}
-
-				// Write Register
-				I2C_Functions::Write_Register(0x04, _HDC2010_INT_DRDY_Read, true);
 
 			}
 
 			// Set Interrupt Polarity Function
-			void Set_Interrupt_Polarity(bool _Polarity) {
+			void Interrupt_Polarity(bool _Polarity = true) {
 
-				// Read Register
-				uint8_t _HDC2010_CONFIG_Read = I2C_Functions::Read_Register(0x0E);
-
-				// Set Polarity 
+				// Control for Polarity
 				if (_Polarity) {
 
-					// Active High
-
 					// Set Bit
-					_HDC2010_CONFIG_Read |= 0x02;
+					I2C_Functions::Set_Register_Bit(0x0E, 1, true);	// Active High
 
 				} else {
 
-					// Active Low
-
 					// Clear Bit
-					_HDC2010_CONFIG_Read &= 0xFD;
+					I2C_Functions::Clear_Register_Bit(0x0E, 1, true);	// Active Low
 
 				}
-
-				// Write Register
-				I2C_Functions::Write_Register(0x0E, _HDC2010_CONFIG_Read, true);
 
 			}
 
@@ -570,19 +524,21 @@
 
 			}
 
-			// Enable Heater Function
-			void Enable_Heater(void) {
+			// Enable / Disable Heater Function
+			void Heater(bool _State = false) {
 
-				// Set Bit
-				I2C_Functions::Set_Register_Bit(0x0E, 3, true);
+				// Control for State
+				if (_State) {
 
-			}
+					// Set Bit
+					I2C_Functions::Set_Register_Bit(0x0E, 3, true);
 
-			// Disable Heater Function
-			void Disable_Heater(void) {
+				} else {
 
-				// Clear Bit
-				I2C_Functions::Clear_Register_Bit(0x0E, 3, true);
+					// Clear Bit
+					I2C_Functions::Clear_Register_Bit(0x0E, 3, true);
+
+				}
 
 			}
 
@@ -607,16 +563,16 @@
 					this->Reset();
 
 					// Set Measurement Limit
-					this->Set_High_Temperature_Threshold(50);
+					this->Set_High_Temperature_Threshold(30);
 					this->Set_Low_Temperature_Threshold(-20);
-					this->Set_High_Humidity_Threshold(60);
+					this->Set_High_Humidity_Threshold(80);
 					this->Set_Low_Humidity_Threshold(20);
 
 					// Set Interrupt Pin
-					this->Enable_Interrupt();
-					this->Enable_Threshold_Interrupt();
-					this->Set_Interrupt_Polarity(true);
-					this->Set_Interrupt_Mode(1);
+					this->Interrupt_Config(false, true, true, true, true);	// Enable Threshold Interrupts
+					this->Interrupt_Mode(false);							// Transparent Mode
+					this->Interrupt_Polarity(true);							// Active High
+					this->Interrupt(true);									// Enable Interrupt
 
 					// Configure Measurements
 					this->Set_Measurement_Mode(0);
@@ -732,19 +688,21 @@
 
 			}
 
-			// Enable Interrupt Function
-			void Enable_Interrupt(void) {
+			// Enable/Disable Interrupt Function
+			void Interrupt(bool _State = false) {
 
-				// Set Interrupt Enable Bit
-				I2C_Functions::Set_Register_Bit(0x0E, 2, true);
+				// Control for State
+				if (_State) {
 
-			}
+					// Set Bit
+					I2C_Functions::Set_Register_Bit(0x0E, 2, true);
 
-			// Disable Interrupt Function
-			void Disable_Interrupt(void) {
+				} else {
 
-				// Clear Interrupt Enable Bit
-				I2C_Functions::Clear_Register_Bit(0x0E, 2, true);
+					// Clear Bit
+					I2C_Functions::Clear_Register_Bit(0x0E, 2, true);
+
+				}
 
 			}
 
