@@ -6,22 +6,18 @@
 # Datatypes (KEYWORD1)
 #######################################
 
-HDC2010						KEYWORD1
 Analog                      KEYWORD1
+HDC2010						KEYWORD1
 MPL3115A2                   KEYWORD1
+TSL2561                     KEYWORD1
+SDP810                      KEYWORD1
+SI1145                      KEYWORD1
+I2C_Functions               KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
 #######################################
 
-Sensor  					KEYWORD2
-Set_Calibration_Parameters  KEYWORD2
-Temperature                 KEYWORD2
-Humidity                    KEYWORD2
-Standard_Deviation          KEYWORD2
-Analog                      KEYWORD2
-Read                        KEYWORD2
-Pressure                    KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
