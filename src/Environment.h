@@ -16,6 +16,9 @@
 		#include <Statistical.h>
 	#endif
 
+	// Include Defaults
+	#include "Defaults.h"
+
 	// AVR Analog Read Class
 	class Analog {
 
@@ -563,10 +566,10 @@
 					this->Reset();
 
 					// Set Measurement Limit
-					this->Set_High_Temperature_Threshold(30);
-					this->Set_Low_Temperature_Threshold(-20);
-					this->Set_High_Humidity_Threshold(80);
-					this->Set_Low_Humidity_Threshold(20);
+					this->Set_High_Temperature_Threshold(_HDC2010_Max_Temperature_);
+					this->Set_Low_Temperature_Threshold(_HDC2010_Min_Temperature_);
+					this->Set_High_Humidity_Threshold(_HDC2010_Max_Humidity_);
+					this->Set_Low_Humidity_Threshold(_HDC2010_Min_Humidity_);
 
 					// Set Interrupt Pin
 					this->Interrupt_Config(false, true, true, true, true);	// Enable Threshold Interrupts
