@@ -1,5 +1,13 @@
 // HDC2010 Defaults
-#define _HDC2010_Min_Humidity_ 20
-#define _HDC2010_Max_Humidity_ 80
-#define _HDC2010_Min_Temperature_ 21
-#define _HDC2010_Max_Temperature_ 27
+#ifndef __HDC2010_Min_Humidity__
+    #define __HDC2010_Min_Humidity__ 20
+#endif
+#ifndef __HDC2010_Max_Humidity__
+    #define __HDC2010_Max_Humidity__ 80
+#endif
+#ifndef __HDC2010_Min_Temperature__
+    #define __HDC2010_Min_Temperature__ 21
+#endif
+#ifndef __HDC2010_Max_Temperature__
+    #define __HDC2010_Max_Temperature__ 27
+#endif

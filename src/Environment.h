@@ -566,10 +566,10 @@
 					this->Reset();
 
 					// Set Measurement Limit
-					this->Set_High_Temperature_Threshold(_HDC2010_Max_Temperature_);
-					this->Set_Low_Temperature_Threshold(_HDC2010_Min_Temperature_);
-					this->Set_High_Humidity_Threshold(_HDC2010_Max_Humidity_);
-					this->Set_Low_Humidity_Threshold(_HDC2010_Min_Humidity_);
+					this->Set_High_Temperature_Threshold(__HDC2010_Max_Temperature__);
+					this->Set_Low_Temperature_Threshold(__HDC2010_Min_Temperature__);
+					this->Set_High_Humidity_Threshold(__HDC2010_Max_Humidity__);
+					this->Set_Low_Humidity_Threshold(__HDC2010_Min_Humidity__);
 
 					// Set Interrupt Pin
 					this->Interrupt_Config(false, true, true, true, true);	// Enable Threshold Interrupts
