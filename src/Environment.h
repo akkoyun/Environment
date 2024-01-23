@@ -51,7 +51,7 @@
 		public:
 
 			// Construct a new Analog object
-			Analog(uint8_t _Channel) {
+			Analog(uint8_t _Channel = 1) {
 
 				// Set Channel Variable
 				_Channel &= 0b00000111;
@@ -122,10 +122,13 @@
 			}
 
 			// Analog Read Function
-			float Read(const uint8_t _Read_Count) {
+			double Read(const uint8_t _Read_Count) {
 
 				// Define Measurement Read Array
 				double _Measurement_Array[_Read_Count];
+
+				// Clear Array
+				memset(_Measurement_Array, 0, sizeof(_Measurement_Array));
 
 				// Read Loop For Read Count
 				for (uint8_t _Read_ID = 0; _Read_ID < _Read_Count; _Read_ID++) {
@@ -528,28 +531,28 @@
 			}
 
 			// Enable / Disable Heater Function
-			void Heater(bool _State = false) {
+//			void Heater(bool _State = false) {
 
 				// Control for State
-				if (_State) {
+//				if (_State) {
 
 					// Set Bit
-					I2C_Functions::Set_Register_Bit(0x0E, 3, true);
+//					I2C_Functions::Set_Register_Bit(0x0E, 3, true);
 
-				} else {
+//				} else {
 
 					// Clear Bit
-					I2C_Functions::Clear_Register_Bit(0x0E, 3, true);
+//					I2C_Functions::Clear_Register_Bit(0x0E, 3, true);
 
-				}
+//				}
 
-			}
+//			}
 
 		// Public Context
 		public:
 
 			// Construct a new HDC2010 object
-			HDC2010(const bool _Multiplexer_Enable = false, const uint8_t _Multiplexer_Channel = 0) : I2C_Functions(__I2C_Addr_HDC2010__, _Multiplexer_Enable, _Multiplexer_Channel) {
+			HDC2010(bool _Multiplexer_Enable = false, uint8_t _Multiplexer_Channel = 0) : I2C_Functions(__I2C_Addr_HDC2010__, _Multiplexer_Enable, _Multiplexer_Channel) {
 
 			}
 
@@ -831,6 +834,9 @@
 				// Define Measurement Read Array
 				float _Measurement_Array[_Measurement_Count];
 
+				// Clear Array
+				memset(_Measurement_Array, 0, sizeof(_Measurement_Array));
+
 				// Read Loop For Read Count
 				for (uint8_t _Read_ID = 0; _Read_ID < _Measurement_Count; _Read_ID++) {
 
@@ -894,6 +900,9 @@
 
 				// Define Measurement Read Array
 				float _Measurement_Array[_Measurement_Count];
+
+				// Clear Array
+				memset(_Measurement_Array, 0, sizeof(_Measurement_Array));
 
 				// Read Loop For Read Count
 				for (uint8_t _Read_ID = 0; _Read_ID < _Measurement_Count; _Read_ID++) {
@@ -1064,6 +1073,9 @@
 
 				// Define Measurement Read Array
 				float _Measurement_Array[_Measurement_Count];
+
+				// Clear Array
+				memset(_Measurement_Array, 0, sizeof(_Measurement_Array));
 
 				// Read Loop For Read Count
 				for (int Read_ID = 0; Read_ID < _Measurement_Count; Read_ID++) {
@@ -1432,7 +1444,7 @@
 			TSL2561(bool _Multiplexer_Enable, uint8_t _Multiplexer_Channel, uint8_t _Measurement_Count = 1, bool _Calibration_Enable = false) : I2C_Functions(__I2C_Addr_TSL2561__, _Multiplexer_Enable, _Multiplexer_Channel) {
 
 				// Set Measurement Count
-				_Measurement_Count = _Measurement_Count;
+				this->Sensor.Read_Count = _Measurement_Count;
 
 				// Enable Calibration
 				this->Sensor.Calibration = _Calibration_Enable;
@@ -1629,6 +1641,10 @@
 			// Construct a new SDP810 object
 			SDP810(bool _Multiplexer_Enable, uint8_t _Multiplexer_Channel) : I2C_Functions(__I2C_Addr_SDP810__, _Multiplexer_Enable, _Multiplexer_Channel) {
 
+				// Clear Arrays
+				memset(this->Product_Number, '\0', 11);
+				memset(this->Serial_Number, '\0', 19);
+
 			}
 
 			// Begin Sensor
@@ -1683,6 +1699,10 @@
 				// Define Measurement Read Array
 				float _Pressure_Measurement_Array[_Measurement_Count];
 				float _Temperature_Measurement_Array[_Measurement_Count];
+
+				// Clear Array
+				memset(_Pressure_Measurement_Array, 0, sizeof(_Pressure_Measurement_Array));
+				memset(_Temperature_Measurement_Array, 0, sizeof(_Temperature_Measurement_Array));
 
 				// Read Loop For Read Count
 				for (uint8_t _Read_ID = 0; _Read_ID < _Measurement_Count; _Read_ID++) this->Read_Measurement(_Pressure_Measurement_Array[_Read_ID], _Temperature_Measurement_Array[_Read_ID]);
@@ -1799,15 +1819,15 @@
 			}
 
 			// Read Parameter Data Function
-			uint8_t Read_Param_Data(uint8_t _Reg) {
+//			uint8_t Read_Param_Data(uint8_t _Reg) {
 
 				// Write Command
-				I2C_Functions::Write_Register(0X18, _Reg | 0X80, true);
+//				I2C_Functions::Write_Register(0x18, _Reg | 0x80, true);
 
 				// Read Byte
-				return(I2C_Functions::Read_Register(0X2E));
+//				return(I2C_Functions::Read_Register(0x2E));
 
-			}
+//			}
 
 			// Write Parameter Data Function
 			uint8_t Write_Param_Data(uint8_t _Reg, uint8_t _Value) {
@@ -1997,6 +2017,9 @@
 				// Define Measurement Read Array
 				float _Pressure_Measurement_Array[_Measurement_Count];
 
+				// Clear Array
+				memset(_Pressure_Measurement_Array, 0, sizeof(_Pressure_Measurement_Array));
+
 				// Read Loop For Read Count
 				for (uint8_t _Read_ID = 0; _Read_ID < _Measurement_Count; _Read_ID++) {
 
@@ -2066,6 +2089,9 @@
 
 				// Define Measurement Read Array
 				float _Temperature_Measurement_Array[_Measurement_Count];
+
+				// Clear Array
+				memset(_Temperature_Measurement_Array, 0, sizeof(_Temperature_Measurement_Array));
 
 				// Read Loop For Read Count
 				for (uint8_t _Read_ID = 0; _Read_ID < _Measurement_Count; _Read_ID++) {
