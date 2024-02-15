@@ -2,7 +2,7 @@
 #define __Environment__
 
 	// Include Arduino Library
-	#ifndef __Arduino__
+	#ifndef Arduino_h
 		#include <Arduino.h>
 	#endif
 
@@ -51,7 +51,7 @@
 		public:
 
 			// Construct a new Analog object
-			Analog(uint8_t _Channel) {
+			explicit Analog(uint8_t _Channel = 1) {
 
 				// Set Channel Variable
 				_Channel &= 0b00000111;
@@ -122,10 +122,13 @@
 			}
 
 			// Analog Read Function
-			float Read(const uint8_t _Read_Count) {
+			double Read(const uint8_t _Read_Count) {
 
 				// Define Measurement Read Array
 				double _Measurement_Array[_Read_Count];
+
+				// Clear Array
+				memset(_Measurement_Array, 0, sizeof(_Measurement_Array));
 
 				// Read Loop For Read Count
 				for (uint8_t _Read_ID = 0; _Read_ID < _Read_Count; _Read_ID++) {
@@ -528,28 +531,28 @@
 			}
 
 			// Enable / Disable Heater Function
-			void Heater(bool _State = false) {
+//			void Heater(bool _State = false) {
 
 				// Control for State
-				if (_State) {
+//				if (_State) {
 
 					// Set Bit
-					I2C_Functions::Set_Register_Bit(0x0E, 3, true);
+//					I2C_Functions::Set_Register_Bit(0x0E, 3, true);
 
-				} else {
+//				} else {
 
 					// Clear Bit
-					I2C_Functions::Clear_Register_Bit(0x0E, 3, true);
+//					I2C_Functions::Clear_Register_Bit(0x0E, 3, true);
 
-				}
+//				}
 
-			}
+//			}
 
 		// Public Context
 		public:
 
 			// Construct a new HDC2010 object
-			HDC2010(const bool _Multiplexer_Enable = false, const uint8_t _Multiplexer_Channel = 0) : I2C_Functions(__I2C_Addr_HDC2010__, _Multiplexer_Enable, _Multiplexer_Channel) {
+			explicit HDC2010(bool _Multiplexer_Enable = false, uint8_t _Multiplexer_Channel = 0) : I2C_Functions(__I2C_Addr_HDC2010__, _Multiplexer_Enable, _Multiplexer_Channel) {
 
 			}
 
@@ -831,6 +834,9 @@
 				// Define Measurement Read Array
 				float _Measurement_Array[_Measurement_Count];
 
+				// Clear Array
+				memset(_Measurement_Array, 0, sizeof(_Measurement_Array));
+
 				// Read Loop For Read Count
 				for (uint8_t _Read_ID = 0; _Read_ID < _Measurement_Count; _Read_ID++) {
 
@@ -894,6 +900,9 @@
 
 				// Define Measurement Read Array
 				float _Measurement_Array[_Measurement_Count];
+
+				// Clear Array
+				memset(_Measurement_Array, 0, sizeof(_Measurement_Array));
 
 				// Read Loop For Read Count
 				for (uint8_t _Read_ID = 0; _Read_ID < _Measurement_Count; _Read_ID++) {
@@ -1010,7 +1019,7 @@
 		public:
 
 			// Construct a new MPL3115A2 object
-			MPL3115A2(const bool _Multiplexer_Enable = false, const uint8_t _Multiplexer_Channel = 0) : I2C_Functions(__I2C_Addr_MPL3115A2__, _Multiplexer_Enable, _Multiplexer_Channel) {
+			explicit MPL3115A2(const bool _Multiplexer_Enable = false, const uint8_t _Multiplexer_Channel = 0) : I2C_Functions(__I2C_Addr_MPL3115A2__, _Multiplexer_Enable, _Multiplexer_Channel) {
 
 			}
 
@@ -1064,6 +1073,9 @@
 
 				// Define Measurement Read Array
 				float _Measurement_Array[_Measurement_Count];
+
+				// Clear Array
+				memset(_Measurement_Array, 0, sizeof(_Measurement_Array));
 
 				// Read Loop For Read Count
 				for (int Read_ID = 0; Read_ID < _Measurement_Count; Read_ID++) {
@@ -1432,7 +1444,7 @@
 			TSL2561(bool _Multiplexer_Enable, uint8_t _Multiplexer_Channel, uint8_t _Measurement_Count = 1, bool _Calibration_Enable = false) : I2C_Functions(__I2C_Addr_TSL2561__, _Multiplexer_Enable, _Multiplexer_Channel) {
 
 				// Set Measurement Count
-				_Measurement_Count = _Measurement_Count;
+				this->Sensor.Read_Count = _Measurement_Count;
 
 				// Enable Calibration
 				this->Sensor.Calibration = _Calibration_Enable;
@@ -1629,6 +1641,10 @@
 			// Construct a new SDP810 object
 			SDP810(bool _Multiplexer_Enable, uint8_t _Multiplexer_Channel) : I2C_Functions(__I2C_Addr_SDP810__, _Multiplexer_Enable, _Multiplexer_Channel) {
 
+				// Clear Arrays
+				memset(this->Product_Number, '\0', 11);
+				memset(this->Serial_Number, '\0', 19);
+
 			}
 
 			// Begin Sensor
@@ -1683,6 +1699,10 @@
 				// Define Measurement Read Array
 				float _Pressure_Measurement_Array[_Measurement_Count];
 				float _Temperature_Measurement_Array[_Measurement_Count];
+
+				// Clear Array
+				memset(_Pressure_Measurement_Array, 0, sizeof(_Pressure_Measurement_Array));
+				memset(_Temperature_Measurement_Array, 0, sizeof(_Temperature_Measurement_Array));
 
 				// Read Loop For Read Count
 				for (uint8_t _Read_ID = 0; _Read_ID < _Measurement_Count; _Read_ID++) this->Read_Measurement(_Pressure_Measurement_Array[_Read_ID], _Temperature_Measurement_Array[_Read_ID]);
@@ -1799,15 +1819,15 @@
 			}
 
 			// Read Parameter Data Function
-			uint8_t Read_Param_Data(uint8_t _Reg) {
+//			uint8_t Read_Param_Data(uint8_t _Reg) {
 
 				// Write Command
-				I2C_Functions::Write_Register(0X18, _Reg | 0X80, true);
+//				I2C_Functions::Write_Register(0x18, _Reg | 0x80, true);
 
 				// Read Byte
-				return(I2C_Functions::Read_Register(0X2E));
+//				return(I2C_Functions::Read_Register(0x2E));
 
-			}
+//			}
 
 			// Write Parameter Data Function
 			uint8_t Write_Param_Data(uint8_t _Reg, uint8_t _Value) {
@@ -1997,6 +2017,9 @@
 				// Define Measurement Read Array
 				float _Pressure_Measurement_Array[_Measurement_Count];
 
+				// Clear Array
+				memset(_Pressure_Measurement_Array, 0, sizeof(_Pressure_Measurement_Array));
+
 				// Read Loop For Read Count
 				for (uint8_t _Read_ID = 0; _Read_ID < _Measurement_Count; _Read_ID++) {
 
@@ -2066,6 +2089,9 @@
 
 				// Define Measurement Read Array
 				float _Temperature_Measurement_Array[_Measurement_Count];
+
+				// Clear Array
+				memset(_Temperature_Measurement_Array, 0, sizeof(_Temperature_Measurement_Array));
 
 				// Read Loop For Read Count
 				for (uint8_t _Read_ID = 0; _Read_ID < _Measurement_Count; _Read_ID++) {
@@ -2162,239 +2188,6 @@
 
 				// Return Address
 				return(I2C_Functions::Variables.Multiplexer.Channel);
-
-			}
-
-	};
-
-	// Weather Sensor Class
-	class B108AA_Environment : private HDC2010, private MPL3115A2, private SI1145 {
-
-		// Public Context		
-		public:
-
-			// Construct a new B108AA_Environment object
-			B108AA_Environment(void) : HDC2010(true, __B108AA_MUX_HDC2010__), MPL3115A2(true, __B108AA_MUX_MPL3115__), SI1145(true, __B108AA_MUX_SI1145__) {
-
-			}
-
-			// Begin Sensor
-			void Start(void) {
-
-				// Start HDC2010
-				HDC2010::Begin();
-
-				// Calibrate HDC2010
-				HDC2010::Set_Calibration_Parameters(1, 1.0053, -0.4102);
-				HDC2010::Set_Calibration_Parameters(2, 0.9821, -0.3217);
-
-				// Start MPL3115A2
-				MPL3115A2::Begin();
-
-				// Calibrate MPL3115A2
-				MPL3115A2::Set_Calibration_Parameters(1, 0);
-
-				// Start SI1145
-				SI1145::Begin();
-
-			}
-
-			// Read Temperature Function
-			float Temperature(void) {
-
-				// Return Temperature
-				return(HDC2010::Temperature(10));
-
-			}
-
-			// Read Humidity Function
-			float Humidity(void) {
-
-				// Return Humidity
-				return(HDC2010::Humidity(10));
-
-			}
-
-			// Read Pressure Function
-			float Pressure(void) {
-
-				// Return Pressure
-				return(MPL3115A2::Pressure(1));
-
-			}
-
-			// Read Visible Light Function
-			float Visible(void) {
-
-				// Return Visible Light
-				return(SI1145::Read_Visible());
-
-			}
-
-			// Read IR Light Function
-			float IR(void) {
-
-				// Return IR Light
-				return(SI1145::Read_IR());
-
-			}
-
-			// Read UV Function
-			float UV(void) {
-
-				// Return UV
-				return(SI1145::Read_UV());
-
-			}
-
-			// Read Delta Pressure Function
-			void Wind(float & _WD, float & _WS) {
-
-				// Define Sensor Object
-				SDP810 Sensor_Axis_1(true, __B108AA_MUX_SDP810_X__);
-				SDP810 Sensor_Axis_2(true, __B108AA_MUX_SDP810_Y__);
-				SDP810 Sensor_Axis_3(true, __B108AA_MUX_SDP810_Z__);
-
-				// Begin Sensor
-				Sensor_Axis_1.Begin();
-				Sensor_Axis_2.Begin();
-				Sensor_Axis_3.Begin();
-
-				// Declare Variables
-				struct Wind_Speed_Struct {
-
-					// Axis 1 Struct
-					struct Wind_Speed_A_Struct {
-						float Speed;
-						float X;
-						float Y;
-					} Axis_1;
-					
-					// Axis 2 Struct
-					struct Wind_Speed_B_Struct {
-						float Speed;
-						float X;
-						float Y;
-					} Axis_2;
-
-					// Axis 3 Struct
-					struct Wind_Speed_C_Struct {
-						float Speed;
-						float X;
-						float Y;
-					} Axis_3;
-
-					// X Vector Sum
-					float X_Vectors_SUM;
-
-					// Y Vector Sum
-					float Y_Vector_SUM;
-
-				} _Wind_Speed;
-
-				// Declare Constants
-				const double _Rho = 1.225;
-
-				// Calculate Wind Speed
-				_Wind_Speed.Axis_1.Speed = sqrt(2 * Sensor_Axis_1.Pressure(50) / _Rho);
-				_Wind_Speed.Axis_2.Speed = sqrt(2 * Sensor_Axis_2.Pressure(50) / _Rho);
-				_Wind_Speed.Axis_3.Speed = sqrt(2 * Sensor_Axis_3.Pressure(50) / _Rho);
-
-				// Calculate Wind Direction Axis 1
-				if (_Wind_Speed.Axis_1.Speed > 0) {
-
-					// Calculate Wind Direction X Vector
-					_Wind_Speed.Axis_1.X = _Wind_Speed.Axis_1.Speed * cos(radians(0));
-
-					// Calculate Wind Direction Y Vector
-					_Wind_Speed.Axis_1.Y = _Wind_Speed.Axis_1.Speed * sin(radians(0));
-
-				} else if (_Wind_Speed.Axis_1.Speed < 0) {
-
-					// Calculate Wind Direction X Vector
-					_Wind_Speed.Axis_1.X = abs(_Wind_Speed.Axis_1.Speed) * cos(radians(180));
-
-					// Calculate Wind Direction Y Vector
-					_Wind_Speed.Axis_1.Y = abs(_Wind_Speed.Axis_1.Speed) * sin(radians(180));
-
-				} else if (_Wind_Speed.Axis_1.Speed == 0) {
-
-					// Calculate Wind Direction X Vector
-					_Wind_Speed.Axis_1.X = 0;
-
-					// Calculate Wind Direction Y Vector
-					_Wind_Speed.Axis_1.Y = 0;
-
-				}
-
-				// Calculate Wind Direction Axis 2
-				if (_Wind_Speed.Axis_2.Speed > 0) {
-
-					// Calculate Wind Direction X Vector
-					_Wind_Speed.Axis_2.X = _Wind_Speed.Axis_2.Speed * cos(radians(60));
-
-					// Calculate Wind Direction Y Vector
-					_Wind_Speed.Axis_2.Y = _Wind_Speed.Axis_2.Speed * sin(radians(60));
-
-				} else if (_Wind_Speed.Axis_2.Speed < 0) {
-
-					// Calculate Wind Direction X Vector
-					_Wind_Speed.Axis_2.X = abs(_Wind_Speed.Axis_2.Speed) * cos(radians(240));
-
-					// Calculate Wind Direction Y Vector
-					_Wind_Speed.Axis_2.Y = abs(_Wind_Speed.Axis_2.Speed) * sin(radians(240));
-
-				} else if (_Wind_Speed.Axis_2.Speed == 0) {
-
-					// Calculate Wind Direction X Vector
-					_Wind_Speed.Axis_2.X = 0;
-
-					// Calculate Wind Direction Y Vector
-					_Wind_Speed.Axis_2.Y = 0;
-
-				}
-
-				// Calculate Wind Direction Axis 3
-				if (_Wind_Speed.Axis_3.Speed > 0) {
-
-					// Calculate Wind Direction X Vector
-					_Wind_Speed.Axis_3.X = _Wind_Speed.Axis_3.Speed * cos(radians(120));
-
-					// Calculate Wind Direction Y Vector
-					_Wind_Speed.Axis_3.Y = _Wind_Speed.Axis_3.Speed * sin(radians(120));
-
-				} else if (_Wind_Speed.Axis_3.Speed < 0) {
-
-					// Calculate Wind Direction X Vector
-					_Wind_Speed.Axis_3.X = abs(_Wind_Speed.Axis_3.Speed) * cos(radians(300));
-
-					// Calculate Wind Direction Y Vector
-					_Wind_Speed.Axis_3.Y = abs(_Wind_Speed.Axis_3.Speed) * sin(radians(300));
-
-				} else if (_Wind_Speed.Axis_3.Speed == 0) {
-
-					// Calculate Wind Direction X Vector
-					_Wind_Speed.Axis_3.X = 0;
-
-					// Calculate Wind Direction Y Vector
-					_Wind_Speed.Axis_3.Y = 0;
-
-				}
-
-				// Calculate X Vectors Sum
-				_Wind_Speed.X_Vectors_SUM = _Wind_Speed.Axis_1.X + _Wind_Speed.Axis_2.X + _Wind_Speed.Axis_3.X;
-
-				// Calculate Y Vectors Sum
-				_Wind_Speed.Y_Vector_SUM = _Wind_Speed.Axis_1.Y + _Wind_Speed.Axis_2.Y + _Wind_Speed.Axis_3.Y;
-
-				// Calculate Wind Total Speed
-				_WS = sqrt(pow(_Wind_Speed.X_Vectors_SUM, 2) + pow(_Wind_Speed.Y_Vector_SUM, 2));
-
-				// Calculate Wind Direction
-				_WD = degrees(atan2(_Wind_Speed.Y_Vector_SUM, _Wind_Speed.X_Vectors_SUM));
-
-				// Control for Wind Direction
-				if (_WD < 0) _WD += 360;
 
 			}
 
