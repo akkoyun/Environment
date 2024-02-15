@@ -51,7 +51,7 @@
 		public:
 
 			// Construct a new Analog object
-			Analog(uint8_t _Channel = 1) {
+			explicit Analog(uint8_t _Channel = 1) {
 
 				// Set Channel Variable
 				_Channel &= 0b00000111;
@@ -552,7 +552,7 @@
 		public:
 
 			// Construct a new HDC2010 object
-			HDC2010(bool _Multiplexer_Enable = false, uint8_t _Multiplexer_Channel = 0) : I2C_Functions(__I2C_Addr_HDC2010__, _Multiplexer_Enable, _Multiplexer_Channel) {
+			explicit HDC2010(bool _Multiplexer_Enable = false, uint8_t _Multiplexer_Channel = 0) : I2C_Functions(__I2C_Addr_HDC2010__, _Multiplexer_Enable, _Multiplexer_Channel) {
 
 			}
 
@@ -1019,7 +1019,7 @@
 		public:
 
 			// Construct a new MPL3115A2 object
-			MPL3115A2(const bool _Multiplexer_Enable = false, const uint8_t _Multiplexer_Channel = 0) : I2C_Functions(__I2C_Addr_MPL3115A2__, _Multiplexer_Enable, _Multiplexer_Channel) {
+			explicit MPL3115A2(const bool _Multiplexer_Enable = false, const uint8_t _Multiplexer_Channel = 0) : I2C_Functions(__I2C_Addr_MPL3115A2__, _Multiplexer_Enable, _Multiplexer_Channel) {
 
 			}
 
