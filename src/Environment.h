@@ -530,24 +530,6 @@
 
 			}
 
-			// Enable / Disable Heater Function
-//			void Heater(bool _State = false) {
-
-				// Control for State
-//				if (_State) {
-
-					// Set Bit
-//					I2C_Functions::Set_Register_Bit(0x0E, 3, true);
-
-//				} else {
-
-					// Clear Bit
-//					I2C_Functions::Clear_Register_Bit(0x0E, 3, true);
-
-//				}
-
-//			}
-
 		// Public Context
 		public:
 
@@ -828,6 +810,24 @@
 
 			}
 
+			// Enable / Disable Heater Function
+			void Heater(bool _State = false) {
+
+				// Control for State
+				if (_State) {
+
+					// Set Bit
+					I2C_Functions::Set_Register_Bit(0x0E, 3, true);
+
+				} else {
+
+					// Clear Bit
+					I2C_Functions::Clear_Register_Bit(0x0E, 3, true);
+
+				}
+
+			}
+			
 			// Read Temperature Function
 			float Temperature(const uint8_t _Measurement_Count = 1) {
 
@@ -1132,21 +1132,6 @@
 			struct TSL2561_Struct {
 
 				/**
-				 * @brief MPL3115A2 Sensor Address Variable.
-				 */
-				uint8_t TWI_Address 				= 0x39;
-
-				/**
-				 * @brief Sensor Mux Variable (if after a I2C multiplexer).
-				 */
-				bool Mux_Enable 					= false;
-
-				/**
-				 * @brief Sensor Mux Channel (if after a I2C multiplexer).
-				 */
-				uint8_t Mux_Channel 				= 0;
-
-				/**
 				 * @brief Measurement Read Count Variable (if not defined 1 measurement make).
 				 */
 				uint8_t Read_Count 					= 1;
@@ -1396,10 +1381,6 @@
 
 				// Enable Calibration
 				this->Sensor.Calibration = _Calibration_Enable;
-
-				// Set Multiplexer Variables
-				this->Sensor.Mux_Enable = _Multiplexer_Enable;
-				this->Sensor.Mux_Channel = _Multiplexer_Channel;
 
 			}
 
